@@ -1,0 +1,236 @@
+// Copyright (c) 2017-2020 Xiamen Yaji Software Co., Ltd.
+// 双重模糊 https://forum.cocos.org/t/topic/131249
+CCEffect %{
+  techniques:
+  - name: Down
+    passes:
+    - vert: sprite-vs:Down
+      frag: sprite-fs:Down
+      depthStencilState:
+        depthTest: false
+        depthWrite: false
+      blendState:
+        targets:
+        - blend: true
+          blendSrc: src_alpha
+          blendDst: one_minus_src_alpha
+          blendDstAlpha: one_minus_src_alpha
+      rasterizerState:
+        cullMode: none
+      properties:
+        resolution: { value: [1920, 1080] }
+        offset: { value: 1, editor: { range: [0, 100] }}
+        alphaThreshold: { value: 0.5 }
+  - name: Up
+    passes:
+    - vert: sprite-vs:Up
+      frag: sprite-fs:Up
+      depthStencilState:
+        depthTest: false
+        depthWrite: false
+      blendState:
+        targets:
+        - blend: true
+          blendSrc: src_alpha
+          blendDst: one_minus_src_alpha
+          blendDstAlpha: one_minus_src_alpha
+      rasterizerState:
+        cullMode: none
+      properties:
+        resolution: { value: [1920, 1080] }
+        offset: { value: 1, editor: { range: [0, 100] }}
+        alphaThreshold: { value: 0.5 }
+}%
+
+CCProgram sprite-vs %{
+  precision highp float;
+  #include <builtin/uniforms/cc-global>
+  #if USE_LOCAL
+    #include <builtin/uniforms/cc-local>
+  #endif
+  #if SAMPLE_FROM_RT
+    #include <common/common-define>
+  #endif
+  in vec3 a_position;
+  in vec2 a_texCoord;
+  in vec4 a_color;
+
+  #if USE_TEXTURE
+  in vec2 a_uv0;
+  in vec2 a_p;
+  in vec2 a_q;
+
+  out vec2 v_uv0;
+  out vec4 v_uv1;
+  out vec4 v_uv2;
+  out vec4 v_uv3;
+  out vec4 v_uv4;
+  out vec2 v_p;
+  out vec2 v_q;
+
+  #endif
+
+  uniform Properties {
+    vec2 resolution;
+    float offset;
+  };
+
+  out vec4 color;
+  out vec2 uv0;
+
+  vec4 Down () {
+    vec4 pos = vec4(a_position, 1);
+
+    #if USE_LOCAL
+      pos = cc_matWorld * pos;
+    #endif
+
+    #if USE_PIXEL_ALIGNMENT
+      pos = cc_matView * pos;
+      pos.xyz = floor(pos.xyz);
+      pos = cc_matProj * pos;
+    #else
+      pos = cc_matViewProj * pos;
+    #endif
+
+    uv0 = a_texCoord;
+    #if SAMPLE_FROM_RT
+      CC_HANDLE_RT_SAMPLE_FLIP(uv0);
+    #endif
+
+    #if USE_TEXTURE
+    vec2 uv = uv0;
+    vec2 texelSize = 0.5 / resolution;
+    v_uv0 = uv;
+    v_uv1.xy = uv - texelSize * vec2(1. + offset); //top right
+    v_uv1.zw = uv + texelSize * vec2(1. + offset); //bottom left
+    v_uv2.xy = uv - vec2(texelSize.x, -texelSize.y) * vec2(1. + offset); //top right
+    v_uv2.zw = uv + vec2(texelSize.x, -texelSize.y) * vec2(1. + offset); //bottom left
+    v_p = a_p;
+    v_q = a_q;
+    #endif
+
+    color = a_color;
+
+    return pos;
+  }
+
+  vec4 Up () {
+    vec4 pos = vec4(a_position, 1);
+    
+    #if USE_LOCAL
+      pos = cc_matWorld * pos;
+    #endif
+
+    #if USE_PIXEL_ALIGNMENT
+      pos = cc_matView * pos;
+      pos.xyz = floor(pos.xyz);
+      pos = cc_matProj * pos;
+    #else
+      pos = cc_matViewProj * pos;
+    #endif
+
+    uv0 = a_texCoord;
+    #if SAMPLE_FROM_RT
+      CC_HANDLE_RT_SAMPLE_FLIP(uv0);
+    #endif
+
+    #if USE_TEXTURE
+      vec2 uv = uv0;
+      vec2 texelSize = 0.5 / resolution;
+      v_uv0 = uv;
+      v_uv1.xy = uv + vec2(-texelSize.x * 2., 0) * offset;
+      v_uv1.zw = uv + vec2(-texelSize.x, texelSize.y) * offset;
+      v_uv2.xy = uv + vec2(0, texelSize.y * 2.) * offset;
+      v_uv2.zw = uv + texelSize * offset;
+      v_uv3.xy = uv + vec2(texelSize.x * 2., 0) * offset;
+      v_uv3.zw = uv + vec2(texelSize.x, -texelSize.y) * offset;
+      v_uv4.xy = uv + vec2(0, -texelSize.y * 2.) * offset;
+      v_uv4.zw = uv - texelSize * offset;
+      v_p = a_p;
+      v_q = a_q; 
+    #endif
+
+
+    color = a_color;
+
+    return pos;
+  }
+}%
+
+CCProgram sprite-fs %{
+  precision highp float;
+  #include <builtin/internal/embedded-alpha>
+  #include <builtin/internal/alpha-test>
+  
+
+  in vec4 color;
+
+  #if USE_TEXTURE
+    in vec2 uv0;
+    #pragma builtin(local)
+    layout(set = 2, binding = 11) uniform sampler2D cc_spriteTexture;
+
+    in vec2 v_uv0;
+    in vec4 v_uv1;
+    in vec4 v_uv2;
+    in vec4 v_uv3;
+    in vec4 v_uv4;
+    in vec2 v_p;
+    in vec2 v_q;
+  #endif
+
+  uniform Properties {
+    vec2 resolution;
+    float offset;
+  };
+
+
+
+  vec4 Down () {
+    vec4 o = vec4(1, 1, 1, 1);
+
+    #if USE_TEXTURE
+      o *= CCSampleWithAlphaSeparated(cc_spriteTexture, uv0);
+
+      o += texture(cc_spriteTexture, v_uv1.xy);
+      o += texture(cc_spriteTexture, v_uv1.zw);
+      o += texture(cc_spriteTexture, v_uv2.xy);
+      o += texture(cc_spriteTexture, v_uv2.zw);
+      o *= 0.2;
+      #if IS_GRAY
+        float gray  = 0.2126 * o.r + 0.7152 * o.g + 0.0722 * o.b;
+        o.r = o.g = o.b = gray;
+      #endif
+    #endif
+
+    o *= color;
+    ALPHA_TEST(o);
+    return o;
+  }
+
+  vec4 Up () {
+    vec4 o = vec4(1, 1, 1, 1);
+
+    #if USE_TEXTURE
+      o *= CCSampleWithAlphaSeparated(cc_spriteTexture, uv0);
+
+      o += texture(cc_spriteTexture, v_uv1.zw) * 2.;
+      o += texture(cc_spriteTexture, v_uv2.xy);
+      o += texture(cc_spriteTexture, v_uv2.zw) * 2.;
+      o += texture(cc_spriteTexture, v_uv3.xy);
+      o += texture(cc_spriteTexture, v_uv3.zw) * 2.;
+      o += texture(cc_spriteTexture, v_uv4.xy);
+      o += texture(cc_spriteTexture, v_uv4.zw) * 2.;
+      o *= 0.0833;
+      #if IS_GRAY
+        float gray  = 0.2126 * o.r + 0.7152 * o.g + 0.0722 * o.b;
+        o.r = o.g = o.b = gray;
+      #endif
+    #endif
+
+    o *= color;
+    ALPHA_TEST(o);
+    return o;
+  }
+}%

@@ -1,0 +1,1060 @@
+import { BundleWrap } from "./BundleWrap";
+import { AssetWrap } from "./AssetWrap";
+
+import { Asset, assetManager, AssetManager, js, path, Prefab, resources, SceneAsset, SpriteFrame, __private, Texture2D, warn, JsonAsset } from "cc";
+import { EDITOR } from "cc/env";
+const { pluginMgr } = tnt._decorator;
+
+type Bundle = AssetManager.Bundle;
+let _handlerExts = [];
+declare global {
+
+    type CCAssetType<T = Asset> = __private._types_globals__Constructor<T>;
+    type CCIAssetOptions = {
+        [key: string]: any;
+        preset?: "string";
+    } | null;
+
+    type CCProgressCallback = ((finished: number, total: number, item: RequestItem) => void) | null;
+    type CCCompleteCallbackWithData<T = any> = ((err: Error | null, data: T) => void) | null;
+    type RequestItem = AssetManager.RequestItem;
+
+    type LoadBundleAssetCompleteFunc = (err: Error | null, bundle: BundleWrap | null) => void;
+    type LoadBundleCompleteFunc = (err: Error | null, bundle: Bundle | null) => void;
+
+    type CCCompleteCallbackNoData = ((err?: Error | null) => void) | null;
+
+
+    interface IParameters<T> {
+        options: CCIAssetOptions;
+        onProgress: CCProgressCallback | null;
+        onComplete: T | null;
+    }
+
+    interface ILoaderPlugin {
+        name: string;
+        priority?: number;
+        onLoadComplete(loader: AssetLoader, path: string, asset: Asset, bundle: Bundle): void;
+        onLoadDirComplete(loader: AssetLoader, path: string, assets: Asset[], bundle: Bundle): void;
+        onLoadArrayComplete(loader: AssetLoader, path: string[], assets: Asset[], bundle: Bundle): void;
+        onLoadSceneComplete(loader: AssetLoader, sceneName: string, scene: SceneAsset, bundle: Bundle): void;
+
+        onAssetPreProcessing(loader: AssetLoader, path: string, asset: Asset, bundle: Bundle): Asset;
+
+        onRelease(loader: AssetLoader, path: string, asset: Asset): void;
+    }
+
+
+    interface ITNT {
+        AssetLoader: typeof AssetLoader;
+    }
+
+    namespace tnt {
+        type AssetLoader = InstanceType<typeof AssetLoader>;
+    }
+
+    interface IPluginType {
+        AssetLoader: ILoaderPlugin;
+    }
+}
+
+
+class Cache {
+    // 考虑到 相同路径不同类型的资源，所以这里使用数组形式
+    map: Map<string, Array<AssetWrap>>;
+    info: Map<string, string>;
+    constructor() {
+        this.map = new Map();
+        this.info = new Map(); // key [asset uuid]: value [asset path]
+    }
+    set(path, asset: AssetWrap) {
+        let has = this.map.has(path);
+        let assetWrapArray: AssetWrap[] = null;
+        if (has) {
+            assetWrapArray = this.map.get(path);
+        } else {
+            assetWrapArray = [];
+            this.map.set(path, assetWrapArray);
+        }
+        // 记录 uuid 对应的 path
+        this.info.set(asset.asset.uuid, path);
+        assetWrapArray.push(asset);
+    }
+    get(path, type: CCAssetType): AssetWrap {
+        let has = this.map.has(path);
+        if (has) {
+            let assetWraps = this.map.get(path);
+            let typeName = js.getClassName(type)
+            for (let i = 0; i < assetWraps.length; i++) {
+                const asset = assetWraps[i];
+                let assetClassName = js.getClassName(asset.asset);
+                if (assetClassName == typeName) {
+                    return asset;
+                }
+            }
+        }
+        return null;
+    }
+
+    getPathByAsset(asset: Asset) {
+        if (!asset) {
+            return null;
+        }
+        return this.info.get(asset.uuid);
+    }
+
+    delete(path: string, type: CCAssetType) {
+        let has = this.map.has(path);
+        if (has) {
+            let assetWraps = this.map.get(path);
+            let typeName = js.getClassName(type)
+            for (let i = 0; i < assetWraps.length; i++) {
+                const assetWrap = assetWraps[i];
+                let assetClassName = js.getClassName(assetWrap.asset);
+                if (assetClassName == typeName) {
+                    assetWraps.splice(i, 1);
+                    if (!assetWraps.length) {
+                        this.map.delete(path);
+                    }
+                    return assetWrap;
+                }
+            }
+        }
+        return null;
+    }
+
+    forEach(callbackfn: (value: AssetWrap, key: string, map: Cache) => void, thisArg?: any) {
+        this.map.forEach((arr, key) => {
+            for (let i = 0; i < arr.length; i++) {
+                const asset = arr[i];
+                callbackfn(asset, key, this);
+            }
+        }, thisArg);
+    }
+
+    clear() {
+        this.map.clear();
+    }
+
+}
+
+let _plugins: ILoaderPlugin[] = [];
+
+@pluginMgr("AssetLoader")
+class AssetLoader {
+    public key: string = "";
+    public windowName: string = "";
+    protected static loadedBundles: Map<string, BundleWrap> = new Map();
+    protected static bundleVersions: Map<string, string> = null!;
+
+
+    public static getBundleVersions(bundleName: string): string | undefined {
+        if (this.bundleVersions == null) return null;
+        return this.bundleVersions.get(bundleName);
+    }
+
+    //删除bundle
+    public static removeBundle(nameOrUrl: string) {
+        let bundleWrap = this.loadedBundles.get(nameOrUrl);
+        if (bundleWrap) {
+            this.loadedBundles.delete(nameOrUrl);
+            if (nameOrUrl != resources.name)
+                assetManager.removeBundle(bundleWrap.bundle);
+        }
+    }
+
+    /**
+    * 加载 bundle
+    * @param bundleName 
+    */
+    public static loadBundle(bundleName: string | Bundle, onComplete: LoadBundleCompleteFunc) {
+        this.loadBundleWrap(bundleName, (err: Error | null, bundleWrap: BundleWrap | null) => {
+            if (err == null) {
+                onComplete?.(null, bundleWrap.bundle);
+            } else {
+                onComplete?.(err, null);
+            }
+        });
+    }
+    /**
+    * 加载 包装 Bundle
+    * @param bundleName 
+    */
+    protected static loadBundleWrap(bundleName: string | Bundle, onComplete: LoadBundleAssetCompleteFunc) {
+
+        if (!bundleName) {
+            bundleName = resources.name;
+        }
+
+        if (bundleName instanceof AssetManager.Bundle) {
+            bundleName = bundleName.name;
+        }
+        let bundle = this.loadedBundles.get(bundleName);
+        if (bundle) {
+            onComplete?.(null, bundle);
+        } else {
+            if (bundleName == resources.name) {
+                bundle = new BundleWrap(bundleName, resources);
+                this.loadedBundles.set(bundleName, bundle);
+                onComplete?.(null, bundle);
+            } else {
+                let options: any = {}
+                // if(onprogress){
+                //     options.onFileProgress = (loaded: number, total: number)=>{
+                //         onprogress(loaded/total);
+                //     }
+                // }
+                let version = this.getBundleVersions(bundleName)
+                if (version) {
+                    options.version = version;
+                }
+
+                assetManager.loadBundle(bundleName, options, (err: Error | null, data: Bundle) => {
+                    if (err == null) {
+                        bundle = new BundleWrap(bundleName as string, data);
+                        this.loadedBundles.set(bundleName as string, bundle);
+                        onComplete?.(null, bundle);
+                    } else {
+                        onComplete?.(err, null);
+                    }
+                });
+            }
+        }
+    }
+
+    public removeBundle(nameOrUrl: string) {
+        return AssetLoader.removeBundle(nameOrUrl);
+    }
+
+    public loadBundle(bundleName: string | Bundle, onComplete: LoadBundleCompleteFunc) {
+        return AssetLoader.loadBundle(bundleName, onComplete);
+    }
+
+    public loadBundleWrap(bundleName: string | Bundle, onComplete: LoadBundleAssetCompleteFunc) {
+        return AssetLoader.loadBundleWrap(bundleName, onComplete);
+    }
+
+
+    protected _cache: Cache = new Cache();
+    public get cache() {
+        return this._cache;
+    }
+
+    private _loadCount = 0;
+    public get loadCount() {
+        return this._loadCount;
+    }
+    public isValid = false;
+
+    protected _addCount() {
+        this._loadCount++;
+    }
+    protected _checkDecCount() {
+        this._loadCount--;
+        return this.isValid;
+    }
+
+    public static registerPluginAuto(plugins: ILoaderPlugin | ILoaderPlugin[]) {
+        if (EDITOR) {
+            return;
+        }
+        if (!Array.isArray(plugins)) {
+            plugins = new Array(plugins);
+        }
+
+        plugins.forEach((plugin) => {
+            //插件能不重复
+            let findPlugin = _plugins.some(item => item.name === plugin.name || item === plugin);
+            if (findPlugin) {
+                return;
+            }
+            _plugins.push(plugin);
+        });
+
+        _plugins.sort((a, b) => {
+            return (b.priority || 0) - (a.priority || 0);
+        });
+    }
+
+    private onLoadArrayComplete(path: string[], assets: Asset[], bundle: Bundle) {
+        _plugins.forEach((plugin) => {
+            plugin.onLoadArrayComplete(this, path, assets, bundle);
+        });
+    }
+    private onLoadComplete(path: string, asset: Asset, bundle: Bundle) {
+        _plugins.forEach((plugin) => {
+            plugin.onLoadComplete(this, path, asset, bundle);
+        });
+    }
+
+    private onLoadDirComplete(path: string, assets: Asset[], bundle: Bundle) {
+        _plugins.forEach((plugin) => {
+            plugin.onLoadDirComplete(this, path, assets, bundle);
+        });
+    }
+
+    private onRelease(path: string, asset: Asset) {
+        _plugins.forEach((plugin) => {
+            plugin.onRelease(this, path, asset);
+        });
+    }
+
+    private onLoadSceneComplete(sceneName: string, scene: SceneAsset, bundle: Bundle) {
+        _plugins.forEach((plugin) => {
+            plugin.onLoadSceneComplete(this, sceneName, scene, bundle);
+        });
+    }
+
+    /** 预处理资源 */
+    private onAssetPreProcessing(path: string, asset: Asset, bundle: Bundle) {
+        let final_asset = asset;
+        _plugins.forEach((plugin) => {
+            final_asset = plugin.onAssetPreProcessing(this, path, final_asset, bundle);
+        });
+        return final_asset;
+    }
+
+
+    public releaseBundle(bundleName: string) {
+
+        let bundleWrap = this.getBundleAsset(bundleName);
+        if (!bundleWrap) {
+            return;
+        }
+        let releaseArr: AssetWrap[] = [];
+        // 查找目录下的文件
+        this._cache.forEach((assetWrap: AssetWrap) => {
+            if (assetWrap.bundle.name === bundleWrap.name) {
+                releaseArr.push(assetWrap);
+            }
+        })
+
+        // 释放资源
+        for (let i = 0; i < releaseArr.length; i++) {
+            const releaseAsset = releaseArr[i];
+            releaseAsset.decRef();
+            if (releaseAsset.refCount <= 0) {
+                let u_path = this.jointKey(bundleWrap.name, releaseAsset.path);
+                let className = js.getClassName(releaseAsset.asset);
+                let clazz = js.getClassByName(className);
+                let assetWrap = this._cache.delete(u_path, clazz as any);
+                assetWrap && this.onRelease(assetWrap.path, assetWrap.asset);
+            }
+        }
+
+        return AssetLoader.removeBundle(bundleName);
+    }
+
+    // 先对包装层资源进行计数 --
+    public releaseAsset<T extends Asset>(asset: Asset)
+    public releaseAsset<T extends Asset>(path: string, type: CCAssetType<T>)
+    public releaseAsset<T extends Asset>(path: string, type: CCAssetType<T>, bundle: Bundle | string)
+    public releaseAsset<T extends Asset>(pathOrAsset: string | Asset, type?: CCAssetType<T>, bundle?: Bundle | string) {
+        if (!pathOrAsset) {
+            return;
+        }
+        if (pathOrAsset instanceof Asset) {
+            this._releaseOneAsset(pathOrAsset);
+            return;
+        }
+
+        let path = this.formatPath(pathOrAsset, type);
+        let bundleWrap = this.getBundleAsset(bundle);
+        let u_path = this.jointKey(bundleWrap.name, path);
+
+        let asset = this._cache.get(u_path, type);
+        if (asset) {
+            asset.decRef();
+            if (asset.refCount <= 0) {
+                let assetWrap = this._cache.delete(u_path, type);
+                assetWrap && this.onRelease(assetWrap.path, assetWrap.asset);
+            }
+        }
+    }
+
+    private _releaseOneAsset(asset: Asset) {
+        if (!asset) {
+            return;
+        }
+        const u_path = this._cache.getPathByAsset(asset);
+        // 判断当前 Loader 是否包含 指定资源
+        if (u_path) {
+            let className = js.getClassName(asset)
+            let clazz = js.getClassByName(className) as __private._types_globals__Constructor<Asset>;
+            if (asset) {
+                asset.decRef();
+                if (asset.refCount <= 0) {
+                    let assetWrap = this._cache.delete(u_path, clazz);
+                    assetWrap && this.onRelease(assetWrap.path, assetWrap.asset);
+                }
+            }
+        }
+    }
+
+    // 释放目录
+    public releaseDir<T extends Asset>(dir: string, type: CCAssetType<T>, bundle?: Bundle | string) {
+        let bundleWrap = this.getBundleAsset(bundle);
+        let releaseArr: AssetWrap[] = [];
+        // 查找目录下的文件
+        this._cache.forEach((assetWrap: AssetWrap) => {
+            let typeName = js.getClassName(type)
+            let assetClassName = js.getClassName(assetWrap.asset);
+            if (assetClassName == typeName && assetWrap.path.startsWith(dir)) {
+                releaseArr.push(assetWrap);
+            }
+        })
+
+        // 释放资源
+        for (let i = 0; i < releaseArr.length; i++) {
+            const releaseAsset = releaseArr[i];
+            releaseAsset.decRef();
+            if (releaseAsset.refCount <= 0) {
+                let u_path = this.jointKey(bundleWrap.name, releaseAsset.path);
+                let assetWrap = this._cache.delete(u_path, type);
+                assetWrap && this.onRelease(assetWrap.path, assetWrap.asset);
+            }
+        }
+    }
+
+    /**
+     * 直接释放引用资源，不对包装层做判断
+     */
+    public releaseAll() {
+        this._cache?.forEach((assetWrap: AssetWrap) => {
+            // asset.asset.decRef();
+            assetWrap.destroy();
+            this.onRelease(assetWrap.path, assetWrap.asset);
+        });
+        this._cache?.clear();
+    }
+
+    // 是否已经加载
+    public hasRes(path: string, type: CCAssetType, bundle?: Bundle | string) {
+        return !!this.getRes(path, type, bundle);
+    }
+
+    // 获取已加载的资源
+    public getRes(path: string, type: CCAssetType, bundle?: Bundle | string) {
+        let bundleWrap = this.getBundleAsset(bundle);
+        let u_path = this.jointKey(bundleWrap.name, path);
+        let asset = this._cache.get(u_path, type);
+        return asset;
+    }
+
+    // 
+    private getBundleAsset(bundle?: Bundle | string) {
+        if (!bundle) {
+            bundle = resources.name;
+        } else if (bundle instanceof AssetManager.Bundle) {
+            bundle = bundle.name;
+        }
+
+        let bundleWrap = AssetLoader.loadedBundles.get(bundle);
+        if (!bundleWrap) {
+            return null;
+        }
+        return bundleWrap;
+    }
+
+    public preload(paths: string | string[], type: CCAssetType, _bundle?: Bundle | string): void
+    public preload(paths: string | string[], type: CCAssetType, _onComplete?: CCCompleteCallbackWithData<RequestItem[]>, _bundle?: Bundle | string): void
+    public preload(paths: string | string[], type: CCAssetType, _onProgress: CCProgressCallback, _onComplete: CCCompleteCallbackWithData<RequestItem[]>, _bundle?: Bundle | string): void;
+    public preload(paths: string | string[], type: CCAssetType, _onProgress?: CCProgressCallback | CCCompleteCallbackWithData<RequestItem[]> | null | Bundle | string, _onComplete?: CCCompleteCallbackWithData<RequestItem[]> | null | Bundle | string, _bundle?: Bundle | string) {
+
+        let pathBundle = null;
+        // 暂时只对单独资源做 bundle 解析
+        if (typeof paths === 'string') {
+            let pathObj = this.parsePath(paths);
+            paths = pathObj.path;
+            pathBundle = pathObj.bundle;
+        }
+
+
+
+        let obj = this.parsingLoadArgs(_onProgress, _onComplete, _bundle);
+
+        let { onProgress, onComplete, bundle } = obj;
+
+        if (typeof paths === 'string') {
+            // 优先使用路径内的 bundle 
+            if (pathBundle) {
+                bundle = pathBundle;
+            }
+        }
+        this.loadBundleWrap(bundle, (err, bundleWrap) => {
+            if (err) {
+
+                onComplete?.(err, null);
+                return;
+            }
+
+            _onProgress = (finish: number, total: number, item: AssetManager.RequestItem) => {
+                onProgress?.(finish, total, item);
+            }
+            // 保留，否则会在父类里面解析错误
+            _onComplete = (error: Error, assets: any) => {
+                onComplete?.(error, assets);
+            }
+            if (!Array.isArray(paths)) {
+                paths = [paths];
+            }
+
+            // 对路径进行格式化
+            for (let i = 0; i < paths.length; i++) {
+                paths[i] = this.formatPath(paths[i], type);
+            }
+            bundleWrap.bundle.preload(paths, type, _onProgress, _onComplete);
+        });
+
+    }
+
+
+    public loadArray<T extends Asset>(paths: string[], type: CCAssetType<T>, _bundle?: Bundle | string)
+    public loadArray<T extends Asset>(paths: string[], type: CCAssetType<T>, _onComplete?: CCCompleteCallbackWithData<T[]>, _bundle?: Bundle | string)
+    public loadArray<T extends Asset>(paths: string[], type: CCAssetType<T>, _onProgress?: CCProgressCallback, _onComplete?: CCCompleteCallbackWithData<T[]>, _bundle?: Bundle | string)
+    public loadArray<T extends Asset>(paths: string[], type: CCAssetType<T>, _onProgress?: CCProgressCallback | CCCompleteCallbackWithData<T[]> | Bundle | string, _onComplete?: CCCompleteCallbackWithData<T[]> | Bundle | string, _bundle?: Bundle | string) {
+
+
+        // const id = this.computeLoadCount();
+        this._addCount();
+
+        let { onProgress, onComplete, bundle } = this.parsingLoadArgs(_onProgress, _onComplete, _bundle);
+
+
+
+        this.loadBundleWrap(bundle, (err, bundleWrap) => {
+            if (err) {
+                onComplete?.(err, null);
+                return;
+            }
+
+            if (!Array.isArray(paths)) {
+                paths = [paths];
+            }
+
+            // 对路径进行格式化
+            for (let i = 0; i < paths.length; i++) {
+                paths[i] = this.formatPath(paths[i], type);
+            }
+            bundleWrap.bundle.load(paths, type, (finish: number, total: number, item) => {
+                onProgress?.(finish, total, item);
+            }, (error: Error, assets: T[]) => {
+                if (error) {
+                    onComplete?.(error, assets);
+                    return;
+                }
+                // 重新分配元素
+                assets = assets.map((asset) => {
+
+                    if (!this.isValid) {
+                        asset.addRef();
+                        asset.decRef();
+                        return null;
+                    }
+                    let info = bundleWrap.bundle.getAssetInfo(asset.uuid);
+                    // @ts-ignore
+                    let path = info.path;
+                    let u_path = this.jointKey(bundleWrap.name, path);
+                    let assetWrap = this._cache.get(u_path, type);
+                    if (!assetWrap) {
+                        asset = this.onAssetPreProcessing(path, asset, bundleWrap.bundle) as any;
+                        assetWrap = new AssetWrap(path, asset, bundleWrap);
+                        this._cache.set(u_path, assetWrap);
+                    } else {
+                        asset = assetWrap.asset as T;
+                    }
+                    assetWrap.addRef();
+                    return asset;
+                });
+
+                if (!this._checkDecCount()) {
+                    return;
+                }
+
+                this.onLoadArrayComplete(paths, assets, bundleWrap.bundle);
+                onComplete?.(error, assets);
+            });
+        });
+
+    }
+
+    public load<T extends Asset>(path: string, type: CCAssetType<T>, _bundle?: Bundle | string)
+    public load<T extends Asset>(path: string, type: CCAssetType<T>, _onComplete?: CCCompleteCallbackWithData<T>, _bundle?: Bundle | string)
+    public load<T extends Asset>(path: string, type: CCAssetType<T>, _onProgress?: CCProgressCallback, _onComplete?: CCCompleteCallbackWithData<T>, _bundle?: Bundle | string)
+    public load<T extends Asset>(path: string, type: CCAssetType<T>, _onProgress?: CCProgressCallback | CCCompleteCallbackWithData<T> | Bundle | string, _onComplete?: CCCompleteCallbackWithData<T> | Bundle | string, _bundle?: Bundle | string) {
+
+        // const id = this.computeLoadCount();
+        this._addCount();
+
+        let pathObj = this.parsePath(path);
+        path = pathObj.path;
+
+        // 对路径进行格式化
+        path = this.formatPath(path, type);
+
+        let obj = this.parsingLoadArgs(_onProgress, _onComplete, _bundle);
+        let { onProgress, onComplete, bundle } = obj;
+
+        // 优先使用路径内的 bundle 
+        if (pathObj.bundle) {
+            bundle = pathObj.bundle;
+        }
+
+        this.loadBundleWrap(bundle, (err, bundleWrap) => {
+            if (err) {
+                onComplete?.(err, null);
+                return;
+            }
+
+            let u_path = this.jointKey(bundleWrap.name, path);
+            // // 判断是否有缓存
+            // let asset = this._cache.get(u_path, type);
+            // if (asset) {
+            //     // 需要一个异步的过程
+            //     setTimeout(() => {
+            //         asset.addRef();
+            //         let _asset: Asset = asset.asset;
+            //         onComplete?.(null, _asset);
+            //     }, 0);
+            //     return;
+            // }
+
+            bundleWrap.bundle.load(path, type as any, (finish: number, total: number, item) => {
+                onProgress?.(finish, total, item);
+            }, (error: Error, asset: T) => {
+                if (error) {
+                    onComplete?.(error, asset);
+                } else {
+
+                    if (!this._checkDecCount()) {
+                        asset.addRef();
+                        asset.decRef();
+                        return;
+                    }
+
+                    // 如果在 _cache 中存在，直接返回
+                    let assetWrap = this._cache.get(u_path, type);
+                    if (assetWrap) {
+                        assetWrap.addRef();
+                        let _asset: Asset = assetWrap.asset;
+                        this.onLoadComplete(path, _asset, bundleWrap.bundle);
+                        onComplete?.(null, _asset);
+                        return;
+                    }
+
+                    asset = this.onAssetPreProcessing(path, asset, bundleWrap.bundle) as T;
+
+                    assetWrap = new AssetWrap(path, asset, bundleWrap);
+                    assetWrap.addRef();
+                    this._cache.set(u_path, assetWrap);
+                    this.onLoadComplete(path, asset, bundleWrap.bundle);
+                    onComplete?.(error, asset);
+                }
+            });
+        });
+    }
+
+    public preloadDir(dir: string, type: CCAssetType | null, _bundle?: Bundle | string)
+    public preloadDir(dir: string, type: CCAssetType | null, _onProgress: CCProgressCallback | null, _onComplete: CCCompleteCallbackWithData<RequestItem[]> | null, _bundle?: Bundle | string)
+    public preloadDir(dir: string, type: CCAssetType | null, _onComplete?: CCCompleteCallbackWithData<RequestItem[]> | null, _bundle?: Bundle | string)
+    public preloadDir(dir: string, type?: CCAssetType, _onProgress?: CCProgressCallback | CCCompleteCallbackWithData<RequestItem[]> | null | Bundle | string, _onComplete?: CCCompleteCallbackWithData<RequestItem[]> | null | Bundle | string, _bundle?: Bundle | string
+    ) {
+        let pathObj = this.parsePath(dir);
+        let path = pathObj.path;
+        let { onProgress, onComplete, bundle } = this.parsingLoadArgs(_onProgress, _onComplete, _bundle);
+        // 优先使用路径内的 bundle 
+        if (pathObj.bundle) {
+            bundle = pathObj.bundle;
+        }
+        this.loadBundleWrap(bundle, (err, bundleWrap) => {
+            if (err) {
+                onComplete?.(err, null);
+                return;
+            }
+            _onProgress = (finish: number, total: number, item: AssetManager.RequestItem) => {
+                onProgress?.(finish, total, item);
+            }
+            // 保留，否则会在父类里面解析错误
+            _onComplete = (error: Error, assets: any) => {
+                onComplete?.(error, assets);
+            }
+
+            bundleWrap.bundle.preloadDir(path, type, _onProgress, _onComplete);
+        });
+
+    }
+    public loadDir<T extends Asset>(dir: string, type: CCAssetType<T>, _bundle?: Bundle | string)
+    public loadDir<T extends Asset>(dir: string, type: CCAssetType<T>, _onComplete?: CCCompleteCallbackWithData<T[]>, _bundle?: Bundle | string)
+    public loadDir<T extends Asset>(dir: string, type: CCAssetType<T>, _onProgress?: CCProgressCallback, _onComplete?: CCCompleteCallbackWithData<T[]>, _bundle?: Bundle | string)
+    public loadDir<T extends Asset>(dir: string, type: CCAssetType<T>, _onProgress?: CCProgressCallback | CCCompleteCallbackWithData<T[]> | Bundle | string, _onComplete?: CCCompleteCallbackWithData<T[]> | Bundle | string, _bundle?: Bundle | string) {
+
+        // const id = this.computeLoadCount();
+        this._addCount();
+
+        let pathObj = this.parsePath(dir);
+        let path = pathObj.path;
+
+        let { onProgress, onComplete, bundle } = this.parsingLoadArgs(_onProgress, _onComplete, _bundle);
+        // 优先使用路径内的 bundle 
+        if (pathObj.bundle) {
+            bundle = pathObj.bundle;
+        }
+        this.loadBundleWrap(bundle, (err, bundleWrap) => {
+            if (err) {
+                onComplete?.(err, null);
+                return;
+            }
+            bundleWrap.bundle.loadDir(path, type as any, (finish: number, total: number, item: RequestItem) => {
+                // this.onProgress(finish,total,item);
+                onProgress?.(finish, total, item);
+            }, (error: Error, assets: Array<T>) => {
+                if (error) {
+                    onComplete?.(error, assets);
+                    return;
+                }
+                // 重新分配元素
+                assets = assets.map((asset) => {
+                    if (!this.isValid) {
+                        asset.addRef();
+                        asset.decRef();
+                        return null;
+                    }
+
+                    // @ts-ignore
+                    let info = bundleWrap.bundle.getAssetInfo(asset.uuid);
+                    // @ts-ignore
+                    let path = info.path;
+                    let u_path = this.jointKey(bundleWrap.name, path);
+                    let assetWrap = this._cache.get(u_path, type);
+                    if (!assetWrap) {
+
+                        asset = this.onAssetPreProcessing(path, asset, bundleWrap.bundle) as any;
+                        assetWrap = new AssetWrap(path, asset, bundleWrap);
+                        this._cache.set(u_path, assetWrap);
+                    } else {
+
+                    }
+                    assetWrap.addRef();
+                    return asset;
+                });
+
+                if (!this._checkDecCount()) {
+                    return;
+                }
+                this.onLoadDirComplete(path, assets, bundleWrap.bundle);
+                onComplete?.(error, assets);
+            });
+        });
+    }
+
+
+
+    public loadScene(sceneName: string, _bundle?: AssetManager.Bundle | string)
+    public loadScene(sceneName: string, _onComplete?: CCCompleteCallbackWithData, _bundle?: AssetManager.Bundle | string)
+    public loadScene(sceneName: string, _onProgress: CCProgressCallback, _onComplete?: CCCompleteCallbackWithData, _bundle?: AssetManager.Bundle | string)
+    public loadScene(sceneName: string, _onProgress: CCProgressCallback | CCCompleteCallbackWithData | AssetManager.Bundle | string, _onComplete?: CCCompleteCallbackWithData | AssetManager.Bundle | string, _bundle?: AssetManager.Bundle | string) {
+
+        let pathObj = this.parsePath(sceneName);
+        sceneName = pathObj.path;
+
+        let { onProgress, onComplete, bundle } = this.parsingLoadArgs(_onProgress, _onComplete, _bundle);
+        // 优先使用路径内的 bundle 
+        if (pathObj.bundle) {
+            bundle = pathObj.bundle;
+        }
+
+        if (!bundle) {
+            bundle = assetManager.bundles.find((bundle) => {
+                return !!bundle.getSceneInfo(sceneName);
+            });
+        }
+        this.loadBundleWrap(bundle, (err, bundleWrap) => {
+            if (err) {
+                onComplete?.(err, null);
+                return;
+            }
+            // 加载 场景资源
+            bundleWrap.bundle.loadScene(sceneName, (finish: number, total: number, item: AssetManager.RequestItem) => {
+                onProgress?.(finish, total, item);
+            }, (error: Error, assets: SceneAsset) => {
+                // await this.onComplete(error,assets);
+
+                assets = this.onAssetPreProcessing(sceneName, assets, bundleWrap.bundle) as any;
+                this.onLoadSceneComplete(sceneName, assets, bundleWrap.bundle);
+                onComplete?.(error, assets);
+            });
+        });
+    }
+
+
+    public preloadScene(sceneName: string, bundle?: AssetManager.Bundle | string)
+    public preloadScene(sceneName: string, onComplete?: CCCompleteCallbackNoData, bundle?: AssetManager.Bundle | string)
+    public preloadScene(sceneName: string, options?: CCIAssetOptions | null, bundle?: AssetManager.Bundle | string)
+    public preloadScene(sceneName: string, options?: CCIAssetOptions | null, onComplete?: CCCompleteCallbackNoData, bundle?: AssetManager.Bundle | string)
+    public preloadScene(sceneName: string, onProgress?: CCProgressCallback, onComplete?: CCCompleteCallbackNoData, bundle?: AssetManager.Bundle | string)
+    public preloadScene(sceneName: string, _options?: CCIAssetOptions | null | CCProgressCallback | AssetManager.Bundle | string, _onProgress?: CCProgressCallback | CCCompleteCallbackNoData | AssetManager.Bundle | string, _onComplete?: CCCompleteCallbackNoData | AssetManager.Bundle | string, _bundle?: AssetManager.Bundle | string) {
+        let pathObj = this.parsePath(sceneName);
+        sceneName = pathObj.path;
+
+        let { options, onProgress, onComplete, bundle } = this.parseParameters(_options, _onProgress, _onComplete, _bundle);
+        // 优先使用路径内的 bundle 
+        if (pathObj.bundle) {
+            bundle = pathObj.bundle;
+        }
+        if (!bundle) {
+            bundle = assetManager.bundles.find((bundle) => {
+                return !!bundle.getSceneInfo(sceneName);
+            });
+        }
+        this.loadBundleWrap(bundle, (err, bundleWrap) => {
+            if (err) {
+                onComplete?.(err, null);
+                return;
+            }
+            // 加载 场景资源
+            bundleWrap.bundle.preloadScene(sceneName, options, (finish: number, total: number, item: AssetManager.RequestItem) => {
+                onProgress?.(finish, total, item);
+            }, (error: Error) => {
+                // await this.onComplete(error,assets);
+                onComplete?.();
+            });
+        });
+    }
+
+
+    protected jointKey(bundle: string, path) {
+        let u_path = `${bundle}#${path}`;
+        return u_path;
+    }
+
+    public parsingLoadArgs(...args) {
+        let onProgress: CCProgressCallback, onComplete: CCCompleteCallbackWithData, bundle: string | Bundle;
+        let _onProgress = args[0];
+        let _onComplete = args[1];
+        let _bundle = args[2];
+
+        if (_onProgress && _onComplete && _bundle) {
+            onProgress = _onProgress;
+            onComplete = _onComplete;
+            bundle = _bundle;
+        } else {
+            if (typeof _onProgress === 'function') {
+                if (typeof _onComplete === 'function') {
+                    onProgress = _onProgress;
+                    onComplete = _onComplete;
+                } else if (typeof _onComplete === 'undefined') {
+                    onComplete = _onProgress;
+                } else {
+                    onComplete = _onProgress;
+                    bundle = _onComplete;
+                }
+            } else {
+                bundle = _onProgress;
+            }
+        }
+        let obj = { onProgress, onComplete, bundle };
+        return obj;
+    }
+
+    public parseParameters(options, onProgress, onComplete, bundle) {
+
+        if (typeof onComplete === 'function') {
+        } else if (typeof onComplete === 'string' || onComplete instanceof AssetManager.Bundle) {
+            bundle = onComplete;
+            onComplete = onProgress;
+            onProgress = null
+        } else if (!onComplete) {
+            if (typeof onProgress === 'function') {
+                onComplete = onProgress;
+                onProgress = null
+            } else if (typeof onProgress === 'string' || onProgress instanceof AssetManager.Bundle) {
+                bundle = onProgress;
+                onProgress = null;
+            } else if (!onProgress) {
+                if (typeof options === 'function') {
+                    onComplete = options;
+                    options = null;
+                } else if (typeof options === 'string' || options instanceof AssetManager.Bundle) {
+                    bundle = options;
+                    options = null;
+                }
+            }
+        }
+
+        options = options || Object.create(null);
+        return { options, onProgress, onComplete, bundle };
+    }
+
+    isNull(object) {
+        return object === null || object === undefined;
+    }
+
+    isObject(object) {
+        return Object.prototype.toString.call(object) === '[object Object]'
+    }
+
+    formatPath<T extends Asset>(path: string, type: CCAssetType<T>) {
+
+        if(!path){
+            console.log(`AssetLoader-> `);
+            
+        }
+        // 如果有扩展名，则删除
+        let index = path.lastIndexOf('.');
+        if (index !== -1) {
+            path = path.substring(0, index);
+        }
+
+        if (js.getClassName(type) === js.getClassName(SpriteFrame)) {
+            path += "/spriteFrame";
+        } else if (js.getClassName(type) === js.getClassName(Texture2D)) {
+            path += "/texture";
+        }
+
+        return path;
+    }
+
+    parsePath(path: string) {
+        let bundle = null;
+        let arr = path.split("#");
+        if (arr.length === 2) {
+            bundle = arr[0];
+            path = arr[1];
+        } else if (arr.length === 1) {
+            path = arr[0];
+        } else {
+            throw new Error(`path  [${path}]  error`);
+        }
+        return { path, bundle };
+    }
+
+    /**
+     *  注册加载二进制文件的解析
+     *
+     * @param {string} [ext]
+     * @param {(file)=> any} [parserCallback]
+     * @memberof ResourcesMgr
+     */
+    static registerLoadBinary(ext?: string, parserCallback?: (file) => any) {
+        // 参考
+        // https://docs.cocos.com/creator/manual/zh/release-notes/asset-manager-upgrade-guide.html
+        // https://docs.cocos.com/creator/manual/zh/asset-manager/options.html#%E6%89%A9%E5%B1%95%E5%BC%95%E6%93%8E
+        if (!ext) {
+            ext = "bin";
+        }
+        if (_handlerExts.indexOf(ext) != -1) {
+            warn(`[${ext}] LoadHandler is exist`);
+            return;
+        }
+        if (!ext.startsWith('.')) {
+            ext = '.' + ext;
+        }
+        _handlerExts.push(ext);
+
+        let customDownloaderHandler = (url, options, onComplete) => {
+            options.responseType = "arraybuffer";
+            assetManager.downloader.downloadFile(url, options, options.onFileProgress, onComplete);
+        }
+        let customParserHandler = (file, options, cb) => {
+            if (parserCallback) {
+                let array = parserCallback(file);
+                cb(null, array);
+            } else {
+                let rawAsset = new Uint8Array(file);
+                cb(null, rawAsset);
+            }
+        }
+        assetManager.downloader.register(ext, customDownloaderHandler);
+        assetManager.parser.register(ext, customParserHandler);
+    }
+    /**
+     * 在编辑器中加载资源
+     */
+    static loadResInEditor<T>(path: string, type: CCAssetType<T>, callback: CCCompleteCallbackWithData<T>, bundle?: string) {
+        if (EDITOR) {
+            this.getUUIDFromMeta(path, type, function (uuid) {
+                assetManager.loadAny({
+                    uuid: uuid
+                }, callback);
+            }, bundle);
+        }
+    }
+
+    /*
+   编辑器获取读取meta文件获取 uuid
+   */
+    static getUUIDFromMeta(filepath, type, callback, bundle = "resources") {
+        if (EDITOR) {
+            // @ts-ignore
+            var path = require('path');
+            // @ts-ignore
+            var fs = require('fs');
+            // @ts-ignore
+            let projectPath = Editor.Project.path || Editor.projectPath;
+
+            let exts = {};
+            // @ts-ignore
+            exts[Prefab] = "prefab";
+            // @ts-ignore
+            exts[JsonAsset] = "json";
+            // @ts-ignore
+            exts[SpriteFrame] = "png";
+
+
+            let absolutePath = path.join(projectPath, "assets", bundle, `${filepath}.${exts[type]}.meta`);
+            // log('绝对路径', absolutePath);
+            if (!fs.existsSync(absolutePath)) {
+                warn(`[${absolutePath}]file is not exist `);
+                return;
+            }
+
+            fs.readFile(absolutePath, function (err, data) {
+                if (err) {
+                    warn("parse uuid error = ", err || err.message);
+                    return;
+                }
+                let dataStr = data.toString();
+                let json = JSON.parse(dataStr);
+                // log("读取文件: ", dataStr);
+
+                if (type === SpriteFrame || type === Texture2D) {
+                    let filearr = filepath.split("/");
+                    // let filename = filearr[filearr.length - 1];
+                    // log("filename: ", filename);
+                    // log(`AssetLoader->subMetas `,json.subMetas);
+                    for (const key in json.subMetas) {
+                        const subMeta = json.subMetas[key];
+                        if (type === SpriteFrame && subMeta.name === "spriteFrame") {
+                            callback(subMeta.uuid);
+                            return;
+                        }
+                        if (type === Texture2D && subMeta.name === "texture") {
+                            callback(subMeta.uuid);
+                            return;
+                        }
+                    }
+                    let uuid = json.uuid;
+                    callback(uuid);
+                } else {
+                    let uuid = json.uuid;
+                    callback(uuid);
+                }
+            });
+        }
+    }
+
+
+
+
+    private static _instance: AssetLoader = null
+    public static getInstance(): AssetLoader {
+        if (!this._instance) {
+            this._instance = new AssetLoader();
+        }
+        return this._instance;
+    }
+}
+
+export { };
+
+tnt.AssetLoader = AssetLoader;

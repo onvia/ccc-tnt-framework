@@ -1,0 +1,20 @@
+{
+  "__version__": "1.0.4",
+  "general": {
+    "designResolution": {
+      "width": 720,
+      "height": 1280
+    }
+  },
+  "custom_joint_texture_layouts": [],
+  "layer": [
+    {
+      "name": "USER_LAYER_1",
+      "value": 2
+    },
+    {
+      "name": "USER_LAYER_2",
+      "value": 4
+    }
+  ]
+}

@@ -1,0 +1,100 @@
+
+// 高斯模糊 算法参考 https://zhuanlan.zhihu.com/p/85210935
+
+CCEffect %{
+  techniques:
+  - passes:
+    - vert: vs:vert
+      frag: fs:frag
+      depthStencilState:
+        depthTest: false
+        depthWrite: false
+      blendState:
+        targets:
+        - blend: true
+          blendSrc: src_alpha
+          blendDst: one_minus_src_alpha
+          blendDstAlpha: one_minus_src_alpha
+      rasterizerState:
+        cullMode: none
+      properties:
+        alphaThreshold: { value: 0.5 }
+        direction: { value: [1.0, 1.0] }
+}%
+
+CCProgram vs %{
+  precision highp float;
+  #include <builtin/uniforms/cc-global>
+  #if USE_LOCAL
+    #include <builtin/uniforms/cc-local>
+  #endif
+  
+  in vec3 a_position;
+  in vec2 a_texCoord;
+  in vec4 a_color;
+
+  out vec4 color;
+  out vec2 uv0;
+
+  vec4 vert () {
+    vec4 pos = vec4(a_position, 1);
+
+    #if USE_LOCAL
+      pos = cc_matWorld * pos;
+    #endif
+
+      pos = cc_matViewProj * pos;
+
+    uv0 = a_texCoord;
+    color = a_color;
+
+    return pos;
+  }
+}%
+
+CCProgram fs %{
+  precision highp float;
+  #include <builtin/internal/alpha-test>
+  #include <builtin/uniforms/cc-global>
+
+  in vec4 color;
+
+  #if USE_TEXTURE
+    in vec2 uv0;
+    #pragma builtin(local)
+    layout(set = 2, binding = 11) uniform sampler2D cc_spriteTexture;
+
+  #endif
+  
+  uniform Time {
+    vec2 direction;
+    float time;
+  };
+
+  vec4 frag () {
+    vec4 o = vec4(1, 1, 1, 1);
+
+    #if USE_TEXTURE
+    
+        //获取v_uv0这个点的高度
+        float height = 1.0 - uv0.y;
+        //使用pow函数，让越高的地方摆动幅度越明显且成抛物线形态
+        float k = 0.1*pow(height, 2.0);
+        //x轴偏移量，使用sin函数实现两边摆动效果，time*2.0是为了加快摆动
+        float offset = k*2.;
+
+        // vec2 uv = vec2(fract(uv0.x - cc_time.x* direction.x), fract(uv0.y + cc_time.x*direction.y));  
+        vec2 uv = vec2(uv0.x, fract(uv0.y + cc_time.x*direction.y)); 
+        
+        o *= texture(cc_spriteTexture, uv);
+      #if IS_GRAY
+        float gray  = 0.2126 * o.r + 0.7152 * o.g + 0.0722 * o.b;
+        o.r = o.g = o.b = gray;
+      #endif
+    #endif
+    
+    o *= color;
+    ALPHA_TEST(o);
+    return o;
+  }
+}%

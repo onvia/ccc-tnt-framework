@@ -1,0 +1,153 @@
+// Copyright (c) 2017-2020 Xiamen Yaji Software Co., Ltd.
+CCEffect %{
+  techniques:
+  - passes:
+    - vert: vs:vert
+      frag: fs:frag
+      depthStencilState:
+        depthTest: false
+        depthWrite: false
+      blendState:
+        targets:
+        - blend: true
+          blendSrc: src_alpha
+          blendDst: one_minus_src_alpha
+          blendDstAlpha: one_minus_src_alpha
+      rasterizerState:
+        cullMode: none
+      properties:
+        alphaThreshold: { value: 0.5 }
+}%
+
+CCProgram vs %{
+  precision highp float;
+  #include <builtin/uniforms/cc-global>
+  #if USE_LOCAL
+    #include <builtin/uniforms/cc-local>
+  #endif
+  #if SAMPLE_FROM_RT
+    #include <common/common-define>
+  #endif
+  in vec3 a_position;
+  in vec2 a_texCoord;
+  in vec4 a_color;
+
+  out vec4 color;
+  out vec2 uv0;
+
+  vec4 vert () {
+    vec4 pos = vec4(a_position, 1);
+
+    #if USE_LOCAL
+      pos = cc_matWorld * pos;
+    #endif
+
+    #if USE_PIXEL_ALIGNMENT
+      pos = cc_matView * pos;
+      pos.xyz = floor(pos.xyz);
+      pos = cc_matProj * pos;
+    #else
+      pos = cc_matViewProj * pos;
+    #endif
+
+    uv0 = a_texCoord;
+    #if SAMPLE_FROM_RT
+      CC_HANDLE_RT_SAMPLE_FLIP(uv0);
+    #endif
+    color = a_color;
+
+    return pos;
+  }
+}%
+
+CCProgram fs %{
+  precision highp float;
+  #include <builtin/internal/embedded-alpha>
+  #include <builtin/internal/alpha-test>
+
+  in vec4 color;
+
+  #if USE_TEXTURE
+    in vec2 uv0;
+    #pragma builtin(local)
+    layout(set = 2, binding = 11) uniform sampler2D cc_spriteTexture;
+  #endif
+
+
+  float hashOld12(vec2 p)
+  {
+	  return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453);
+  }
+  float drawGird(vec2 p){
+    if(p.x > 0. && p.x < 0.01){
+      return 1.;
+    }
+    if(p.x > 0.99 && p.x < 1.){
+      return 1.;
+    }
+    if(p.y > 0. && p.y < 0.01){
+      return 1.;
+    }
+    if(p.y > 0.99 && p.y < 1.){
+      return 1.;
+    }
+    return 0.;
+  }
+
+  float drawLayer(float scale,vec2 uv){
+    // 输出值
+    float co = 0.1;
+    // 拷贝一份 uv，不使用原值
+    vec2 uv1 = uv;
+    // uv 值范围从 0 - 1 变为 0 - scale
+    uv1 *= scale;
+
+    // floor 向下取整，计算出格子所在下标
+    // 10*10的格子，如果uv 是0.234,0.234 uv1 就是 2.34,2.34
+    // 取整后 即为 该 uv 所在格子下标 2,2
+    // 0.2 <= uv < 0.3 处理后就是一个范围 0-1 的范围
+    vec2 hv = floor(uv1);
+    
+    // 计算小数部分 返回值为  x - floor(x).
+    vec2 fr = fract(uv1);
+
+    // 画圆，用fr（即格内坐标）和 0.5,0.5的点的距离作为颜色值,circle范围0-0.5
+    float circle = distance(fr,vec2(.5));
+
+    // 上面的结果是距离值计算出来的，有明暗变化，用step把圆内都变成纯白色
+    // 用hv引入随机的半径 因为一格内hv相同，随机值结果也就是半径值相等
+    float radius = hashOld12(hv);
+       // radius 0-1 映射到 0.1-0.4的范围
+    radius = radius * 0.3 + 0.1;
+    // 半径*10取整，对2取余，舍弃一半的圆
+    float f1 = mod(floor(radius * 10.),2.);
+    radius *= f1;
+    
+    circle = step(radius,circle);
+
+    // 1. - circle 翻转色值，使距离圆心越近颜色越亮
+    circle = 1. - circle;
+    // co += fr.x + fr.y;
+    co += circle;
+    co += drawGird(fr);
+
+    return co;
+  }
+
+  vec4 frag () {
+    vec4 o = vec4(0.);
+    // #if USE_TEXTURE
+    //   o *= CCSampleWithAlphaSeparated(cc_spriteTexture, uv0);
+    //   #if IS_GRAY
+    //     float gray  = 0.2126 * o.r + 0.7152 * o.g + 0.0722 * o.b;
+    //     o.r = o.g = o.b = gray;
+    //   #endif
+    // #endif
+
+    // o *= color;
+    // ALPHA_TEST(o);
+    o.xyz += drawLayer(10.,uv0);
+    o.a = 1.;
+    return o;
+  }
+}%

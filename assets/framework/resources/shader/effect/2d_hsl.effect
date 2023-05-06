@@ -1,0 +1,185 @@
+// Copyright (c) 2017-2020 Xiamen Yaji Software Co., Ltd.
+CCEffect %{
+  techniques:
+  - passes:
+    - vert: sprite-vs:vert
+      frag: sprite-fs:frag
+      depthStencilState:
+        depthTest: false
+        depthWrite: false
+      blendState:
+        targets:
+        - blend: true
+          blendSrc: src_alpha
+          blendDst: one_minus_src_alpha
+          blendDstAlpha: one_minus_src_alpha
+      rasterizerState:
+        cullMode: none
+      properties:
+        u_h: {
+          value: 0.0,
+          inspector: {
+            tooltip: "色相",
+            range: [0.0,360.0]
+          }
+        }
+        u_s: {
+          value: 0.0,
+          inspector: {
+            tooltip: "饱和度",
+            range: [-1.0, 1.0]
+          }
+        }
+        u_l: {
+          value: 0.0,
+          inspector: {
+            tooltip: "亮度",
+            range: [-1.0, 1.0]
+          }
+        }
+}%
+
+CCProgram sprite-vs %{
+  precision highp float;
+  #include <builtin/uniforms/cc-global>
+  #if USE_LOCAL
+    #include <builtin/uniforms/cc-local>
+  #endif
+  #if SAMPLE_FROM_RT
+    #include <common/common-define>
+  #endif
+  in vec3 a_position;
+  in vec2 a_texCoord;
+  in vec4 a_color;
+
+  out vec4 color;
+  out vec2 uv0;
+
+  vec4 vert () {
+    vec4 pos = vec4(a_position, 1);
+
+    #if USE_LOCAL
+      pos = cc_matWorld * pos;
+    #endif
+
+    #if USE_PIXEL_ALIGNMENT
+      pos = cc_matView * pos;
+      pos.xyz = floor(pos.xyz);
+      pos = cc_matProj * pos;
+    #else
+      pos = cc_matViewProj * pos;
+    #endif
+
+    uv0 = a_texCoord;
+    #if SAMPLE_FROM_RT
+      CC_HANDLE_RT_SAMPLE_FLIP(uv0);
+    #endif
+    color = a_color;
+
+    return pos;
+  }
+}%
+
+CCProgram sprite-fs %{
+  precision highp float;
+  #include <builtin/internal/embedded-alpha>
+  #include <builtin/internal/alpha-test>
+
+  in vec4 color;
+
+  uniform ARGS {
+    float u_h;
+    float u_s;
+    float u_l;
+  };
+
+  in vec2 uv0;
+  #pragma builtin(local)
+  layout(set = 2, binding = 11) uniform sampler2D cc_spriteTexture;
+
+  vec4 frag () {
+    vec4 o = vec4(1, 1, 1, 1);   
+    vec4 texColor = texture(cc_spriteTexture, uv0);
+
+
+    float r=texColor.r;
+    float g=texColor.g;
+    float b=texColor.b;
+    float a=texColor.a;
+    //convert rgb to hsl
+    float h;
+    float s;
+    float l;
+ {
+        float max=max(max(r,g),b);
+        float min=min(min(r,g),b);
+        //----h
+        if(max==min){
+            
+            h=0.0;
+        }else if(max==r&&g>=b){
+            h=60.0*(g-b)/(max-min)+0.0;
+        }else if(max==r&&g<b){
+            h=60.0*(g-b)/(max-min)+360.0;
+        }else if(max==g){
+            h=60.0*(b-r)/(max-min)+120.0;
+        }else if(max==b){
+            h=60.0*(r-g)/(max-min)+240.0;
+        }
+        //----l
+        l=0.5*(max+min);
+        //----s
+        if(l==0.0||max==min){
+            s=0.0;
+        }else if(0.0<=l&&l<=0.5){
+            s=(max-min)/(2.0*l);
+        }else if(l>0.5){
+            s=(max-min)/(2.0-2.0*l);
+        }
+    }
+
+    //(h,s,l)+(dH,dS,dL) -> (h,s,l)
+    h=h+u_h;
+    s=min(1.0,max(0.0,s+u_s));
+    l=l;//do not use HSL model to adjust lightness, because the effect is not good
+    //convert (h,s,l) to rgb and got final color
+    vec4 finalColor;
+    {
+        float q;
+        if(l<0.5){
+            q=l*(1.0+s);
+        }else if(l>=0.5){
+            q=l+s-l*s;
+        }
+        float p=2.0*l-q;
+        float hk=h/360.0;
+        float t[3];
+        t[0]=hk+1.0/3.0;t[1]=hk;t[2]=hk-1.0/3.0;
+        for(int i=0;i<3;i++){
+            if(t[i]<0.0)t[i]+=1.0;
+            if(t[i]>1.0)t[i]-=1.0;
+        }//got t[i]
+        float c[3];
+        for(int i=0;i<3;i++){
+            if(t[i]<1.0/6.0){
+                c[i]=p+((q-p)*6.0*t[i]);
+            }else if(1.0/6.0<=t[i] && t[i]<0.5){
+                c[i]=q;
+            }else if(0.5<=t[i] && t[i]<2.0/3.0){
+                c[i]=p+((q-p)*6.0*(2.0/3.0-t[i]));
+            }else{
+                c[i]=p;
+            }
+        }
+        finalColor=vec4(c[0],c[1],c[2],a);
+    }
+    //actually, it is not final color. the lightness has not been adjusted
+    //adjust lightness use the simplest method
+    finalColor+=vec4(u_l,u_l,u_l,0.0);
+    
+    finalColor *= color;
+
+    ALPHA_TEST(finalColor);
+    return finalColor;
+  }
+}%
