@@ -12,28 +12,22 @@ declare global {
 enum Gravity {
     DEFAULT = 999,
     CENTER = 0,
-    // LEFT = 1,
-    // RIGHT = 2,
     TOP = 3,
     BOTTOM = 4,
-    // TOP_LEFT = 5,
-    // TOP_RIGHT = 6,
-    // BOTTOM_LEFT = 7,
-    // BOTTOM_RIGHT = 8,
 }
 
 
 //规则：如果 要显示的提示和正在显示的提示一致，则直接对当前显示的提示重复出现动作，
 //      否则新创建一条提示，当前提示向上移动一个位置
 
-export class Toast {
+class Toast {
 
     public static LENGTH_LONG = 3;
     public static LENGTH_SHORT = 1.5;
     public static LENGTH_DEFAULT = 1.5;
     public static Gravity = Gravity;
 
-    public static PREFAB_PATH = "framework/toast/Toast";
+    public static PREFAB_PATH = "framework#resources/prefabs/Toast";
 
     public Gravity = Gravity;
 
@@ -45,9 +39,9 @@ export class Toast {
 
     public show(text: string, duration: number = 1.5, gravity: Gravity = Gravity.DEFAULT, isSingle = false) {
 
-
         if (!this.prefab) {//预制体存在
-            resources.load(Toast.PREFAB_PATH, Prefab, (err, prefab: Prefab) => {
+            let loader = tnt.loaderMgr.share;
+            loader.load(Toast.PREFAB_PATH, Prefab, (err, prefab: Prefab) => {
                 if (err) {
                     console.error('Toast-> ', JSON.stringify(err) || err);
                     return;
@@ -208,3 +202,5 @@ export class Toast {
 
 
 tnt.toast = Toast.getInstance();
+
+export { };
