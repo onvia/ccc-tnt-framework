@@ -3,6 +3,7 @@ import { AssetWrap } from "./AssetWrap";
 
 import { Asset, assetManager, AssetManager, js, path, Prefab, resources, SceneAsset, SpriteFrame, __private, Texture2D, warn, JsonAsset } from "cc";
 import { EDITOR } from "cc/env";
+import downloadFile from "./download-file";
 const { pluginMgr } = tnt._decorator;
 
 type Bundle = AssetManager.Bundle;
@@ -953,7 +954,7 @@ class AssetLoader {
 
         let customDownloaderHandler = (url, options, onComplete) => {
             options.responseType = "arraybuffer";
-            assetManager.downloader.downloadFile(url, options, options.onFileProgress, onComplete);
+            downloadFile(url, options, options.onFileProgress, onComplete);
         }
         let customParserHandler = (file, options, cb) => {
             if (parserCallback) {
