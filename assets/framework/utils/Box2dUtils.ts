@@ -57,5 +57,5 @@ class Box2dUtils {
     }
 }
 
-export { };
 tnt.box2dUtils = Box2dUtils.getInstance();
+export { };

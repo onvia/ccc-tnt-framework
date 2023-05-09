@@ -60,6 +60,5 @@ class GMathf {
         return this._instance;
     }
 }
-export { };
-
 tnt.math = GMathf.getInstance();
+export { };

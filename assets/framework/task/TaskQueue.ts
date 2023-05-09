@@ -3,6 +3,16 @@ type CompleteCallbackNoData = (err?: Error | null) => void;
 type ForEachFunction<T> = (item: T, done: CompleteCallbackNoData) => void;
 type TaskRunner = (progress: (value) => void, done: Runnable) => void;
 
+declare global {
+
+    interface ITNT {
+        TaskQueue: typeof TaskQueue;
+    }
+
+    namespace tnt {
+        type TaskQueue = InstanceType<typeof TaskQueue>;
+    }
+}
 class Task {
     static create(key: string) {
         // return _taskPool.get();
@@ -18,7 +28,7 @@ class Task {
     runner: TaskRunner;
 }
 
-export class TaskQueue {
+class TaskQueue {
 
     tasks: Task[] = [];
     isRunning = false;
@@ -150,3 +160,6 @@ export class TaskQueue {
     }
 
 }
+
+tnt.TaskQueue = TaskQueue;
+export { };

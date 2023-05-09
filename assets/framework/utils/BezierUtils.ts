@@ -100,5 +100,5 @@ class BezierUtils {
     }
 }
 
-export { };
 tnt.bezierUtils = BezierUtils.getInstance();
+export { };

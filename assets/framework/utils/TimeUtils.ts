@@ -59,5 +59,5 @@ class GTimeUtils {
     }
 }
 
-export { };
 tnt.timeUtils = GTimeUtils.getInstance()
+export { };

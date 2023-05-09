@@ -103,3 +103,4 @@ class DebugUtils {
 }
 
 tnt.debug = new DebugUtils();
+export {};

@@ -368,5 +368,5 @@ class ComponentUtils {
     }
 }
 
-export { };
 tnt.componentUtils = ComponentUtils.getInstance();
+export { };

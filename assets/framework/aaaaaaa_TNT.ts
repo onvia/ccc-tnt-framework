@@ -35,3 +35,6 @@ import "./utils/TransformUtils";
 import "./utils/ComponentUtils";
 import "./utils/TimeUtils";
 import "./utils/TweenUtils";
+import "./utils/DebugUtils";
+import "./task/TaskMgr";
+import "./task/LoadingTaskQueue";

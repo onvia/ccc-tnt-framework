@@ -1,6 +1,6 @@
 
 import { _decorator, Component, Node, Asset, AssetManager } from 'cc';
-import { TaskQueue } from './TaskQueue';
+import "./TaskQueue";
 const { ccclass, property } = _decorator;
 
 
@@ -9,9 +9,19 @@ declare global {
         onLoadAssetComplete(error, asset: Asset | Asset[], path: string);
         onLoadAllComplete();
     }
+
+    
+    interface ITNT {
+        LoadingTaskQueue: typeof LoadingTaskQueue;
+    }
+
+    namespace tnt {
+        type LoadingTaskQueue = InstanceType<typeof LoadingTaskQueue>;
+    }
 }
+
 @ccclass('LoadingTask')
-export class LoadingTaskQueue extends TaskQueue {
+class LoadingTaskQueue extends tnt.TaskQueue {
 
     private _loaderKey = '';
     private _duration = 2;
@@ -97,3 +107,6 @@ export class LoadingTaskQueue extends TaskQueue {
         return progress;
     }
 }
+
+tnt.LoadingTaskQueue = LoadingTaskQueue;
+export { };

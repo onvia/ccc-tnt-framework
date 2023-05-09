@@ -631,6 +631,5 @@ class GBase64 {
     }
 }
 
-export { };
-
 tnt.stringUtils = GStringUtils.getInstance();
+export { };

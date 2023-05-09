@@ -10,7 +10,7 @@ enum LoggerLevel {
 }
 
 /** 日志系统 */
-export class Logger {
+class Logger {
     static Level = LoggerLevel;
     private _level: LoggerLevel = LoggerLevel.ALL;
     public get level(): LoggerLevel {
@@ -137,3 +137,4 @@ declare global {
 }
 
 tnt.logger = Logger.getInstance();
+export { };

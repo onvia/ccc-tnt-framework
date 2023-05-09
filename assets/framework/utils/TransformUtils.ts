@@ -237,5 +237,5 @@ class TransformUtils {
     }
 }
 
-export { };
 tnt.transformUtils = TransformUtils.getInstance();
+export { };

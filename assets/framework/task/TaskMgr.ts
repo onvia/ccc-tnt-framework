@@ -1,6 +1,5 @@
 import { _decorator } from "cc";
-import { TaskQueue } from "./TaskQueue";
-
+import "./TaskQueue";
 const { ccclass } = _decorator;
 
 
@@ -31,10 +30,10 @@ declare global {
 }
 
 @ccclass('TaskMgr')
-class TaskMgr extends TaskQueue {
+class TaskMgr extends tnt.TaskQueue {
 
     createTaskGroup() {
-        return new TaskQueue();
+        return new tnt.TaskQueue();
     }
 
     private static _instance: TaskMgr = null
