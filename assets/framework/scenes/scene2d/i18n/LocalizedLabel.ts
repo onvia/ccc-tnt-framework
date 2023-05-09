@@ -5,6 +5,16 @@ import { EDITOR } from "cc/env";
 
 const { ccclass, property, executeInEditMode, disallowMultiple, menu } = _decorator;
 
+declare global {
+
+    interface ITNT {
+        LocalizedLabel: typeof LocalizedLabel;
+    }
+
+    namespace tnt {
+        type LocalizedLabel = InstanceType<typeof LocalizedLabel>;
+    }
+}
 @ccclass
 @menu('本地化语言/LocalizedLabel')
 @executeInEditMode
@@ -137,3 +147,5 @@ export default class LocalizedLabel extends Component {
         font && (this.label.font = font);
     }
 }
+
+tnt.LocalizedLabel = LocalizedLabel;

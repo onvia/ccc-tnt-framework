@@ -1,6 +1,5 @@
 
 import { _decorator, Component, Node, find, Camera, Layers, view, Color, Sprite, SpriteFrame,  ImageAsset, Texture2D, Rect, UITransform, Size, sys, instantiate, RenderFlow, game, director, renderer, isValid, Director } from 'cc';
-import { renderTextureMgr } from './RenderTextureMgr';
 const { ccclass, property } = _decorator;
 
 
@@ -164,7 +163,7 @@ export class CaptureMgr  {
     captureScreenAsync(rect?: Rect,options?: { layer?: Layers.Enum,callback?: Runnable }){
         let camera = this.getCaptureCamera();
         camera.node.active = true;
-        let rt = renderTextureMgr.create();
+        let rt = tnt.renderTextureMgr.create();
         const {width,height} = view.getVisibleSize();
         if(!rect){
             rect = new Rect(0,0,width,height)
@@ -210,7 +209,7 @@ export class CaptureMgr  {
             camera.node.active = false;
             node.getComponent(UITransform)?.setContentSize(rect.size);
             // 截图完成回收 rt
-            renderTextureMgr.recycle(rt);
+            tnt.renderTextureMgr.recycle(rt);
     
             options?.callback?.();
         });
@@ -233,7 +232,7 @@ export class CaptureMgr  {
         let rt = camera.targetTexture;
         let isMgrCreated = false;
         if(!rt){
-            rt = renderTextureMgr.create();
+            rt = tnt.renderTextureMgr.create();
             camera.targetTexture = rt;
             isMgrCreated = true;
         }
@@ -287,7 +286,7 @@ export class CaptureMgr  {
         trans.height = rect.height;
         
         if(isMgrCreated){
-            renderTextureMgr.recycle(rt);
+            tnt.renderTextureMgr.recycle(rt);
         }
 
         return node;

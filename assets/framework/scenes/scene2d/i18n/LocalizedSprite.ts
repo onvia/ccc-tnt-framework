@@ -5,6 +5,17 @@ import { EDITOR } from "cc/env";
 import { i18n } from "./i18n";
 
 const {ccclass, property,executeInEditMode, menu,disallowMultiple,requireComponent} = _decorator;
+declare global {
+
+    interface ITNT {
+        LocalizedSprite: typeof LocalizedSprite;
+    }
+
+    namespace tnt {
+        type LocalizedSprite = InstanceType<typeof LocalizedSprite>;
+    }
+}
+
 @ccclass
 @menu('本地化语言/LocalizedSprite')
 @executeInEditMode
@@ -84,3 +95,5 @@ export default class LocalizedSprite extends Component {
     }
         
 }
+
+tnt.LocalizedSprite = LocalizedSprite;

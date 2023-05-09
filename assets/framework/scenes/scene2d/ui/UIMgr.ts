@@ -140,7 +140,7 @@ let maskNodePoolOptions: IPoolOptions<Node> = {
                 console.warn(`UIMgr-> 没有 [framework] bundle`);
                 return;
             }
-            bundle.load("resources/default_sprite_splash/spriteFrame", SpriteFrame, (err, texture) => {
+            bundle.load("resources/texture/default_sprite_splash/spriteFrame", SpriteFrame, (err, texture) => {
                 sprite.spriteFrame = texture;
                 texture.addRef();
                 sprite.sizeMode = Sprite.SizeMode.CUSTOM;

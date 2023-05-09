@@ -3,6 +3,16 @@ import { _decorator, Component, Node, Material, Vec2, EffectAsset, v2, UITransfo
 const { ccclass, property } = _decorator;
 
 
+declare global {
+
+    interface ITNT {
+        DualBlurEffect: typeof DualBlurEffect;
+    }
+
+    namespace tnt {
+        type DualBlurEffect = InstanceType<typeof DualBlurEffect>;
+    }
+}
  
 @ccclass('DualBlurEffect')
 export class DualBlurEffect extends Component {
@@ -247,3 +257,5 @@ export class DualBlurEffect extends Component {
         tempNode.active = false;
     }
 }
+
+tnt.DualBlurEffect = DualBlurEffect;

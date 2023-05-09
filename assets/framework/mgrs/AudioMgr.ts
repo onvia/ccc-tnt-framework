@@ -15,7 +15,7 @@ const { ccclass } = _decorator;
  }
 
 @ccclass('AudioMgr')
-export class AudioMgr {
+class AudioMgr {
     readonly LOADER_KEY = "audio";
     
     storageKey(){
@@ -223,5 +223,5 @@ export class AudioMgr {
     }
 }
 
-export let audioMgr = AudioMgr.getInstance();
-tnt.audioMgr = audioMgr;
+tnt.audioMgr = AudioMgr.getInstance();
+export {};

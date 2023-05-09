@@ -52,7 +52,7 @@
         "_value": false
       },
       "physics-2d": {
-        "_value": true,
+        "_value": false,
         "_option": "physics-2d-box2d"
       },
       "physics-2d-box2d": {
@@ -94,7 +94,16 @@
       "tween": {
         "_value": true
       },
+      "websocket": {
+        "_value": true
+      },
+      "websocket-server": {
+        "_value": false
+      },
       "terrain": {
+        "_value": false
+      },
+      "light-probe": {
         "_value": false
       },
       "tiled-map": {
@@ -104,7 +113,7 @@
         "_value": true
       },
       "dragon-bones": {
-        "_value": true
+        "_value": false
       },
       "marionette": {
         "_value": false
@@ -118,13 +127,10 @@
       "animation",
       "audio",
       "base",
-      "dragon-bones",
       "gfx-webgl",
       "gfx-webgl2",
       "intersection-2d",
-      "light-probe",
       "particle-2d",
-      "physics-2d-box2d",
       "profiler",
       "spine",
       "tiled-map",

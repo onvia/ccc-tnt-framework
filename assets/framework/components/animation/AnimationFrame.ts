@@ -1,6 +1,6 @@
 import { Animation, AnimationClip, Asset, AssetManager, error, JsonAsset, Node, Rect, Size, Sprite, SpriteFrame, Texture2D, Vec2, _decorator } from "cc";
 import { DEV } from "cc/env";
-import { AnimationType } from "./AnimationType";
+import "./AnimationBase";
 
 const { ccclass, requireComponent, disallowMultiple, menu, property, executeInEditMode } = _decorator;
 
@@ -21,9 +21,9 @@ declare global {
 @menu("自定义UI/AnimationFrame")
 @disallowMultiple()
 // @executeInEditMode()
-class AnimationFrame extends tnt.AnimationBase {
+export default class AnimationFrame extends tnt.AnimationBase {
 
-    readonly animationType: AnimationType = AnimationType.Frame;
+    readonly animationType: tnt.AnimationType = tnt.AnimationType.Frame;
 
     public sprite: Sprite = null;
     public animation: Animation = null;

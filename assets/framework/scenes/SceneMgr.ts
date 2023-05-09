@@ -32,7 +32,7 @@ interface SceneOptions<Options> {
 type SceneBase<T = any> = tnt.SceneBase<T>;
 
 @ccclass('SceneMgr')
-export class SceneMgr extends tnt.EventMgr implements ISceneListener {
+class SceneMgr extends tnt.EventMgr implements ISceneListener {
 
     readonly EVENT_EXIT_SCENE = "EVENT_EXIT_SCENE";
 
@@ -93,6 +93,30 @@ export class SceneMgr extends tnt.EventMgr implements ISceneListener {
             return;
         }
         this.isTransform = true;
+        
+        let bundleName = null;
+        if (options) {
+            bundleName = options.bundle;
+        }else if(nextSceneOrOptions && !(nextSceneOrOptions instanceof SceneAsset) && typeof nextSceneOrOptions !== 'string'){
+            bundleName = nextSceneOrOptions.bundle;
+        }
+
+        if(bundleName){
+            let loadedBundle = await new Promise<boolean>((resolve, reject) => {
+                tnt.AssetLoader.loadBundle(bundleName,(err,bundle)=>{
+                    if(err){
+                        resolve(false);
+                        return;
+                    }
+                    resolve(true);
+                });
+            })
+            if(!loadedBundle){                
+                console.error(`SceneMgr-> 加载 Bundle ${bundleName} 失败`);
+                this.isTransform = false;
+                return;
+            }
+        }
         let sceneAsset: SceneAsset = null;
         let nextSceneName: string = null;
 
@@ -196,7 +220,7 @@ export class SceneMgr extends tnt.EventMgr implements ISceneListener {
                     tnt.eventMgr.emit(this.EVENT_EXIT_SCENE);
                     this.emit(this.EVENT_EXIT_SCENE);
                     // 默认暂存弹窗
-                    if(!options || (options.stageWindow || typeof options.stageWindow === 'undefined')){
+                    if (!options || (options.stageWindow || typeof options.stageWindow === 'undefined')) {
                         // 暂存弹窗
                         tnt.uiMgr._stageState(exitSceneName, nextSceneName);
                     }
@@ -241,7 +265,7 @@ export class SceneMgr extends tnt.EventMgr implements ISceneListener {
             this.transition = transition;
 
             assetManager.loadBundle("framework", (err, bundle) => {
-                bundle.load("resources/default_sprite_splash/spriteFrame", SpriteFrame, (err, spriteFrame) => {
+                bundle.load("resources/texture/default_sprite_splash/spriteFrame", SpriteFrame, (err, spriteFrame) => {
                     sprite.spriteFrame = spriteFrame;
                     spriteFrame.addRef();
                     sprite.sizeMode = Sprite.SizeMode.CUSTOM;
@@ -348,3 +372,4 @@ export class SceneMgr extends tnt.EventMgr implements ISceneListener {
 }
 
 tnt.sceneMgr = SceneMgr.getInstance();
+export { };

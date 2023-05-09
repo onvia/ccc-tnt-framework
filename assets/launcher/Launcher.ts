@@ -1,8 +1,8 @@
 
 import { Component, Node, macro, _decorator, assetManager } from "cc";
-import { KeyBoardListener } from "../scripts/game/listeners/KeyBoardListener";
-import { SceneListener } from "../scripts/game/listeners/SceneListener";
 import { bootstrapOptions } from "./BootstarapConfig";
+import { KeyBoardListener } from "./listeners/KeyBoardListener";
+import { SceneListener } from "./listeners/SceneListener";
 const { ccclass, property } = _decorator;
 
 @ccclass('Launcher')
@@ -20,7 +20,15 @@ export class Launcher extends Component {
         console.log(`Launcher-> 加载基础 bundle`);
         
         assetManager.loadBundle("framework", () => {
-            this.onLaunch();
+            tnt.taskMgr.addTask((progress,done)=>{
+                tnt.AssetLoader.loadBundle("game", () => {
+                    done();
+                });
+            });
+
+            tnt.taskMgr.startTasksParallel(()=>{
+                this.onLaunch();
+            });
         });
     }
 
@@ -35,8 +43,8 @@ export class Launcher extends Component {
         tnt.i18n.enable = true;
         // 
         tnt.bootstrap(bootstrapOptions);
-        tnt.sceneMgr.addSceneListener(SceneListener.getInstance());
         tnt.keyboard.on(KeyBoardListener.getInstance());
+        tnt.sceneMgr.addSceneListener(SceneListener.getInstance());
 
         this.btnQuickStart.active = true;
     }

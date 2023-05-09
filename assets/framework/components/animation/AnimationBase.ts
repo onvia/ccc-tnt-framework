@@ -1,5 +1,5 @@
 import { AssetManager, _decorator } from "cc";
-import { AnimationType } from "./AnimationType";
+import "./AnimationType";
 
 const { ccclass, property } = _decorator;
 
@@ -17,7 +17,7 @@ declare global {
 @ccclass
 abstract class AnimationBase extends tnt.GComponent {
 
-    declare animationType: AnimationType;
+    declare animationType: tnt.AnimationType;
 
     // 当前动画名字
     declare animationName: string;

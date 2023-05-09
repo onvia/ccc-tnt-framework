@@ -1,7 +1,7 @@
 
 import { AssetManager, isValid, js, log, Size, sp, sys, Texture2D, Vec2, Vec3, _decorator, __private } from "cc";
 import { DEV, JSB } from "cc/env";
-import { AnimationType } from "./AnimationType";
+import "./AnimationBase";
 
 
 /**
@@ -29,12 +29,12 @@ type PlayListener = (sk: AnimationSkeleton, trackEntry: sp.spine.TrackEntry) => 
 @requireComponent(sp.Skeleton)
 @menu("自定义UI/AnimationSkeleton")
 @disallowMultiple()
-class AnimationSkeleton extends tnt.AnimationBase {
+export default class AnimationSkeleton extends tnt.AnimationBase {
 
     @property({ tooltip: '混合时间' })
     mixTime = 0.2;
 
-    readonly animationType: AnimationType = AnimationType.Spine;
+    readonly animationType: tnt.AnimationType = tnt.AnimationType.Spine;
     private _skeleton: sp.Skeleton;
     public get skeleton(): sp.Skeleton {
         !this._skeleton && (this._skeleton = this.getComponent(sp.Skeleton));
