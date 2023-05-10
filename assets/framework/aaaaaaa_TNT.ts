@@ -13,6 +13,7 @@ import "./scenes/scene2d/ui/_ui";
 import "./scenes/scene2d/stage/_stage";
 import "./scenes/scene2d/i18n/_i18n";
 import "./scenes/scene2d/gui/_gui";
+import "./scenes/SceneBase";
 
 
 import "./assets-manager/AssetLoader";

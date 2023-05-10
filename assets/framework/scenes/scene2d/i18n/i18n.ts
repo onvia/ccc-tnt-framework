@@ -79,8 +79,11 @@ class I18N extends EventTarget {
     private async loadLanguagePack(language: string) {
         return new Promise<JsonAsset>((resolve, reject) => {
             this.languagePack = this.formatLanguagePackName(language);
+            console.log(`i18n-> 加载 ${`text/${language}`}, bundle: ${this.languagePack}`);
+            
             this.config.load(`text/${language}`, JsonAsset, this.languagePack).then(asset => {
                 resolve(asset);
+                console.log(`i18n-> 加载成功 `);
             }).catch(() => {
                 console.log(`i18n-> 加载失败 `);
             });

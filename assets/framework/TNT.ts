@@ -9,7 +9,7 @@ declare global {
     interface IUtils { }
 
     interface ITNT {
-        options: IBootstrapOptions;
+        options: IStartupOptions;
 
         /**表格全局 */
         tbl: ITbl;
@@ -20,13 +20,13 @@ declare global {
         /** 工具全局 */
         utils: IUtils;
 
-        bootstrap(options?: IBootstrapOptions);
+        startup(options?: IStartupOptions);
         enableTimer();
     }
 
     const tnt: ITNT;
 
-    interface IBootstrapOptions {
+    interface IStartupOptions {
         debug?: boolean;
         audioConfig?: AudioMgrOptions;
         i18nConfig: I18NConfig;
@@ -38,7 +38,7 @@ declare global {
 }
 
 
-tnt.bootstrap = (options?: IBootstrapOptions) => {
+tnt.startup = (options?: IStartupOptions) => {
     tnt.options = options;
     tnt.audioMgr.init(options?.audioConfig);
     tnt.i18n.init(options.i18nConfig);

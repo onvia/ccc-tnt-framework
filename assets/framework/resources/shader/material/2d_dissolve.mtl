@@ -26,10 +26,6 @@
   ],
   "_props": [
     {
-      "dissolve": {
-        "__uuid__": "49565042-3b00-4c61-b1b8-c4e649c9cc6b@6c48a",
-        "__expectedType__": "cc.Texture2D"
-      },
       "dissolveThreshold": 0.51,
       "edgeColor": {
         "__type__": "cc.Color",

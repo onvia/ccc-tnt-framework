@@ -2,11 +2,6 @@ import { _decorator, Scene } from "cc";
 const { ccclass, property } = _decorator;
 
 
-
-let idx = 0;
-
-
-
 //  生命周期 执行顺序
 //  
 //  onLoad 组件脚本加到节点上时被调用

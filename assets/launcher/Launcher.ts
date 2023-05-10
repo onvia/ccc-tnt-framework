@@ -1,10 +1,14 @@
 
 import { Component, Node, macro, _decorator, assetManager } from "cc";
-import { bootstrapOptions } from "./BootstarapConfig";
+import { startupOptions } from "./BootstarapConfig";
 import { KeyBoardListener } from "./listeners/KeyBoardListener";
 import { SceneListener } from "./listeners/SceneListener";
 const { ccclass, property } = _decorator;
 
+/**
+ * 启动类在 main 包，需要挂载到 Launcher 场景
+ *
+ */
 @ccclass('Launcher')
 export class Launcher extends Component {
 
@@ -19,13 +23,16 @@ export class Launcher extends Component {
     start() {
         console.log(`Launcher-> 加载基础 bundle`);
         
+        // 首先加载框架 
         assetManager.loadBundle("framework", () => {
+            // 添加任务： 加载 游戏 bundle
             tnt.taskMgr.addTask((progress,done)=>{
                 tnt.AssetLoader.loadBundle("game", () => {
                     done();
                 });
             });
-
+            
+            // 执行任务
             tnt.taskMgr.startTasksParallel(()=>{
                 this.onLaunch();
             });
@@ -41,11 +48,15 @@ export class Launcher extends Component {
         tnt.keyboard.enableCombination = true;
         // 多语言
         tnt.i18n.enable = true;
-        // 
-        tnt.bootstrap(bootstrapOptions);
+
+        // 启动框架
+        tnt.startup(startupOptions);
+        // 键盘事件
         tnt.keyboard.on(KeyBoardListener.getInstance());
+        // 场景切换监听
         tnt.sceneMgr.addSceneListener(SceneListener.getInstance());
 
+        // 显示开始按钮
         this.btnQuickStart.active = true;
     }
 

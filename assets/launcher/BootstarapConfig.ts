@@ -1,14 +1,13 @@
 import { Asset, AssetManager, js, JsonAsset, SpriteFrame, warn } from "cc";
 
 
-export let bootstrapOptions: IBootstrapOptions = {
+export let startupOptions: IStartupOptions = {
 
     debug: true,
 
     
     defaultBtnSound: "click",
     soundConfig: {
-        
     },
 
 
