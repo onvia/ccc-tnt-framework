@@ -1,6 +1,5 @@
 
 import { _decorator, Node, Camera, UIOpacity, Sprite, Color, director, Canvas, EffectAsset } from 'cc';
-import { DualBlurEffect } from '../../../framework/components/effect/DualBlurEffect';
 const { ccclass, property } = _decorator;
 
 
@@ -13,7 +12,7 @@ export class CaptureScreenMaskLayerController implements IMaskLayerController {
     public enable = true;
     public camera: Camera = null;
     private _opacity = 126; // 可以看做是黑色蒙版的透明度
-    dualBlurEffect: DualBlurEffect;
+    dualBlurEffect: tnt.DualBlurEffect;
     
     /**
      * 黑色蒙版的透明度
@@ -30,7 +29,7 @@ export class CaptureScreenMaskLayerController implements IMaskLayerController {
         }
 
         let canvas = director.getScene().getComponentInChildren(Canvas);
-        this.dualBlurEffect = canvas.node.addComponent(DualBlurEffect);
+        this.dualBlurEffect = canvas.node.addComponent(tnt.DualBlurEffect);
 
     }
     onWindowCreateBefore(windowName: string) {

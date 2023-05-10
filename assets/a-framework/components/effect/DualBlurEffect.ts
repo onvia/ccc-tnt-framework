@@ -31,7 +31,7 @@ export class DualBlurEffect extends Component {
 
     start () {
         if(!this.effectAsset){
-            this.effectAsset = EffectAsset.get("../framework/resources/shader/effect/2d_dual_kawase_blur");
+            this.effectAsset = EffectAsset.get("../a-framework/resources/shader/effect/2d_dual_kawase_blur");
         }
         this.materialDown = new Material();
         this.materialDown.initialize({

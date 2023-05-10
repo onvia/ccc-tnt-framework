@@ -5,6 +5,7 @@ import "./decorators/_decorator";
 import "./mgrs/EventMgr";
 import "./components/GComponent";
 import './components/animation/_animation';
+import './components/effect/_effect';
 import './pool/_pool';
 
 

@@ -1,5 +1,5 @@
-import { MainScene } from "./assets/scripts/scene/MainScene"
-import { WindowScene } from "./assets/window-example/scripts/WindowScene"
+import { MainScene } from "./assets/bundles/game/scripts/scene/MainScene"
+import { WindowScene } from "./assets/bundles/window-example/scripts/WindowScene"
 
 declare global {
 	interface MainSceneOptions{}

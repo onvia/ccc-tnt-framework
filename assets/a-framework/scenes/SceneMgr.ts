@@ -93,25 +93,25 @@ class SceneMgr extends tnt.EventMgr implements ISceneListener {
             return;
         }
         this.isTransform = true;
-        
+
         let bundleName = null;
         if (options) {
             bundleName = options.bundle;
-        }else if(nextSceneOrOptions && !(nextSceneOrOptions instanceof SceneAsset) && typeof nextSceneOrOptions !== 'string'){
+        } else if (nextSceneOrOptions && !(nextSceneOrOptions instanceof SceneAsset) && typeof nextSceneOrOptions !== 'string') {
             bundleName = nextSceneOrOptions.bundle;
         }
 
-        if(bundleName){
+        if (bundleName) {
             let loadedBundle = await new Promise<boolean>((resolve, reject) => {
-                tnt.AssetLoader.loadBundle(bundleName,(err,bundle)=>{
-                    if(err){
+                tnt.AssetLoader.loadBundle(bundleName, (err, bundle) => {
+                    if (err) {
                         resolve(false);
                         return;
                     }
                     resolve(true);
                 });
             })
-            if(!loadedBundle){                
+            if (!loadedBundle) {
                 console.error(`SceneMgr-> 加载 Bundle ${bundleName} 失败`);
                 this.isTransform = false;
                 return;

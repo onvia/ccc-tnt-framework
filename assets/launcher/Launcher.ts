@@ -27,7 +27,7 @@ export class Launcher extends Component {
         assetManager.loadBundle("framework", () => {
             // 添加任务： 加载 游戏 bundle
             tnt.taskMgr.addTask((progress,done)=>{
-                tnt.AssetLoader.loadBundle("game", () => {
+                tnt.AssetLoader.loadBundle("main-scene", () => {
                     done();
                 });
             });
@@ -61,7 +61,7 @@ export class Launcher extends Component {
     }
 
     onClickToExample() {
-        tnt.sceneMgr.to('MainScene');
+        tnt.sceneMgr.to('MainScene',{bundle: 'main-scene'});
     }
 
     protected onEnable?() {
