@@ -156,8 +156,13 @@ class UIBase<Options = any> extends tnt.GComponent<Options> implements IUIAble {
         return this.findComponent(name, Toggle, parent);
     }
 
-    public setLabelText(name: string, text: string, parent?: Node) {
-        let label = this.getLabelByName(name, parent);
+    public setLabelText(name: NodeNoun<Node>, text: string, parent?: Node) {
+        let label: Label = null;
+        if(name instanceof Node){
+            label = name.getComponent(Label);
+        }else{
+            label = this.getLabelByName(name, parent);
+        }
         if (label) {
             label.string = text;
         } else {

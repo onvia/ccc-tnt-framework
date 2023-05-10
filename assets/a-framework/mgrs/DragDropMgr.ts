@@ -25,7 +25,8 @@ declare global {
          * @memberof IDragAgentData
          */
         sourceData?: any;
-        // touchPosition?: Vec3;
+
+        onShow: (node: Node)=> void;
     }
 
     interface IDragDropListener<SourceData = any> {
@@ -91,7 +92,7 @@ declare global {
          * @return {*}  {IDragAgentData}
          * @memberof IDragDropListener
          */
-        onShowDragAgent(touchTarget: Node, uiLocation: Vec2): IDragAgentData;
+        onCreateDragAgentData(touchTarget: Node, uiLocation: Vec2): IDragAgentData;
 
         /**
          * 拖放监听
@@ -295,12 +296,15 @@ export class DragDropMgr<SourceData = any> {
      * @return {*} 
      * @memberof DragDropMgr
      */
-    protected startDrag(source: Node, icon: SpriteFrame | Node, sourceData: SourceData) {
+    protected startDrag(source: Node, data: IDragAgentData) {
         if (this.dragging) {
             return;
         }
+        let { icon, sourceData, onShow } = data;
+
         this.lazyInit();
         this.sourceData = sourceData;
+      
         this.dragAgent.scale = new Vec3(1, 1, 1);
         this.dragAgent.getComponent(UIOpacity).opacity = 255;
 
@@ -316,21 +320,12 @@ export class DragDropMgr<SourceData = any> {
                 icon.position = new Vec3();
             }
         }
-
-        // if (touchPosition === undefined) {
-        //     let uiTransform = source.getComponent(UITransform);
-        //     touchPosition = uiTransform.convertToWorldSpaceAR(new Vec3(0, 0, 0));
-        // }
-        // //计算位置
-        // let mainTransform = this.touchTestPanel.getComponent(UITransform);
-        // let pos = mainTransform.convertToNodeSpaceAR(touchPosition);
-        //   this.dragAgent.position = new Vec3(pos.x, pos.y,this.dragAgent.position.z);
         this.dragAgent.position = new Vec3(this.touchStartPositon.x, this.touchStartPositon.y, this.dragAgent.position.z);
         this.dragAgent.parent = this.touchTestPanel;
         this.dragAgent.startDrag();
 
         this.sourceData = sourceData;
-
+        onShow(this.dragAgent);
         return this.dragAgent;
     }
 
@@ -352,19 +347,6 @@ export class DragDropMgr<SourceData = any> {
                     container = tempCont;
                     break;
                 }
-                // let uiTransform = tempCont.getComponent(UITransform);
-                // //计算 dragAgent 的中心点 是否在 container 上
-                // //如果在 则 break,并给 container 发送 drop 事件
-                // let containerBox = uiTransform?.getBoundingBoxToWorld();
-                // if (containerBox == undefined || containerBox == null) {
-                //     console.error(`DragDropMgr-> index: ${i} BoundingBox error`);
-                // }
-                // let dragAgentTransform = dragAgent.getComponent(UITransform);
-                // let dragAgentRect = dragAgentTransform.getBoundingBoxToWorld();
-                // if (containerBox.intersects(dragAgentRect)) {
-                //     container = tempCont;
-                //     break;
-                // }
             }
         }
 
@@ -431,8 +413,8 @@ export class DragDropMgr<SourceData = any> {
             // 延迟之后判断是否是按压状态
             if (this.isTouching) {
                 this.isTouching = false;
-                let data = this.dragDropListener?.onShowDragAgent(node, event.getUILocation());
-                this.startDrag(node, data.icon, data.sourceData);
+                let data = this.dragDropListener?.onCreateDragAgentData(node, event.getUILocation());
+                this.startDrag(node, data);
             }
             this._delayShowTimer = null;
         }
@@ -449,12 +431,6 @@ export class DragDropMgr<SourceData = any> {
         // 在有拖拽代理的时候 事件不允许派发给渲染在下一层级的节点
         if (this.dragAgent && this.dragAgent.activeInHierarchy) {
             event.preventSwallow = false;
-            // let deltaXY = event.getDelta();
-            // this.dragAgent.position.add(new Vec3(deltaXY.x, deltaXY.y, 0));
-            // let pos = event.getUILocation();
-            // tmp_v3_1.set(pos.x,pos.y);
-            // let localPos = this.touchTransform.convertToNodeSpaceAR(tmp_v3_1);
-            // this.dragAgent.setPosition(localPos);
             this.dragAgent.emit(Node.EventType.TOUCH_MOVE, event);
         } else {
             let location = event.getUILocation();
@@ -504,7 +480,7 @@ export class DragDropMgr<SourceData = any> {
             if (node) {
                 return node;
             }
-            DEV && console.log(`DragDropMgr->  没有通过 dragDropListener.onFindTarget 查找到目标节点`);
+            DEV && console.log(`DragDropMgr->  通过 dragDropListener.onFindTarget 没有查找到目标节点`);
         }
         let touchPos = event.getUILocation();
         for (let index = 0; index < this.dragNodes.length; index++) {

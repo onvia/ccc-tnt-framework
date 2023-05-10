@@ -908,7 +908,7 @@
   },
   {
     "__type__": "cc.Node",
-    "_name": "btnWindow",
+    "_name": "btnTemplete",
     "_objFlags": 0,
     "_parent": {
       "__id__": 24
@@ -1047,7 +1047,7 @@
       "b": 255,
       "a": 255
     },
-    "_string": "弹窗",
+    "_string": "场景",
     "_horizontalAlign": 1,
     "_verticalAlign": 1,
     "_actualFontSize": 36,

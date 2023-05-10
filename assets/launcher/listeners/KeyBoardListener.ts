@@ -18,7 +18,25 @@ export class KeyBoardListener implements IKeyboard{
 
         let scene = director.getScene();
         let scenename = scene.name;
-        
+        if(scenename === 'MainScene'){
+
+            return;
+        }
+
+        let preScene = tnt.sceneMgr.getPreviousScene();
+        if(!preScene){
+            return;
+        }
+
+        this.toScene(preScene,()=>{
+            let clazz = js.getClassByName(preScene);
+            if(clazz && js.getSuper(clazz) == tnt.SceneBase){
+                // @ts-ignore
+                tnt.sceneMgr.toScene(clazz);
+            }else{
+                tnt.sceneMgr.to("MainScene",{bundle: "main-scene"});
+            }
+        }); 
     }
 
     toScene(preScene,toFn: ()=> void){

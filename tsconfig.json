@@ -4,6 +4,12 @@
 
   /* Add your custom configuration here. */
   "compilerOptions": {
-    "strict": false
+    "strict": false,
+    "types": [
+      "./temp/declarations/jsb",
+      "./temp/declarations/cc.custom-macro",
+      "./temp/declarations/cc.env",
+      "./cc"
+    ],
   }
 }

@@ -124,6 +124,7 @@ class SceneMgr extends tnt.EventMgr implements ISceneListener {
             clazz = js.getClassByName(clazz) as GConstructor<T>;
             if (!clazz) {
                 console.error(`SceneMgr-> 没有找到场景 ${clazz} 类`);
+                this.isTransform = false;
                 return;
             }
         }

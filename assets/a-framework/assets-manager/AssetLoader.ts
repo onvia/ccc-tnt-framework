@@ -358,8 +358,14 @@ class AssetLoader {
             this._releaseOneAsset(pathOrAsset);
             return;
         }
+        let pathObj = this.parsePath(pathOrAsset);
+        let path = pathObj.path;
 
-        let path = this.formatPath(pathOrAsset, type);
+        // 优先使用路径内的 bundle 
+        if (pathObj.bundle) {
+            bundle = pathObj.bundle;
+        }
+        path = this.formatPath(path, type);
         let bundleWrap = this.getBundleAsset(bundle);
         let u_path = this.jointKey(bundleWrap.name, path);
 
@@ -1003,7 +1009,6 @@ class AssetLoader {
 
 
             let absolutePath = path.join(projectPath, "assets", bundle, `${filepath}.${exts[type]}.meta`);
-            // log('绝对路径', absolutePath);
             if (!fs.existsSync(absolutePath)) {
                 warn(`[${absolutePath}]file is not exist `);
                 return;
@@ -1016,13 +1021,8 @@ class AssetLoader {
                 }
                 let dataStr = data.toString();
                 let json = JSON.parse(dataStr);
-                // log("读取文件: ", dataStr);
-
                 if (type === SpriteFrame || type === Texture2D) {
                     let filearr = filepath.split("/");
-                    // let filename = filearr[filearr.length - 1];
-                    // log("filename: ", filename);
-                    // log(`AssetLoader->subMetas `,json.subMetas);
                     for (const key in json.subMetas) {
                         const subMeta = json.subMetas[key];
                         if (type === SpriteFrame && subMeta.name === "spriteFrame") {

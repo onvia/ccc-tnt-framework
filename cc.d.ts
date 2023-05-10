@@ -19696,7 +19696,7 @@ declare module "cc" {
         /**
          * @internal
          */
-        [editorExtrasTag]: unknown;
+        "__editorExtras__": unknown;
         /**
          * @internal
          */
