@@ -70,12 +70,12 @@ export class DragDropScene extends tnt.SceneBase implements IDragDropListener {
         sprite.color = color(randomRangeInt(0, 255), randomRangeInt(0, 255), randomRangeInt(0, 255));
     }
 
-    // 可选
+    // // 可选，可以用此方法代替 DragDropMgr 内置的查找方法
     // onFindTarget(event: EventTouch, dragNodes: Array<Node>): Node{
     //     return null;
     // }
 
-    // // 可选 
+    // // 可选，可以用此方法代替 DragDropMgr 内置的查找方法
     // onFindContainer(dragAgent: Node, containers: Array<Node>, intersects: (node1: Node, node2: Node) => boolean): Node{
     //     return null;
     // }

@@ -238,8 +238,9 @@ tnt.touch.off(touchImpl);  // 取消监听
 
 
 ### 拖放管理器
-类 `DragDropMgr`
-
+类 `DragDropMgr`  
+方便快捷的实现拖放
+具体使用请查看，场景 `DragDropScene.scene`， 脚本 `DragDropScene.ts` 
 
 ### 截图管理器
 类 `CaptureMgr`

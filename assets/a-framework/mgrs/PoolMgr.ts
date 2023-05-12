@@ -33,19 +33,19 @@ class PoolMgr {
     constructor(readonly name: string) {
     }
 
-    get LOADER_KEY() {
+    public get LOADER_KEY() {
         return `PoolMgr_${this.name}`
     };
 
     protected _loader: tnt.AssetLoader = null;
-    get loader() {
+    public get loader() {
         if (!this._loader) {
             this._loader = tnt.loaderMgr.get(this.LOADER_KEY);
         }
         return this._loader;
     }
 
-    protected nodePoolMap: Map<string, tnt.NodePool | tnt.Pool<any>> = new Map();
+    protected poolMap: Map<string, tnt.NodePool | tnt.Pool<any>> = new Map();
     protected templeteMap: Map<string, Node | any> = new Map();
     protected poolResMap: Map<string, { path: string, bundle?: string, type?: CCAssetType }> = new Map();
 
@@ -53,7 +53,7 @@ class PoolMgr {
     protected _currentNodePoolName: string = null;
 
 
-    createPool<T>(name: string, node: any, options?: iPoolOptions<T>) {
+    public createPool<T>(name: string, node: any, options?: iPoolOptions<T>) {
         if (this.has(name)) {
             return this.getPool(name);
         }
@@ -70,14 +70,14 @@ class PoolMgr {
             pool = _pool;
         }
 
-        this.nodePoolMap.set(name, pool);
+        this.poolMap.set(name, pool);
         this.templeteMap.set(name, node);
 
         return pool;
     }
 
-    /** 使用图片资源地址创建预制体 */
-    createPoolWithAssetPath(poolName: string, res: { path: string, bundle?: string, type?: CCAssetType }, options?: iPoolOptions<Node>, callback?: (poolName: string) => void) {
+    /** 使用图片资源地址创建 池 */
+    public createPoolWithAssetPath(poolName: string, res: { path: string, bundle?: string, type?: CCAssetType }, options?: iPoolOptions<Node>, callback?: (poolName: string) => void) {
         return new Promise<any>((resolve, reject) => {
             if (this.has(poolName)) {
                 callback?.(poolName);
@@ -104,11 +104,18 @@ class PoolMgr {
         })
     }
 
-    get(name: string) {
-        if (!name) {
+    /**
+     * 从指定池中获取元素
+     *
+     * @param {string} poolName
+     * @return {*} 
+     * @memberof PoolMgr
+     */
+    public get(poolName: string) {
+        if (!poolName) {
             return null;
         }
-        let pool = this._pool(name);
+        let pool = this._pool(poolName);
         if (!pool) {
             return null;
         }
@@ -116,7 +123,7 @@ class PoolMgr {
         let node = null;
 
         if (DEBUG) {
-            console.log(`PoolMgr-> get: ${name} size: ${pool.count}`);
+            console.log(`PoolMgr-> get: ${poolName} size: ${pool.count}`);
         }
 
         // if(pool.count > 0){
@@ -127,16 +134,24 @@ class PoolMgr {
         // }
         node = pool.get();
         if (!node) {
-            let param = this.templeteMap.get(name);
+            let param = this.templeteMap.get(poolName);
             node = instantiate(param);
         }
         return node;
 
     }
 
-    put(name: string, element: any) {
+    /**
+     * 回收元素
+     *
+     * @param {string} poolName
+     * @param {*} element
+     * @return {*} 
+     * @memberof PoolMgr
+     */
+    public put(poolName: string, element: any) {
 
-        if (!name) {
+        if (!poolName) {
             console.error(`PoolMgr-> put: name is null}`);
             return false;
         }
@@ -144,7 +159,7 @@ class PoolMgr {
 
             return false;
         }
-        let pool = this._pool(name);
+        let pool = this._pool(poolName);
         if (!pool) {
             return false;
         }
@@ -152,13 +167,13 @@ class PoolMgr {
         pool.put(element);
 
         if (DEBUG) {
-            console.log(`PoolMgr-> put: ${name} size: ${pool.count}`);
+            console.log(`PoolMgr-> put: ${poolName} size: ${pool.count}`);
         }
 
         return true;
     }
 
-    putAll(name: string, arr: Array<any>) {
+    public putAll(name: string, arr: Array<any>) {
         while (arr.length > 0) {
             let element = arr[0];
             arr.splice(0, 1);
@@ -166,13 +181,19 @@ class PoolMgr {
         }
     }
 
-
-    has(name: string): boolean {
-        return this.nodePoolMap.has(name);
+    /**
+     * 判断是否有指定池
+     *
+     * @param {string} name
+     * @return {*}  {boolean}
+     * @memberof PoolMgr
+     */
+    public has(name: string): boolean {
+        return this.poolMap.has(name);
     }
 
-    size(name: string) {
-        let pool = this.nodePoolMap.get(name);
+    public size(name: string) {
+        let pool = this.poolMap.get(name);
         if (!pool) {
             return -1;
         }
@@ -180,8 +201,8 @@ class PoolMgr {
     }
 
 
-    getPool(name: string) {
-        return this.nodePoolMap.get(name);
+    public getPool(name: string) {
+        return this.poolMap.get(name);
     }
 
 
@@ -191,7 +212,7 @@ class PoolMgr {
         if (name == this._currentNodePoolName) {
             pool = this._currentNodePool;
         } else {
-            pool = this.nodePoolMap.get(name);
+            pool = this.poolMap.get(name);
             if (!pool) {
                 DEBUG && console.warn(`PoolMgr-> not have  [${name}] pool`);
                 return null;
@@ -203,7 +224,14 @@ class PoolMgr {
     }
 
 
-    createPrefabWithImageAsset(asset: SpriteFrame | Texture2D) {
+    /**
+     * 用资源创建预制体
+     *
+     * @param {(SpriteFrame | Texture2D)} asset
+     * @return {*} 
+     * @memberof PoolMgr
+     */
+    public createPrefabWithImageAsset(asset: SpriteFrame | Texture2D) {
         let node = new Node();
         let sprite = node.addComponent(Sprite);
         if (asset instanceof Texture2D) {
@@ -214,7 +242,9 @@ class PoolMgr {
         return this.createPrefabByNode(node);
     }
 
-    //手动实现一个预制体
+    /** 
+     * 手动实现一个预制体
+    */
     createPrefabByNode(node: Node) {
         let prefab = new Prefab();
         prefab.data = node;
@@ -238,45 +268,50 @@ class PoolMgr {
     }
 
 
-
-    deletePool(name: string) {
-        if (this.nodePoolMap.has(name)) {
-            let pool = this.nodePoolMap.get(name);
+    /**
+     * 删除指定池
+     *
+     * @param {string} poolName
+     * @param {boolean} [releaseAsset=true] 是否释放资源
+     * @memberof PoolMgr
+     */
+    public deletePool(poolName: string,releaseAsset = true) {
+        if (this.poolMap.has(poolName)) {
+            let pool = this.poolMap.get(poolName);
             if (pool instanceof tnt.NodePool) {
                 pool.clear();
             } else {
                 pool.resize(0);
             }
-            this.nodePoolMap.delete(name);
+            this.poolMap.delete(poolName);
         }
 
-        if (this.templeteMap.has(name)) {
-            let node = this.templeteMap.get(name);
+        if (this.templeteMap.has(poolName)) {
+            let node = this.templeteMap.get(poolName);
             if (node instanceof Node || node instanceof Prefab) {
                 node.destroy();
             }
-            this.templeteMap.delete(name)
+            this.templeteMap.delete(poolName)
+        }
+
+        if(releaseAsset){
+            if (this.poolResMap.has(poolName)) {
+                let poolRes = this.poolResMap.get(poolName);
+                this.loader.releaseAsset(poolRes.path, poolRes.type, poolRes.bundle);
+                this.poolResMap.delete(poolName);
+            }
         }
     }
 
-    releasePool(name) {
-        this.deletePool(name);
-        if (this.poolResMap.has(name)) {
-            let poolRes = this.poolResMap.get(name);
-            this.loader.releaseAsset(poolRes.path, poolRes.type, poolRes.bundle);
-            this.poolResMap.delete(name);
-        }
-    }
-
-    cleanAll() {
-        this.nodePoolMap.forEach((pool) => {
+    public clear() {
+        this.poolMap.forEach((pool) => {
             if (pool instanceof tnt.NodePool) {
                 pool.clear();
             } else {
                 pool.resize(0);
             }
         });
-        this.nodePoolMap.clear();
+        this.poolMap.clear();
         this.templeteMap.forEach((node) => {
             if (node instanceof Node || node instanceof Prefab) {
                 node.destroy();
@@ -284,7 +319,7 @@ class PoolMgr {
         });
         this.templeteMap.clear();
         this.poolResMap.clear();
-        tnt.loaderMgr.releaseLoader(this.loader);
+        tnt.loaderMgr.releaseLoader(this.loader); // 一次性释放所有资源
         this._currentNodePoolName = null;
         this._currentNodePool = null;
         this._loader = null;

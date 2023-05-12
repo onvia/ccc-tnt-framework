@@ -4,8 +4,6 @@ import { DEV } from "cc/env";
 const { ccclass } = _decorator;
 
 
-
-
 declare global {
     interface ITNT {
         dragDropMgr: DragDropMgr;
@@ -26,6 +24,11 @@ declare global {
          */
         sourceData?: any;
 
+        /**
+         * 可以对显示的节点进行处理
+         *
+         * @memberof IDragAgentData
+         */
         onShow: (node: Node)=> void;
     }
 
@@ -128,8 +131,6 @@ export class DragDropMgr<SourceData = any> {
 
 
     private autoRemove = true;
-    // 拖拽敏感度
-    private _sensitivity = 10;
 
     private _delayMap = new Map<string, number>();
     private _clickEventMap = new Map<string, TouchEventFunc>();
