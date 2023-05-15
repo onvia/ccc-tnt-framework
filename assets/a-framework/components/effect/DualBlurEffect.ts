@@ -165,7 +165,10 @@ export class DualBlurEffect extends Component {
         // dstRT.reset({width: width*0.5, height: height*0.5});     
         const {width: winWidth,height: winHeight} = view.getVisibleSize();
 
-        const tempNode = tnt.captureMgr.allocCaptureNode();
+
+        const tempNode =  new Node();
+        tempNode.name = "CaptureNode";
+        tempNode.addComponent(Sprite);
         tempNode.layer = tnt.captureMgr.CAPTURE_LAYER;
         tempNode.parent = director.getScene().getComponentInChildren(Canvas).node;
         const tempSprite = tempNode.getComponent(Sprite);
@@ -197,7 +200,9 @@ export class DualBlurEffect extends Component {
         // this.debug(dstRT.readPixels(),width,height);
         // this.debug2(dstRT);
         camera.targetTexture = null;
-        tnt.captureMgr.recycleCaptureNode(tempNode);
+        tempNode.destroy();
+        tempSprite.spriteFrame.destroy();
+        tempSprite.destroy();
         return dstRT;
     }
 

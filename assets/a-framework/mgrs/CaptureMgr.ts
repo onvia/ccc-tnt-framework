@@ -26,7 +26,7 @@ let pool = new tnt.Pool<Node>({
         }
         node.name = "CaptureNode";
         let sprite = node.getComponent(Sprite);
-        sprite.spriteFrame?.texture?.destroy();
+        sprite.spriteFrame?.texture?.destroy();  // 这里会把 renderTexture 销毁
         sprite.spriteFrame?.destroy();
         sprite.spriteFrame = null;
         node.removeFromParent();

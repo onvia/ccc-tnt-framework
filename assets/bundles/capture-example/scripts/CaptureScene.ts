@@ -13,13 +13,14 @@ export class CaptureScene extends tnt.SceneBase {
     }
 
     onClickFullscreen() {
-        let captureNode = tnt.captureMgr.captureScreenSync();
+        // let captureNode = tnt.captureMgr.captureScreenSync();
+        let captureNode = tnt.captureMgr.captureScreenAsync();
         captureNode.parent = this.content;
     }
     onClickNode() {
         let node = this.getNodeByName("Sprite");
-        let captureNode = tnt.captureMgr.captureNodeSync(node);
-        // let captureNode = tnt.captureMgr.captureNodeAsync(node);
+        // let captureNode = tnt.captureMgr.captureNodeSync(node); // 同步 
+        let captureNode = tnt.captureMgr.captureNodeAsync(node); // 异步
         captureNode.parent = this.content;
     }
     onClickClear() {
