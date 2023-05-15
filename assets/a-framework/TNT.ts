@@ -22,6 +22,10 @@ declare global {
 
         startup(options?: IStartupOptions);
         enableTimer();
+
+
+        /** 引擎初始化完成事件 */
+        readonly EVENT_FRAMEWORK_INITED;
     }
 
     const tnt: ITNT;
@@ -36,7 +40,6 @@ declare global {
         soundConfig?: { [k in string]: string };
     }
 }
-
 
 tnt.startup = (options?: IStartupOptions) => {
     tnt.options = options;

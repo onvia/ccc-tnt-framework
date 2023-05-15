@@ -10,4 +10,9 @@ export const SceneConfig = [
         button: "弹窗",
         bundle: "window-example"
     },
+    {
+        scene: "CaptureScene",
+        button: "截屏",
+        bundle: "capture-example"
+    },
 ]

@@ -46,6 +46,4 @@ export class PauseWindow extends tnt.UIWindow<PauseWindowOptions> {
         console.log(`PauseWindow-> onCloseCallback`);
 
     }
-
-
 }

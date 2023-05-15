@@ -13,22 +13,16 @@ declare global {
         type DualBlurEffect = InstanceType<typeof DualBlurEffect>;
     }
 }
- 
+
 @ccclass('DualBlurEffect')
 export class DualBlurEffect extends Component {
   
     @property(EffectAsset)
     effectAsset: EffectAsset = null;
 
-    
-    private _offset: number = 5;
-    private _iteration: number = 3;
-    private _scale: number = 0.5;
-
-
     materialUp: Material = null;
     materialDown: Material = null;
-
+    renderTexturePool: tnt.Pool<RenderTexture> = null;
     start () {
         if(!this.effectAsset){
             this.effectAsset = EffectAsset.get("../a-framework/resources/shader/effect/2d_dual_kawase_blur");
@@ -47,11 +41,17 @@ export class DualBlurEffect extends Component {
             defines: [{USE_TEXTURE: true},{USE_PIXEL_ALIGNMENT: true,}]
         });
         
+        this.renderTexturePool = new tnt.Pool<RenderTexture>({
+            maxCount: 8,
+            newObject() {
+                return new RenderTexture();
+            },
+        });
     }
 
     captureScreen(offset: number, iteration: number){
         const {width,height} = view.getVisibleSize();
-        this.cache.length = 0;
+        // this.cache.length = 0;
       
         let _buffer = this.blur(offset,iteration,1);
         
@@ -81,9 +81,9 @@ export class DualBlurEffect extends Component {
 
         tempNode.parent = director.getScene().getComponentInChildren(Canvas).node;
 
-        this.cache.forEach((node)=>{
-            node.active = true;
-        });
+        // this.cache.forEach((node)=>{
+        //     node.active = true;
+        // });
         return tempNode;
     }
     
@@ -96,8 +96,8 @@ export class DualBlurEffect extends Component {
         this.materialUp.setProperty('offset', offset);
 
         // 创建临时 RenderTexture
-        let srcRT = tnt.renderTextureMgr.create();
-        let lastRT = tnt.renderTextureMgr.create();
+        let srcRT = this.renderTexturePool.get();
+        let lastRT = this.renderTexturePool.get();
         this.getRenderTexture(lastRT);
 
         // // 记录升降纹理时纹理尺寸
@@ -119,8 +119,8 @@ export class DualBlurEffect extends Component {
 
         let _buffer = lastRT.readPixels(0,0,width, height);
 
-        tnt.renderTextureMgr.recycle(srcRT);
-        tnt.renderTextureMgr.recycle(lastRT);
+        this.renderTexturePool.put(srcRT);
+        this.renderTexturePool.put(lastRT);
        
         return _buffer;
     }
@@ -129,7 +129,7 @@ export class DualBlurEffect extends Component {
         let camera = tnt.captureMgr.getCaptureCamera("BLUR_CAPTURE_CAMERA");
         camera.node.active = true;
         if(!out){
-            out = tnt.renderTextureMgr.create();
+            out = this.renderTexturePool.get();
         }
         const {width,height} = view.getVisibleSize();
         // 防止重复重置
@@ -158,7 +158,6 @@ export class DualBlurEffect extends Component {
 
         // 获取图像宽高
         const { width, height } = size ?? { width: srcRT.width, height: srcRT.height };
-        // console.log(`DualBlurEffect-> `,width, height);
         
         if(dstRT.width != width || dstRT.height != height){
             dstRT.reset({width, height});
@@ -202,60 +201,60 @@ export class DualBlurEffect extends Component {
         return dstRT;
     }
 
-    private cache: Node[] = [];
+    // private cache: Node[] = [];
 
-    private debug(_buffer,width,height){
+    // private debug(_buffer,width,height){
 
-        const tempNode = new Node();
-        tempNode.layer = Layers.Enum.UI_2D;
-        const tempSprite = tempNode.addComponent(Sprite);
-        tempSprite.sizeMode = Sprite.SizeMode.RAW;
+    //     const tempNode = new Node();
+    //     tempNode.layer = Layers.Enum.UI_2D;
+    //     const tempSprite = tempNode.addComponent(Sprite);
+    //     tempSprite.sizeMode = Sprite.SizeMode.RAW;
       
-        let img = new ImageAsset();
-        img.reset({
-            _data: _buffer,
-            width: width,
-            height: height,
-            format: Texture2D.PixelFormat.RGBA8888,
-            _compressed: false
-        });
-        let texture = new Texture2D();
-        texture.image = img;
-        let sf = new SpriteFrame();
-        sf.texture = texture;
-        sf.packable = false;
-        sf.flipUVY = true;
-        if (sys.isNative && (sys.os === sys.OS.IOS || sys.os === sys.OS.OSX)) {
-            sf.flipUVY = false;
-        }
-        tempSprite.spriteFrame  = sf;
+    //     let img = new ImageAsset();
+    //     img.reset({
+    //         _data: _buffer,
+    //         width: width,
+    //         height: height,
+    //         format: Texture2D.PixelFormat.RGBA8888,
+    //         _compressed: false
+    //     });
+    //     let texture = new Texture2D();
+    //     texture.image = img;
+    //     let sf = new SpriteFrame();
+    //     sf.texture = texture;
+    //     sf.packable = false;
+    //     sf.flipUVY = true;
+    //     if (sys.isNative && (sys.os === sys.OS.IOS || sys.os === sys.OS.OSX)) {
+    //         sf.flipUVY = false;
+    //     }
+    //     tempSprite.spriteFrame  = sf;
 
-        tempNode.parent = director.getScene().getComponentInChildren(Canvas).node;
+    //     tempNode.parent = director.getScene().getComponentInChildren(Canvas).node;
 
-        this.cache.push(tempNode);
-        tempNode.active = false;
-    }
-    private debug2(rt){
-        const tempNode = new Node();
-        tempNode.layer = Layers.Enum.UI_2D;
-        const tempSprite = tempNode.addComponent(Sprite);
-        tempSprite.sizeMode = Sprite.SizeMode.RAW;
+    //     this.cache.push(tempNode);
+    //     tempNode.active = false;
+    // }
+    // private debug2(rt){
+    //     const tempNode = new Node();
+    //     tempNode.layer = Layers.Enum.UI_2D;
+    //     const tempSprite = tempNode.addComponent(Sprite);
+    //     tempSprite.sizeMode = Sprite.SizeMode.RAW;
       
     
-        let sf = new SpriteFrame();
-        sf.texture = rt;
-        sf.packable = false;
-        sf.flipUVY = true;
-        if (sys.isNative && (sys.os === sys.OS.IOS || sys.os === sys.OS.OSX)) {
-            sf.flipUVY = false;
-        }
-        tempSprite.spriteFrame  = sf;
+    //     let sf = new SpriteFrame();
+    //     sf.texture = rt;
+    //     sf.packable = false;
+    //     sf.flipUVY = true;
+    //     if (sys.isNative && (sys.os === sys.OS.IOS || sys.os === sys.OS.OSX)) {
+    //         sf.flipUVY = false;
+    //     }
+    //     tempSprite.spriteFrame  = sf;
 
-        tempNode.parent = director.getScene().getComponentInChildren(Canvas).node;
+    //     tempNode.parent = director.getScene().getComponentInChildren(Canvas).node;
 
-        this.cache.push(tempNode);
-        tempNode.active = false;
-    }
+    //     this.cache.push(tempNode);
+    //     tempNode.active = false;
+    // }
 }
 
 tnt.DualBlurEffect = DualBlurEffect;

@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, find, Camera, Layers, view, Color, Sprite, SpriteFrame, ImageAsset, Texture2D, Rect, UITransform, Size, sys, instantiate, RenderFlow, game, director, renderer, isValid, Director } from 'cc';
+import { _decorator, Component, Node, find, Camera, Layers, view, Color, Sprite, SpriteFrame, ImageAsset, Texture2D, Rect, UITransform, Size, sys, instantiate, director, isValid, Director, UIRenderer, RenderTexture } from 'cc';
 const { ccclass, property } = _decorator;
 
 
@@ -26,7 +26,8 @@ let pool = new tnt.Pool<Node>({
         }
         node.name = "CaptureNode";
         let sprite = node.getComponent(Sprite);
-        sprite.spriteFrame.destroy();
+        sprite.spriteFrame?.texture?.destroy();
+        sprite.spriteFrame?.destroy();
         sprite.spriteFrame = null;
         node.removeFromParent();
         return true;
@@ -39,7 +40,7 @@ class CaptureMgr {
     private _captureLayer: number = -1;
     public get CAPTURE_LAYER(): number {
         if (this._captureLayer != -1) {
-            return this._captureLayer;
+            return 1 << this._captureLayer;
         }
 
         // 跳过 索引 0
@@ -94,7 +95,7 @@ class CaptureMgr {
         camera.visibility = Layers.Enum.UI_2D;
         cameraNode.setSiblingIndex(999);
 
-        cameraNode.layer = Layers.Enum.NONE;
+        cameraNode.layer = Layers.Enum.DEFAULT;
         cameraNode.name = name;
 
         cameraNode.active = false;
@@ -118,25 +119,31 @@ class CaptureMgr {
         return [copyNode, rect];
     }
 
-   
+
     /**
      * 异步截取单个节点
      *
      * @param {Node} node
+     * @param {Runnable1<Node>} [callback]
      * @param {Camera} [camera]
      * @return {*} 
      * @memberof CaptureMgr
      */
-    captureNodeAsync(node: Node,camera?: Camera) {
+    captureNodeAsync(node: Node, callback?: Runnable1<Node>, camera?: Camera) {
 
         let [copyNode, rect] = this.createCopyNode(node);
 
+        let render = copyNode.getComponent(UIRenderer);
+        // 更新一下 脏数据，否则无法渲染
+        render.updateRenderer();
+        director.emit(Director.EVENT_AFTER_UPDATE);
         return this.captureScreenAsync(rect, {
-            layer: this.CAPTURE_LAYER, 
+            layer: this.CAPTURE_LAYER,
             camera: camera,
-            callback: () => {
+            callback: (node) => {
                 // 截图完成销毁 拷贝出来的节点
                 copyNode.destroy();
+                callback?.(node);
             }
         });
     }
@@ -150,8 +157,10 @@ class CaptureMgr {
      */
     captureNodeSync(node: Node, camera?: Camera) {
         let [copyNode, rect] = this.createCopyNode(node);
-
-        let captureNode = this.captureScreenSync(rect, { layer: this.CAPTURE_LAYER,camera: camera });
+        let render = copyNode.getComponent(UIRenderer);
+        // 更新一下 脏数据，否则无法渲染
+        render.updateRenderer();
+        let captureNode = this.captureScreenSync(rect, { layer: this.CAPTURE_LAYER, camera: camera });
         copyNode.destroy();
         return captureNode;
     }
@@ -162,17 +171,17 @@ class CaptureMgr {
      * 异步截取屏幕
      *
      * @param {Rect} [rect]
-     * @param {{ layer?: Layers.Enum,callback?: Runnable }} [options]
+     * @param {{ layer?: Layers.Enum,callback?: Runnable1<Node> }} [options]
      * @return {*} 
      * @memberof CaptureMgr
      */
-    captureScreenAsync(rect?: Rect, options?: { layer?: Layers.Enum, callback?: Runnable,camera?: Camera }) {
+    captureScreenAsync(rect?: Rect, options?: { layer?: Layers.Enum, callback?: Runnable1<Node>, camera?: Camera }) {
         let camera = options?.camera;
-        if(!camera){
+        if (!camera) {
             camera = this.getCaptureCamera();
-        }        
+        }
         camera.node.active = true;
-        let rt = tnt.renderTextureMgr.create();
+        let rt = new RenderTexture();
         const { width, height } = view.getVisibleSize();
         if (!rect) {
             rect = new Rect(0, 0, width, height)
@@ -217,10 +226,11 @@ class CaptureMgr {
             sprite.spriteFrame = sf;
             camera.node.active = false;
             node.getComponent(UITransform)?.setContentSize(rect.size);
-            // 截图完成回收 rt
-            tnt.renderTextureMgr.recycle(rt);
+            // // 截图完成回收 rt
+            // tnt.renderTextureMgr.recycle(rt);
+            rt.destroy();
 
-            options?.callback?.();
+            options?.callback?.(node);
         });
         return node;
     }
@@ -233,25 +243,18 @@ class CaptureMgr {
      * @return {*} 
      * @memberof CaptureMgr
      */
-    captureScreenSync(rect?: Rect, options?: { layer?: Layers.Enum,camera?: Camera }) {
+    captureScreenSync(rect?: Rect, options?: { layer?: Layers.Enum, camera?: Camera }) {
         let camera = options?.camera;
         if (!camera) {
             camera = this.getCaptureCamera();
             camera.node.active = true;
         }
-        let rt = camera.targetTexture;
-        let isMgrCreated = false;
-        if (!rt) {
-            rt = tnt.renderTextureMgr.create();
-            camera.targetTexture = rt;
-            isMgrCreated = true;
-        }
+        let rt = new RenderTexture();
         const { width, height } = view.getVisibleSize();
 
         if (!rect) {
             rect = new Rect(0, 0, width, height)
         }
-
         // //  防止重复重置
         if (rt.width != width || rt.height != height) {
             rt.reset({ width, height });
@@ -259,6 +262,7 @@ class CaptureMgr {
 
         let node = pool.get();
         node.layer = Layers.Enum.UI_2D;
+        camera.targetTexture = rt;
 
         // 摄像机设置为 只显示截图图层
         if (options?.layer) {
@@ -268,6 +272,7 @@ class CaptureMgr {
         }
 
         // game.step();
+        // director.emit(Director.EVENT_AFTER_UPDATE);
         director.root.frameMove(0);
         let _buffer = rt.readPixels(rect.x, rect.y, rect.width, rect.height);
         let sprite = node.getComponent(Sprite);
@@ -294,10 +299,9 @@ class CaptureMgr {
         let trans = node.getComponent(UITransform);
         trans.width = rect.width;
         trans.height = rect.height;
-
-        if (isMgrCreated) {
-            tnt.renderTextureMgr.recycle(rt);
-        }
+        
+        // tnt.renderTextureMgr.recycle(rt);
+        rt.destroy();
 
         return node;
     }

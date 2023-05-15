@@ -1,4 +1,6 @@
 
+import { EDITOR } from 'cc/env';
+
 import './TNT';
 
 import "./decorators/_decorator";
@@ -44,3 +46,7 @@ import "./utils/TweenUtils";
 import "./utils/DebugUtils";
 import "./task/TaskMgr";
 import "./task/LoadingTaskQueue";
+
+if(!EDITOR){
+    tnt.eventMgr.emit(tnt.EVENT_FRAMEWORK_INITED);
+}
