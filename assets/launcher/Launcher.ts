@@ -22,18 +22,19 @@ export class Launcher extends Component {
 
     start() {
         console.log(`Launcher-> 加载基础 bundle`);
-        
-        // 首先加载框架 
+
+        // 首先加载框架 Bundle
         assetManager.loadBundle("framework", () => {
+            // framework bundle 加载完之后就可以使用 tnt 了
             // 添加任务： 加载 游戏 bundle
-            tnt.taskMgr.addTask((progress,done)=>{
+            tnt.taskMgr.addTask((progress, done) => {
                 tnt.AssetLoader.loadBundle("main-scene", () => {
                     done();
                 });
             });
-            
+
             // 执行任务
-            tnt.taskMgr.startTasksParallel(()=>{
+            tnt.taskMgr.startTasksParallel(() => {
                 this.onLaunch();
             });
         });
@@ -41,7 +42,7 @@ export class Launcher extends Component {
 
     onLaunch() {
         console.log(`Launcher-> 启动`);
-        
+
         // 多点触控
         macro.ENABLE_MULTI_TOUCH = true;
         // 启用键盘组合键
@@ -61,7 +62,7 @@ export class Launcher extends Component {
     }
 
     onClickToExample() {
-        tnt.sceneMgr.to('MainScene',{bundle: 'main-scene'});
+        tnt.sceneMgr.to('MainScene', { bundle: 'main-scene' });
     }
 
     protected onEnable?() {

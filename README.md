@@ -1,16 +1,72 @@
+
 # CocosCreator 3.7.x 游戏开发框架
+- [CocosCreator 3.7.x 游戏开发框架](#cocoscreator-37x-游戏开发框架)
+    - [介绍](#介绍)
+    - [基类](#基类)
+      - [`GComponent`](#gcomponent)
+      - [`UIBase`](#uibase)
+    - [资源管理](#资源管理)
+    - [场景管理](#场景管理)
+    - [UI 管理](#ui-管理)
+    - [输入](#输入)
+      - [类 `KeyboardMgr`](#类-keyboardmgr)
+      - [类 `MouseMgr`](#类-mousemgr)
+      - [类 `TouchMgr`](#类-touchmgr)
+    - [事件管理器](#事件管理器)
+    - [全局定时器](#全局定时器)
+    - [池管理](#池管理)
+    - [拖放管理器](#拖放管理器)
+    - [截图管理器](#截图管理器)
+    - [按钮通用事件管理器](#按钮通用事件管理器)
+    - [红点管理](#红点管理)
+    - [网络管理器](#网络管理器)
+    - [多语言](#多语言)
+    - [TiledMap](#tiledmap)
+    - [MVVM](#mvvm)
+    - [装饰器](#装饰器)
+    - [寻路](#寻路)
+    - [相机控制](#相机控制)
+      - [相机跟随](#相机跟随)
+      - [相机缩放/双指缩放](#相机缩放双指缩放)
+      - [屏幕震动](#屏幕震动)
+    - [热更新](#热更新)
+    - [活动管理](#活动管理)
+    - [工具类](#工具类)
+    - [引擎扩展](#引擎扩展)
+    - [周边工具](#周边工具)
+      - [excel导表](#excel导表)
+      - [帧动画打包](#帧动画打包)
+      - [热更新](#热更新-1)
+      - [protobuf](#protobuf)
+      - [psd转预制体](#psd转预制体)
+      - [中文文件名转拼音](#中文文件名转拼音)
+      - [图片压缩](#图片压缩)
+    - [框架插件](#框架插件)
+    - [参考](#参考)
+      - [AssetLoader](#assetloader)
+      - [MVVM](#mvvm-1)
+      - [其他](#其他)
 
 ### 介绍
-本框架将所有管理者单例和大部分类都挂载到了全局变量 `tnt` 上，
+
 使用本框架在开发过程中是远离编辑器，不在编辑器中挂载脚本到节点，但是在运行时会自动挂载脚本到节点。
-游戏启动需要有一个启动类和启动场景，将启动类挂载到启动场景中，在后续使用过程中，基本不再需要手动在节点挂载组件了。详细的使用可以启动实例 Launcher.scene 查看。
+框架所有管理者单例和大部分类都挂载到了全局变量 `tnt` 上，
+游戏启动需要有一个启动类和启动场景，将启动类挂载到启动场景中，在后续使用过程中，基本不再需要手动在节点挂载组件了。
 
+框架启动需要实现 `IStartupOptions`  
+详细的使用可以启动实例 Launcher.scene 查看，脚本同名。
 
+```
+// 启动框架 
+tnt.startup(startupOptions);
+
+```
 
 
 
 ### 基类
-#### `GComponent` 继承自 `Component`
+#### `GComponent` 
+继承自 `Component`  
 
 属性
 prefabUrl，bundle：需要子类搭配 【类装饰器】 @prefabUrl("xxx/xxx","bundle") 使用。  
@@ -19,9 +75,9 @@ loaderKey： 属性为 资源管理器的键值，用以保证在资源能够正
 
 
 
-####  `UIBase` 继承自 `GComponent`
+####  `UIBase` 
+继承自 `GComponent`
 
-类 `UIBase`  
 实现了大部分 `ComponentUtils` 中的功能
 
 `UIBase` 的子类
@@ -95,7 +151,7 @@ export class PauseWindow extends tnt.UIPopup<PauseWindowOptions> {
 
 
 
-### 资源管理器
+### 资源管理
 `AssetLoader` 资源的加载释放管理，每个模块或者每个界面都可以实例化一个加载器，在退出模块或者关闭弹窗的时候一次性释放所依赖的资源，而不影响其他模块或弹窗的相同依赖资源，在本框架中，每个弹窗都持有了一个 加载器，在当前弹窗加载资源时直接使用弹窗内置的 加载器  
 `LoaderMgr` 加载器管理类，通过任意键值获取或实例化一个加载器  
 `ResourcesMgr` 加载器的顶级封装，相当于 `LoaderMgr` + `AssetLoader` 的结合，只是为了方便使用
@@ -109,7 +165,7 @@ export class PauseWindow extends tnt.UIPopup<PauseWindowOptions> {
 
 
 
-### UI 管理器
+### UI 管理
 
 类 `UIMgr` 
 
@@ -184,7 +240,7 @@ tnt.uiMgr.showDebugToast("...");
 > 如果你可以保证正确的引用依赖，可以使用 showWindowByClass 
 ---
 ### 输入
-类 `KeyboardMgr`  
+#### 类 `KeyboardMgr`  
 ```
 // 添加监听和取消监听尽量保证成对出现，被监听的对象需要实现 IKey 接口
 tnt.keyboard.on(keyboardImpl); // 监听 
@@ -198,7 +254,7 @@ tnt.keyboard.enableCombination = true;
 ```
 
 
-类 `MouseMgr`  
+#### 类 `MouseMgr`  
 ```
 // 添加监听和取消监听尽量保证成对出现，被监听的对象需要实现 IMouse 接口
 tnt.mouse.on(mouseImpl); // 监听
@@ -206,7 +262,7 @@ tnt.mouse.off(mouseImpl); // 取消监听
 
 ```
 
-类 `TouchMgr`  
+#### 类 `TouchMgr`  
 ```
 // 添加监听和取消监听尽量保证成对出现，被监听的对象需要实现 ITouch 接口
 tnt.touch.on(touchImpl); // 监听
@@ -245,7 +301,7 @@ tnt.touch.off(touchImpl);  // 取消监听
 ### 拖放管理器
 类 `DragDropMgr`  
 方便快捷的实现拖放
-具体使用请查看脚本 `DragDropScene.scene`，场景同名  
+具体使用请查看脚本 `DragDropScene`，场景同名  
 效果如下
 
 ![img1](./readme-img/img3.gif)
@@ -256,16 +312,12 @@ tnt.touch.off(touchImpl);  // 取消监听
 业务层一行代码实现全屏截图或指定节点截图
 具体使用请查看脚本 `CaptureScene`，场景同名
 
-### 按钮事件管理器
+### 按钮通用事件管理器
 类 `BtnCommonEventMgr` 
 内置按钮音效插件
 
+
 ### 红点管理
-
-### TiledMap
-类 `TiledMapProxy`  
-
-### MVVM
 ### 网络管理器
 类 `NetMgr`
 
@@ -286,6 +338,10 @@ tnt.touch.off(touchImpl);  // 取消监听
     |-- text
         |--zh.json  
 ```
+### TiledMap
+类 `TiledMapProxy`  
+
+### MVVM
 
 ### 装饰器
 `./assets/framework/decorators/_decorator.ts`
@@ -323,7 +379,7 @@ tnt.touch.off(touchImpl);  // 取消监听
 
 1. Node 添加属性 draggable, 可直接设置为拖拽节点
 2. Button 添加方法 setSoundName ，设置点击音效
-3. visible 
+3. ~~visible 轻量级的 active~~
 4. 快速访问组件
 5. vec2 增加方法 copyAsVec3
 6. vec3 增加方法 copyAsVec2
