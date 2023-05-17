@@ -8,7 +8,7 @@ const { pluginMgr } = tnt._decorator;
 type WindowShownCallback<T extends Key_Golbal_Window_Type> = (window: Key_Golbal_UI_Window_Ctor<T>) => void;
 
 // type ShowPluginCallback<T extends tnt.UIPanel> = (ins: T,isInit: boolean)=> void;
-type UIQueueRemoveFilter<T extends Key_Golbal_Window_Type> =  (opts: UIQueueOpts<T>, index: number, arr: Array<UIQueueOpts<T>>) => boolean;
+type UIQueueRemoveFilter<T extends Key_Golbal_Window_Type> = (opts: UIQueueOpts<T>, index: number, arr: Array<UIQueueOpts<T>>) => boolean;
 type AssetLoader = tnt.AssetLoader;
 declare global {
 
@@ -285,13 +285,6 @@ export class UIMgr extends tnt.EventMgr {
         return node;
     }
 
-    // setMaskPool(uiMaskPool?: IPoolOptions<Node>){
-    //     maskNodePool.initialize(uiMaskPool || maskNodePoolOptions);
-    // }
-    // resetMaskPool(){
-    //     maskNodePool.initialize(maskNodePoolOptions);
-    // }
-
     /**
      * 依次显示的界面队列
      * @param opts 
@@ -398,11 +391,16 @@ export class UIMgr extends tnt.EventMgr {
         let { prefabUrl, bundle } = tnt.resourcesMgr._parseAssetUrl(_windowCtor, param);
         this.loader.preload(prefabUrl, Prefab, bundle);
     }
-
+    
     /**
      * 显示弹窗
-     * @param clazz 
-     * @param optionsOrCallback 
+     *
+     * @template T
+     * @param {T} clazz
+     * @param {Key_Golbal_UI_Window_Options<T>} [options]
+     * @param {WindowShownCallback<T>} [callback]
+     * @return {*} 
+     * @memberof UIMgr
      */
     public showWindow<T extends Key_Golbal_Window_Type>(clazz: T, options?: Key_Golbal_UI_Window_Options<T>, callback?: WindowShownCallback<T>) {
         let _clazz: GConstructor<tnt.UIWindowBase> = null;
@@ -423,6 +421,29 @@ export class UIMgr extends tnt.EventMgr {
                 return;
             }
         }
+
+        this.showWindowByClass(_clazz, options, callback);
+    }
+
+    /**
+     * 显示弹窗
+     *
+     * @template Options
+     * @template T
+     * @param {GConstructor<T>} clazz
+     * @param {Options} [options]
+     * @param {(window: T) => void} [callback]
+     * @return {*} 
+     * @memberof UIMgr
+     */
+    public showWindowByClass<Options, T extends tnt.UIWindowBase<Options> = any>(clazz: GConstructor<T>, options?: Options, callback?: (window: T) => void) {
+        let _clazz: GConstructor<tnt.UIWindowBase<Options>> = clazz;
+        let name = js.getClassName(_clazz);
+        if (!name) {
+            console.error(`UIMgr-> `, _clazz, "没有设置 类名，请使用类装饰器 @ccclass('xxx') 注入类名");
+            return;
+        }
+
 
         if (this.isShowing(name)) {
             let _window = this.getWindow(name);
@@ -445,7 +466,6 @@ export class UIMgr extends tnt.EventMgr {
 
         tnt.resourcesMgr.loadPrefabNode(this.loader, _clazz, options).then((_window) => {
             _window.root = rootNodePool.get();
-            // view.mask = maskNodePool.get();
             _window.mask = this.maskLayerController.onWindowCreateAfter(_window);
             // let uiOpacity = view.mask.getComponent(UIOpacity);
             // uiOpacity.opacity = 0; // 在动态加载阶段不显示蒙版
@@ -462,7 +482,7 @@ export class UIMgr extends tnt.EventMgr {
                 _window.loaderKey = _window.name.substring(index, _window.name.length) + "" + _window.uuid;
             }
             _window.node.parent = _window.root;
-            this._onWindowCreated(_window, windowName);
+            this._onPluginWindowCreated(_window, windowName);
             // view.onStart(); // 被 start 调用了
             // uiOpacity.opacity = view._maskOpacity;
             this._addToMgr(_window);
@@ -478,7 +498,7 @@ export class UIMgr extends tnt.EventMgr {
             let top = this._stack[this._stack.length - 1];
             let topName: string = this._getClassName(top);
             if (topName === name) {
-                if(!isTop){
+                if (!isTop) {
                     this._playActiveAnimation(top);
                 }
                 break;
@@ -523,7 +543,7 @@ export class UIMgr extends tnt.EventMgr {
                 const view = array[i];
                 if (view && view.node) {
                     let windowName = this._getClassName(view);
-                    this._onBeCleanByPlugins(view, windowName);
+                    this._onPluginsWindowBeClean(view, windowName);
                     view._unregisterClickClose();
 
                     this.destroyUI(view);
@@ -550,7 +570,7 @@ export class UIMgr extends tnt.EventMgr {
             let topWindow = this._stack[this._stack.length - 1];
             topWindow.onFreeze?.();
 
-            topWindow?._playMaskFadeOut();
+            topWindow?._playHideMask();
             if (window._isHideOtherWindows) {
                 this._playFreezeAnimation(topWindow);
             }
@@ -570,7 +590,7 @@ export class UIMgr extends tnt.EventMgr {
                 topWindow = this._stack[this._stack.length - 1];
                 this._playActiveAnimation(topWindow);
             }
-            topWindow?._playMaskFadeIn();
+            topWindow?._playShowMask();
         }
         let _activeTopWindow: Runnable = null;
         if (param) {
@@ -607,8 +627,8 @@ export class UIMgr extends tnt.EventMgr {
         }
 
 
+        _activeTopWindow?.();
         this._playCloseAnimation(reWindow, () => {
-            _activeTopWindow?.();
         });
         this._removeCurUI(reWindow);
         return reWindow;
@@ -650,7 +670,7 @@ export class UIMgr extends tnt.EventMgr {
     private _playShowAnimation(window: tnt.UIWindowBase) {
         let windowName = this._getClassName(window);
 
-        this._onShowBeforByPlugins(window, windowName);
+        this._onPluginsWindowShowBefor(window, windowName);
         this.emit(this.Event.WILL_SHOW_VIEW, windowName);
 
         let showEndFunc = () => {
@@ -660,7 +680,7 @@ export class UIMgr extends tnt.EventMgr {
             window._exeShowListeners();
             window._registerAutoClose();
             window._registerClickClose();
-            this._onShowAfterByPlugins(window, windowName);
+            this._onPluginsWindowShowAfter(window, windowName);
             this.emit(this.Event.SHOWN_VIEW, windowName);
 
             this.closeBlockInput();
@@ -668,7 +688,7 @@ export class UIMgr extends tnt.EventMgr {
 
 
         window.onActive();
-        window._playMaskFadeIn();
+        window._playShowMask();
         window._playShowAnimation(ACTION_TAG, showEndFunc.bind(this));
     }
 
@@ -685,7 +705,7 @@ export class UIMgr extends tnt.EventMgr {
             view.onCloseCallback();
             view._exeCloseListeners();
 
-            this._onCloseByPlugins(view, windowName);
+            this._onPluginsWindowClose(view, windowName);
 
             this.destroyUI(view);
 
@@ -694,10 +714,10 @@ export class UIMgr extends tnt.EventMgr {
             view = null;
         }
         if (useAnimation) {
-            view._playMaskFadeOut();
+            view._playHideMask();
             view._playCloseAnimation(ACTION_TAG, closeEndFunc.bind(this));
         } else {
-            view._playMaskFadeOut(0);
+            view._playHideMask(0);
             closeEndFunc();
         }
     }
@@ -718,12 +738,11 @@ export class UIMgr extends tnt.EventMgr {
         let isReleaseWindowPrefab = view._isReleaseWindowPrefab;
 
         if (view.mask) {
-            // maskNodePool.put(view.mask);
             view.mask.removeFromParent();
             this.maskLayerController.onWindowDestroy(view, view.mask);
         }
         rootNodePool.put(view.root);
-        view.onDestroyUI();
+        view.onDestroyWindow();
         view.destroy();
         view.node.destroy();
 
@@ -734,7 +753,7 @@ export class UIMgr extends tnt.EventMgr {
         tnt.loaderMgr.releaseLoader(view.loaderKey);
 
         let windowName = this._getClassName(view);
-        this._onDestroyByPlugins(view, windowName);
+        this._onPluginsWindowDestroy(view, windowName);
 
         // 销毁弹窗图集
         // @ts-ignore
@@ -755,7 +774,7 @@ export class UIMgr extends tnt.EventMgr {
             return;
         }
         window.onActive();
-        window._playMaskFadeIn();
+        window._playShowMask();
 
         let showEndFunc = () => {
             window.onActiveAfter();
@@ -1182,36 +1201,36 @@ export class UIMgr extends tnt.EventMgr {
         });
     }
 
-    private _onWindowCreated(view: tnt.UIWindowBase, name: string) {
+    private _onPluginWindowCreated(view: tnt.UIWindowBase, name: string) {
         _uiWindowPlugins.forEach((listener) => {
             listener.onWindowCreated?.(view, name);
         });
     }
 
-    private _onShowBeforByPlugins(view: tnt.UIWindowBase, name: string) {
+    private _onPluginsWindowShowBefor(view: tnt.UIWindowBase, name: string) {
         _uiWindowPlugins.forEach((listener) => {
             listener.onWindowShowBefor?.(view, name);
         });
     }
 
-    private _onShowAfterByPlugins(view: tnt.UIWindowBase, name: string) {
+    private _onPluginsWindowShowAfter(view: tnt.UIWindowBase, name: string) {
         _uiWindowPlugins.forEach((listener) => {
             listener.onWindowShowAfter?.(view, name);
         });
     }
 
-    private _onCloseByPlugins(view: tnt.UIWindowBase, name: string) {
+    private _onPluginsWindowClose(view: tnt.UIWindowBase, name: string) {
         _uiWindowPlugins.forEach((listener) => {
             listener.onWindowClose?.(view, name);
         });
     }
-    private _onBeCleanByPlugins(view: tnt.UIWindowBase, name: string) {
+    private _onPluginsWindowBeClean(view: tnt.UIWindowBase, name: string) {
         _uiWindowPlugins.forEach((listener) => {
             listener.onBeClean?.(view, name);
         });
     }
 
-    private _onDestroyByPlugins(view: tnt.UIWindowBase, name: string) {
+    private _onPluginsWindowDestroy(view: tnt.UIWindowBase, name: string) {
         _uiWindowPlugins.forEach((listener) => {
             listener.onWindowDestroy?.(view, name);
         });

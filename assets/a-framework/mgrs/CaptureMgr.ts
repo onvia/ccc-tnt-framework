@@ -103,6 +103,8 @@ class CaptureMgr {
     }
 
     private createCopyNode(node: Node): [Node, Rect] {
+        // 现在只能对单个节点进行截图
+        // TODO 对节点树进行截图
         let trans = node.getComponent(UITransform);
         var width = trans.width;
         var height = trans.height;

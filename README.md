@@ -1,10 +1,10 @@
 # CocosCreator 3.7.x 游戏开发框架
 
 ### 介绍
-本框架不是以组件驱动的方式进行开发，而是以脚本驱动。
+本框架将所有管理者单例和大部分类都挂载到了全局变量 `tnt` 上，
+使用本框架在开发过程中是远离编辑器，不在编辑器中挂载脚本到节点，但是在运行时会自动挂载脚本到节点。
 游戏启动需要有一个启动类和启动场景，将启动类挂载到启动场景中，在后续使用过程中，基本不再需要手动在节点挂载组件了。详细的使用可以启动实例 Launcher.scene 查看。
 
-本框架将所有管理者单例和大部分类都挂载到了全局变量 `tnt` 上，
 
 
 
@@ -13,9 +13,9 @@
 #### `GComponent` 继承自 `Component`
 
 属性
-prefabUrl，bundle ，需要子类搭配 【类装饰器】 @prefabUrl("xxx/xxx","bundle") 使用  
-loaderKey 属性为 资源管理器的键值，用以保证在资源能够正确的加载和释放，尽量不要手动去设置这个值  
-为保持接口风格统一 使用 onStart 代理 start ， 也可以直接使用 start ， 不影响。
+prefabUrl，bundle：需要子类搭配 【类装饰器】 @prefabUrl("xxx/xxx","bundle") 使用。  
+loaderKey： 属性为 资源管理器的键值，用以保证在资源能够正确的加载和释放，尽量不要手动去设置这个值  
+为保持接口风格统一，使用 onStart 代理 start ， 也可以直接使用 start ，不影响。
 
 
 
@@ -61,8 +61,8 @@ declare global {
   }
 }
 
-//@prefabUrl("window-example#prefabs/PauseWindow")// 预制体路径
-@prefabUrl("prefabs/window/PauseWindow","window-example") // 预制体路径，两种写法都可以
+//@prefabUrl("window-example#prefabs/PauseWindow")// 预制体路径  写法1 
+@prefabUrl("prefabs/window/PauseWindow","window-example") // 预制体路径，写法2 两种写法都可以
 @ccclass('PauseWindow')
 export class PauseWindow extends tnt.UIPopup<PauseWindowOptions> {
     
@@ -118,7 +118,7 @@ export class PauseWindow extends tnt.UIPopup<PauseWindowOptions> {
 
 ![img1](./readme-img/img1.gif)
 
- 
+
 ```
    tnt.uiMgr.showWindow('PauseWindow', { pauseBgm: true }, (pauseWindow) => {
 
@@ -178,18 +178,23 @@ tnt.uiMgr.showDebugToast("...");
  ```
 7. 插件,可参考 `TopMenuBarPlugin` 和 `UIDebugToastPlugin` 的使用
 
+
+---
+> 以上  showWindow 使用字符串的方式是为了减少脚本的相互引用，以便跨 Bundle 调用弹窗  
+> 如果你可以保证正确的引用依赖，可以使用 showWindowByClass 
+---
 ### 输入
 类 `KeyboardMgr`  
 ```
 // 添加监听和取消监听尽量保证成对出现，被监听的对象需要实现 IKey 接口
-tnt.keyboard.on(keyboardImpl); // 监听
+tnt.keyboard.on(keyboardImpl); // 监听 
 tnt.keyboard.off(keyboardImpl); // 取消监听 
 
 
 // 组合键 控制键为 [KeyCode.CTRL_LEFT, KeyCode.SHIFT_LEFT, KeyCode.ALT_LEFT]
 tnt.keyboard.enableCombination = true;
 
-具体使用方式参考 KeyBoardListener
+具体使用方式参考 `KeyBoardListener`
 ```
 
 
@@ -235,16 +240,21 @@ tnt.touch.off(touchImpl);  // 取消监听
 
 ### 池管理
 类 `PoolMgr`
-
+对 Pool 进行统一管理，方便任意地方去使用
 
 ### 拖放管理器
 类 `DragDropMgr`  
 方便快捷的实现拖放
-具体使用请查看，场景 `DragDropScene.scene`， 脚本 `DragDropScene.ts` 
+具体使用请查看脚本 `DragDropScene.scene`，场景同名  
+效果如下
+
+![img1](./readme-img/img3.gif)
+
 
 ### 截图管理器
 类 `CaptureMgr`
-
+业务层一行代码实现全屏截图或指定节点截图
+具体使用请查看脚本 `CaptureScene`，场景同名
 
 ### 按钮事件管理器
 类 `BtnCommonEventMgr` 
@@ -261,11 +271,12 @@ tnt.touch.off(touchImpl);  // 取消监听
 
 ### 多语言
 `i18n`  
-每种语言使用一个 bundle，命名规则为 `language-${语言}`
+每种语言使用一个 Bundle，命名规则为 `language-${语言}`
 
 目录结构如下
 
 ```
+|-- language-en 
 |-- language-zh 
     |-- font
         |-- normal.ttf
@@ -287,7 +298,6 @@ tnt.touch.off(touchImpl);  // 取消监听
 #### 相机缩放/双指缩放
 #### 屏幕震动
  
-
 
 ### 热更新
 
@@ -355,3 +365,5 @@ https://github.com/wsssheep/cocos_creator_mvvm_tools
 
 #### 其他  
 https://github.com/1226085293/nodes/blob/master/assets/essential/engine/node/nodes.js 
+https://github.com/fairygui/FairyGUI-cocoscreator/blob/master/source/src/fairygui/GObject.ts
+https://github.com/fairygui/FairyGUI-cocoscreator/blob/master/source/src/fairygui/DragDropManager.ts

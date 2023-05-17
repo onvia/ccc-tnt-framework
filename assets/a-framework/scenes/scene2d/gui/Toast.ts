@@ -53,7 +53,11 @@ class Toast {
             return;
         }
         if (isSingle && this.singleMap[text]) {
-            this._show(this.singleMap[text], text, duration, gravity);
+            let toast = this.singleMap[text];
+            let opacityCom = toast.getComponent(UIOpacity)
+            Tween.stopAllByTarget(toast);
+            Tween.stopAllByTarget(opacityCom);
+            this._show(toast, text, duration, gravity);
             return;
         }
         let toast = instantiate(this.prefab);

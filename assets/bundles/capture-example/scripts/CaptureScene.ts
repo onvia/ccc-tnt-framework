@@ -13,8 +13,8 @@ export class CaptureScene extends tnt.SceneBase {
     }
 
     onClickFullscreen() {
-        // let captureNode = tnt.captureMgr.captureScreenSync();
-        let captureNode = tnt.captureMgr.captureScreenAsync();
+        // let captureNode = tnt.captureMgr.captureScreenSync(); // 同步
+        let captureNode = tnt.captureMgr.captureScreenAsync(); // 异步
         captureNode.parent = this.content;
     }
     onClickNode() {

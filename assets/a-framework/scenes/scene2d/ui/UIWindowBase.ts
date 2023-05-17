@@ -173,7 +173,7 @@ class UIWindowBase<Options = any> extends tnt.UIBase<Options> implements ILoader
     _playFreezeAnimation(tag: number, callback: () => void) {
         this._playCloseAnimation(tag, callback);
     }
-    _playMaskFadeIn(duration = 0.2) {
+    _playShowMask(duration = 0.1) {
         if (this.mask) {
             let maskOpacity = this.mask.getComponent(UIOpacity);
             tween(maskOpacity).to(duration, { opacity: this._maskOpacity }).start();
@@ -181,7 +181,7 @@ class UIWindowBase<Options = any> extends tnt.UIBase<Options> implements ILoader
 
         DEV && console.log(`${js.getClassName(this)}-> ${this.uuid}  _playMaskFadeIn  ${sys.now()}`);
     }
-    _playMaskFadeOut(duration = 0.2) {
+    _playHideMask(duration = 0.2) {
         if (this.mask) {
             let maskOpacity = this.mask.getComponent(UIOpacity);
             tween(maskOpacity).to(duration, { opacity: 0 }).start();
@@ -346,7 +346,7 @@ class UIWindowBase<Options = any> extends tnt.UIBase<Options> implements ILoader
     /**
      * 销毁自身节点之前进行一些处理
      */
-    public onDestroyUI() {
+    public onDestroyWindow() {
 
     }
 

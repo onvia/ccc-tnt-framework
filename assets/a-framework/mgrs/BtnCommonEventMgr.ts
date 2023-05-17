@@ -124,6 +124,12 @@ export class BtnCommonEventMgr {
 }
 tnt.btnCommonEventMgr = BtnCommonEventMgr.getInstance();
 
+/**
+ * 按钮音效插件
+ *
+ * @class BtnCommonSoundEventPlugin
+ * @implements {IBtnEventPlugin}
+ */
 @plugin("BtnCommonEventMgr")
 @ccclass("BtnCommonSoundEventPlugin")
 class BtnCommonSoundEventPlugin implements IBtnEventPlugin {

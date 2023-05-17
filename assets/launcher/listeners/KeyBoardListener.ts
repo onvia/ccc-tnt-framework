@@ -19,7 +19,8 @@ export class KeyBoardListener implements IKeyboard{
         let scene = director.getScene();
         let scenename = scene.name;
         if(scenename === 'MainScene'){
-
+            
+            tnt.toast.show(`无法返回上一场景`,1.5,0,true);
             return;
         }
 

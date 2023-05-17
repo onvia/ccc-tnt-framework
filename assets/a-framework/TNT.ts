@@ -1,6 +1,6 @@
 
 
-import { profiler, EffectAsset, game, Game } from "cc";
+import { profiler, EffectAsset } from "cc";
 
 declare global {
 

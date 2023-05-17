@@ -1019,8 +1019,8 @@
     "_prefab": null,
     "_lpos": {
       "__type__": "cc.Vec3",
-      "x": -121.514,
-      "y": 124.085,
+      "x": -121.51399999999998,
+      "y": 102.062,
       "z": 0
     },
     "_lrot": {
@@ -1057,8 +1057,8 @@
     "__prefab": null,
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 216,
-      "height": 50.4
+      "width": 252,
+      "height": 90.4
     },
     "_anchorPoint": {
       "__type__": "cc.Vec2",
@@ -1086,8 +1086,8 @@
       "b": 255,
       "a": 255
     },
-    "_string": "刷新当前场景",
-    "_horizontalAlign": 2,
+    "_string": "刷新所在场景\n当前场景不生效",
+    "_horizontalAlign": 0,
     "_verticalAlign": 1,
     "_actualFontSize": 36,
     "_fontSize": 36,
@@ -1117,7 +1117,7 @@
     "_alignFlags": 32,
     "_target": null,
     "_left": 0,
-    "_right": 92.194,
+    "_right": 56.19399999999999,
     "_top": 0,
     "_bottom": 0,
     "_horizontalCenter": 0,

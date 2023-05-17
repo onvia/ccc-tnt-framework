@@ -1,6 +1,6 @@
 
 import { Component, Node, macro, _decorator, assetManager } from "cc";
-import { startupOptions } from "./BootstarapConfig";
+import { startupOptions } from "./StartupConfig";
 import { KeyBoardListener } from "./listeners/KeyBoardListener";
 import { SceneListener } from "./listeners/SceneListener";
 const { ccclass, property } = _decorator;

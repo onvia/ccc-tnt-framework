@@ -1,5 +1,6 @@
 import { _decorator, Component, Node } from 'cc';
 import { CaptureScreenMaskLayerController } from './plugins/CaptureScreenMaskLayerController';
+import { VictoryWindow } from './VictoryWindow';
 const { ccclass, property } = _decorator;
 
 @ccclass('WindowScene')
@@ -17,7 +18,7 @@ export class WindowScene extends tnt.SceneBase {
 
         this.registeButtonClick("btnWindowEmbed", () => {
             
-            tnt.uiMgr.showWindow('EmbedWindow')
+            tnt.uiMgr.showWindow('EmbedWindow');
         });
 
         this.registeButtonClick("btnAutoCloseWindow", () => {
@@ -25,7 +26,7 @@ export class WindowScene extends tnt.SceneBase {
         });
 
         this.registeButtonClick("btnVictory", () => {
-            tnt.uiMgr.showWindow("VictoryWindow");
+            tnt.uiMgr.showWindowByClass(VictoryWindow);
         });
 
 
