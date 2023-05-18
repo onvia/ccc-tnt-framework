@@ -6,6 +6,9 @@
       - [`GComponent`](#gcomponent)
       - [`UIBase`](#uibase)
     - [资源管理](#资源管理)
+      - [`AssetLoader`](#assetloader)
+      - [`LoaderMgr`](#loadermgr)
+      - [`ResourcesMgr`](#resourcesmgr)
     - [场景管理](#场景管理)
     - [UI 管理](#ui-管理)
     - [输入](#输入)
@@ -43,15 +46,17 @@
       - [图片压缩](#图片压缩)
     - [框架插件](#框架插件)
     - [参考](#参考)
-      - [AssetLoader](#assetloader)
+      - [AssetLoader](#assetloader-1)
       - [MVVM](#mvvm-1)
       - [其他](#其他)
 
 ### 介绍
 
 使用本框架在开发过程中是远离编辑器，不在编辑器中挂载脚本到节点，但是在运行时会自动挂载脚本到节点。
-框架所有管理者单例和大部分类都挂载到了全局变量 `tnt` 上，
+框架所有管理者单例和大部分类都挂载到了全局变量 `tnt` 上，文档中为了书写方便，省略了 `tnt.`
 游戏启动需要有一个启动类和启动场景，将启动类挂载到启动场景中，在后续使用过程中，基本不再需要手动在节点挂载组件了。
+
+>为保证在编辑器内优先加载框架代码，这里使用了 `a-framework` 作为文件夹名，`a-framework` 作为Bundle 名为 `framework`，在开发过程中其他 Bundle 尽量保证要在框架 Bundle 后加载
 
 框架启动需要实现 `IStartupOptions`  
 详细的使用可以启动实例 Launcher.scene 查看，脚本同名。
@@ -82,11 +87,11 @@ loaderKey： 属性为 资源管理器的键值，用以保证在资源能够正
 
 `UIBase` 的子类
 
-- `UIItem` 小部件
-- `UIPanel` 面板
-- `UIWindowBase` 弹窗基类
+- `UIItem` 小部件项
+- `UIPanel` 面板项
+- `UIWindowBase` 弹窗基类，
   - `UIPopup` 模态窗口 会自动生成半透明蒙版
-  - `UIWindow` 全屏窗口 需要手动设置背景图
+  - `UIWindow` 全屏窗口 需要手动设置背景图，
 
 1. UI 基类
 每一个作为预制体的小部件、面板、弹窗都需要对应一个脚本  
@@ -99,10 +104,10 @@ loaderKey： 属性为 资源管理器的键值，用以保证在资源能够正
 
 
 
-2. 弹窗
+2. 弹窗  
+   在弹出关闭时，默认会自动释放弹窗的预制体资源，如果需要关闭可以调用 `setReleaseWindowPrefab` 进行设置  
 
    使用示例 PauseWindow.ts
-
 ```
 
 const { prefabUrl } = tnt._decorator;
@@ -124,6 +129,9 @@ export class PauseWindow extends tnt.UIPopup<PauseWindowOptions> {
     
     onActive(): void {
       // 窗口激活, 首次打开和从冻结状态激活都会被调用
+      if(this.options.pauseBgm){
+        // ...
+      }
     }
     onFreeze(): void {
       // 窗口冻结，窗口被关闭时不会被自动调用
@@ -152,8 +160,16 @@ export class PauseWindow extends tnt.UIPopup<PauseWindowOptions> {
 
 
 ### 资源管理
-`AssetLoader` 资源的加载释放管理，每个模块或者每个界面都可以实例化一个加载器，在退出模块或者关闭弹窗的时候一次性释放所依赖的资源，而不影响其他模块或弹窗的相同依赖资源，在本框架中，每个弹窗都持有了一个 加载器，在当前弹窗加载资源时直接使用弹窗内置的 加载器  
+#### `AssetLoader`
+`AssetLoader` 资源的加载释放管理，每个模块或者每个界面都可以实例化一个加载器，在退出模块或者关闭界面的时候一次性释放所依赖的资源，而不影响其他模块或界面的相同依赖资源。  
+`AssetLoader` 的使用基本与 引擎 Bundle 加载资源的方法一致。
+> 在本框架中，每个弹窗都持有了一个 加载器 `this.loader`，为当前弹窗加载资源时直接使用弹窗内置的 加载器。
+
+#### `LoaderMgr`
 `LoaderMgr` 加载器管理类，通过任意键值获取或实例化一个加载器  
+> 全局共享的 `AssetLoader` 为 `tnt.loaderMgr.share`
+
+#### `ResourcesMgr`
 `ResourcesMgr` 加载器的顶级封装，相当于 `LoaderMgr` + `AssetLoader` 的结合，只是为了方便使用
 
 
@@ -291,6 +307,9 @@ tnt.touch.off(touchImpl);  // 取消监听
   let timerId = tnt.timerMgr.startTimer(()=>{  },this);
   // 移除计时器
   tnt.timerMgr.removeTimer(timerId);
+
+  // 或者在离开界面的时候将此界面绑定的所有计时器关闭
+  tnt.timerMgr.removeTimerByTarget(this);
 ```
 
 

@@ -1,8 +1,10 @@
-import { Node, EventTouch, _decorator, Sprite, UITransform, Layers, UIOpacity, isValid, SpriteFrame, Vec3, Vec2, Canvas, director } from "cc";
+import { Node, EventTouch, _decorator, Sprite, UITransform, Layers, UIOpacity, isValid, SpriteFrame, Vec3, Vec2, Canvas, director, Mat4, Rect } from "cc";
 import { DEV } from "cc/env";
 
 const { ccclass } = _decorator;
 
+const _matrix = new Mat4();
+const _worldMatrix = new Mat4();
 
 declare global {
     interface ITNT {
@@ -376,20 +378,36 @@ export class DragDropMgr<SourceData = any> {
      * @memberof DragDropMgr
      */
     public intersects(tempCont: Node, dragAgent: Node) {
-        let uiTransform = tempCont.getComponent(UITransform);
         //计算 dragAgent 的中心点 是否在 container 上
         //如果在 则 break,并给 container 发送 drop 事件
-        let containerBox = uiTransform?.getBoundingBoxToWorld();
+        let containerBox = this._getBoundingBoxToWorld(tempCont);
         if (containerBox == undefined || containerBox == null) {
         }
-        let dragAgentTransform = dragAgent.getComponent(UITransform);
-        let dragAgentRect = dragAgentTransform.getBoundingBoxToWorld();
+        let dragAgentRect = this._getBoundingBoxToWorld(dragAgent);
         if (containerBox.intersects(dragAgentRect)) {
             return true;
         }
         return false;
     }
 
+    
+    private _getBoundingBoxToWorld(node: Node) {
+        node.parent.getWorldMatrix(_worldMatrix);
+        Mat4.fromRTS(_matrix, node.getRotation(), node.getPosition(), node.getScale());
+        const width = node.uiTransform.contentSize.width;
+        const height = node.uiTransform.contentSize.height;
+        const rect = new Rect(
+            -node.uiTransform.anchorPoint.x * width,
+            -node.uiTransform.anchorPoint.y * height,
+            width,
+            height,
+        );
+
+        Mat4.multiply(_worldMatrix, _worldMatrix, _matrix);
+        rect.transformMat4(_worldMatrix);
+
+        return rect;
+    }
     public removeDragAgent() {
         let icon = this.dragAgent.getChildByName(NAME_AGENTICON);
         if (icon) {

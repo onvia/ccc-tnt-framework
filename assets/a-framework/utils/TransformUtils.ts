@@ -1,10 +1,13 @@
-import { Node, UITransform, Vec3, _decorator } from "cc";
+import { Mat4, Node, Rect, UITransform, Vec3, _decorator } from "cc";
 
 declare global {
     interface ITNT {
         transformUtils: TransformUtils;
     }
 }
+
+const _matrix = new Mat4();
+const _worldMatrix = new Mat4();
 
 class TransformUtils {
 
@@ -228,6 +231,30 @@ class TransformUtils {
         return rotation;
     }
 
+    /**
+     * 计算节点的世界包围盒，但是不包含子节点
+     *
+     * @param {Node} node
+     * @return {*} 
+     * @memberof TransformUtils
+     */
+    public getBoundingBoxToWorldWithoutChildren(node: Node) {
+        node.parent.getWorldMatrix(_worldMatrix);
+        Mat4.fromRTS(_matrix, node.getRotation(), node.getPosition(), node.getScale());
+        const width = node.uiTransform.contentSize.width;
+        const height = node.uiTransform.contentSize.height;
+        const rect = new Rect(
+            -node.uiTransform.anchorPoint.x * width,
+            -node.uiTransform.anchorPoint.y * height,
+            width,
+            height,
+        );
+
+        Mat4.multiply(_worldMatrix, _worldMatrix, _matrix);
+        rect.transformMat4(_worldMatrix);
+
+        return rect;
+    }
     private static _instance: TransformUtils = null
     public static getInstance(): TransformUtils {
         if (!this._instance) {

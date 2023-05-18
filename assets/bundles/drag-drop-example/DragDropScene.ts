@@ -32,12 +32,12 @@ export class DragDropScene extends tnt.SceneBase implements IDragDropListener {
         // 对列表节点进行拖拽注册
         let content = this.find('content');
         content.children.forEach(element => {
+            element.sprite.color = color(randomRangeInt(0, 255), randomRangeInt(0, 255), randomRangeInt(0, 255));
             tnt.dragDropMgr.registerDragTarget(element, 0.2, (event) => {
-                let node = event.currentTarget;
+                let node = event.currentTarget as Node;
                 console.log(`DragDropScene-> click `, node.name);
 
-                let sprite = node.getComponent(Sprite);
-                sprite.color = color(randomRangeInt(0, 255), randomRangeInt(0, 255), randomRangeInt(0, 255));
+                node.sprite.color = color(randomRangeInt(0, 255), randomRangeInt(0, 255), randomRangeInt(0, 255));
 
             });
         });
@@ -54,7 +54,7 @@ export class DragDropScene extends tnt.SceneBase implements IDragDropListener {
         let dragSprite = touchTarget.getComponent(Sprite);
         return {
             icon: dragSprite.spriteFrame,
-            sourceData: dragSprite.spriteFrame,
+            sourceData: dragSprite.color.clone(), // 【传递】的数据是颜色
             onShow: (node)=>{
                 node.scale = new Vec3(2,2,2);
             }
@@ -67,7 +67,7 @@ export class DragDropScene extends tnt.SceneBase implements IDragDropListener {
             return;
         }
         let sprite = container.getComponent(Sprite);
-        sprite.color = color(randomRangeInt(0, 255), randomRangeInt(0, 255), randomRangeInt(0, 255));
+        sprite.color = sourceData; // 【接收】【传递】的数据
     }
 
     // // 可选，可以用此方法代替 DragDropMgr 内置的查找方法
