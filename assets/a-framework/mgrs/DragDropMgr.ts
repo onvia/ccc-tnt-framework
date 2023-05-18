@@ -31,7 +31,7 @@ declare global {
          *
          * @memberof IDragAgentData
          */
-        onShow: (node: Node)=> void;
+        onShow: (node: Node) => void;
     }
 
     interface IDragDropListener<SourceData = any> {
@@ -266,7 +266,7 @@ export class DragDropMgr<SourceData = any> {
      * 注册单个拖拽节点
      * @param dragTarget 拖拽目标
      * @param delay 延迟弹出代理
-     * @param checkDelta 是否检查移动距离，如果超过移动距离则判定为不拖拽
+     * @param clickEvent 点击事件
      */
     public registerDragTarget(dragTarget: Node, delay: number = 0, clickEvent: TouchEventFunc = null) {
         if (!dragTarget) {
@@ -293,9 +293,9 @@ export class DragDropMgr<SourceData = any> {
     /**
      * 生成拖拽代理节点
      *
-     * @param {Node} source 要拖拽的节点
-     * @param {(SpriteFrame | Node)} icon 当传入参数为 SpriteFrame 时，生成一个
-     * @param {SourceData} sourceData
+     * @protected
+     * @param {Node} source
+     * @param {IDragAgentData} data
      * @return {*} 
      * @memberof DragDropMgr
      */
@@ -307,7 +307,7 @@ export class DragDropMgr<SourceData = any> {
 
         this.lazyInit();
         this.sourceData = sourceData;
-      
+
         this.dragAgent.scale = new Vec3(1, 1, 1);
         this.dragAgent.getComponent(UIOpacity).opacity = 255;
 
@@ -345,9 +345,9 @@ export class DragDropMgr<SourceData = any> {
             container = this.dragDropListener.onFindContainer(dragAgent, containers, this.intersects);
         } else {
             for (let i = 0; i < containers.length; i++) {
-                const tempCont = containers[i];
-                if (this.intersects(tempCont, dragAgent)) {
-                    container = tempCont;
+                const tempContainer = containers[i];
+                if (this.intersects(tempContainer, dragAgent)) {
+                    container = tempContainer;
                     break;
                 }
             }
@@ -372,15 +372,15 @@ export class DragDropMgr<SourceData = any> {
     /**
      * 判断是否相交
      *
-     * @param {Node} tempCont
+     * @param {Node} tempContainer
      * @param {Node} dragAgent
      * @return {*} 
      * @memberof DragDropMgr
      */
-    public intersects(tempCont: Node, dragAgent: Node) {
+    public intersects(tempContainer: Node, dragAgent: Node) {
         //计算 dragAgent 的中心点 是否在 container 上
         //如果在 则 break,并给 container 发送 drop 事件
-        let containerBox = this._getBoundingBoxToWorld(tempCont);
+        let containerBox = this._getBoundingBoxToWorld(tempContainer);
         if (containerBox == undefined || containerBox == null) {
         }
         let dragAgentRect = this._getBoundingBoxToWorld(dragAgent);
@@ -390,7 +390,14 @@ export class DragDropMgr<SourceData = any> {
         return false;
     }
 
-    
+    /**
+     * 计算世界包围盒，但不包含子节点
+     *
+     * @private
+     * @param {Node} node
+     * @return {*} 
+     * @memberof DragDropMgr
+     */
     private _getBoundingBoxToWorld(node: Node) {
         node.parent.getWorldMatrix(_worldMatrix);
         Mat4.fromRTS(_matrix, node.getRotation(), node.getPosition(), node.getScale());
@@ -408,6 +415,7 @@ export class DragDropMgr<SourceData = any> {
 
         return rect;
     }
+    
     public removeDragAgent() {
         let icon = this.dragAgent.getChildByName(NAME_AGENTICON);
         if (icon) {
