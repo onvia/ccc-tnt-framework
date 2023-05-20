@@ -29,7 +29,7 @@ export class MVVMScene extends tnt.SceneBase implements IMVVM {
 
     onEnterTransitionStart(sceneName?: string): void {
         // let proxy = tnt.vm._reactive(this.data);
-
+        tnt.vm.observe(this,"MvvmSceneTest");
         // // this.data.name
         // // this.data.name = "123";
         // // this.data.obj.progress
@@ -44,8 +44,8 @@ export class MVVMScene extends tnt.SceneBase implements IMVVM {
         // proxy.obj.progress
         // proxy.obj.progress = 1;
 
-        // let label: Label = this.getLabelByName("label");
-        // let sprite: Sprite = this.getSpriteByName("sprite");
+        let label: Label = this.getLabelByName("label");
+        let sprite: Sprite = this.getSpriteByName("sprite");
         // tnt.vm.bind(this, label, "*.name");
         // tnt.vm.bind(this, label, {
         //     color: "*.color"
@@ -60,9 +60,9 @@ export class MVVMScene extends tnt.SceneBase implements IMVVM {
         //     },
         //     'color': "*.color"
         // });
-        // tnt.vm.label(this, label, "", () => {
-        //     return Promise.resolve("");
-        // });
+        tnt.vm.label(this, label, "*.array.0.age", () => {
+            return Promise.resolve("");
+        });
 
 
         // tnt.vm.bind(this, sprite, {
@@ -74,11 +74,9 @@ export class MVVMScene extends tnt.SceneBase implements IMVVM {
         //     }
         // });
 
-
-
-        tnt.vm.observe(this);
-        tnt.vm.observe(this, "MVVMScene");
-        tnt.vm.observe(this.data, "MvvmData");
+        // tnt.vm.observe(this);
+        // tnt.vm.observe(this, "MVVMScene");
+        // tnt.vm.observe(this.data, "MvvmData");
         // tnt.vm.observe(this, { xxx: 11, ddd: 22 });
         // tnt.vm.observe(this, { xxx: 11, ddd: 22 },"MVVMTag");
     }
