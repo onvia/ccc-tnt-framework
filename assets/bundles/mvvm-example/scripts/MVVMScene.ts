@@ -76,11 +76,11 @@ export class MVVMScene extends tnt.SceneBase implements IMVVM {
 
 
 
-        // tnt.vm.observe(this);
-        // tnt.vm.observe(this, "MVVMScene");
-        // tnt.vm.observe(this.data, "MvvmData");
-        tnt.vm.observe(this, { xxx: 11, ddd: 22 });
-        tnt.vm.observe(this, { xxx: 11, ddd: 22 },"MVVMTag");
+        tnt.vm.observe(this);
+        tnt.vm.observe(this, "MVVMScene");
+        tnt.vm.observe(this.data, "MvvmData");
+        // tnt.vm.observe(this, { xxx: 11, ddd: 22 });
+        // tnt.vm.observe(this, { xxx: 11, ddd: 22 },"MVVMTag");
     }
 }
 

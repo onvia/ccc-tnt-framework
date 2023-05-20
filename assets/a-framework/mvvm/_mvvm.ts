@@ -1,7 +1,6 @@
 import { CCObject, Component, Label, ValueType, Node, Sprite, EditBox, ProgressBar, RichText, Slider, Toggle, UIOpacity, UIRenderer, js } from "cc";
 
 
-const map = new WeakMap();
 
 type VMTweenValueResults = (newValue: any, oldValue: any, path: any) => void;
 interface IVMTween {
@@ -48,14 +47,18 @@ const hasOwnProperty = Object.prototype.hasOwnProperty
 const hasOwn = (
     val: object,
     key: PropertyKey
-): key is keyof typeof val => hasOwnProperty.call(val, key)
+): key is keyof typeof val => hasOwnProperty.call(val, key);
 
 
-export interface Target {
+interface Target {
 
 }
 
-export const reactiveMap = new WeakMap<Target, any>();
+const reactiveMap = new WeakMap<Target, any>();
+
+// 防止重复注册
+const proxySet = new WeakSet();
+
 
 class VM {
     private _defObserverKey: WeakMap<Object, string> = new WeakMap();
@@ -88,43 +91,16 @@ class VM {
     public observe(target: IMVVM, data: object)
     public observe(target: IMVVM, data: object, tag: string)
     public observe(targetOrData: IMVVM | object, data?: object | string, tag?: string) {
-        let target: IMVVM = null;
+        let { target: _target, data: _data, tag: _tag } = this._parseObserveArgs(targetOrData, data, tag);
 
-        if (!tag) {
-            if (typeof data === 'string') {
-                tag = data;
-                if (targetOrData instanceof Component) {
-                    target = targetOrData as any as IMVVM;
-                    target._vmTag = tag;
-                    data = target.data;
-                } else {
-                    data = targetOrData;
-                }
-            } else {
-                if (typeof data !== 'undefined') {
-                    target = targetOrData as IMVVM;
-                    this.VMTag(target);
-                    tag = target._vmTag;
-                } else {
-                    target = targetOrData as IMVVM;
-                    this.VMTag(target);
-                    tag = target._vmTag;
-                    data = target.data;
-                }
-            }
-        } else {
-            target = targetOrData as IMVVM;
-            target._vmTag = tag;
-        }
-
-
-        target
-        data
-        tag
-
-        if (tag == undefined || tag == null) {
+        if (_tag == undefined || _tag == null) {
             console.error(`VM-> tag is null`);
             return;
+        }
+
+        let proxy = this.reactive(_data);
+        if (_target) {
+            _target.data = proxy;
         }
 
 
@@ -135,12 +111,16 @@ class VM {
     }
 
     public _reactive<T extends object>(data: T): T {
+        if(proxySet.has(data)){
+            console.warn(`_mvvm-> 本身已经是代理`);
+            return data;
+        }
         if (!_isObject(data)) {
-            console.warn(`value cannot be made reactive: ${String(data)}`)
+            console.warn(`_mvvm-> value cannot be made reactive: ${String(data)}`)
             return data;
         }
 
-        const existingProxy = reactiveMap.get(data)
+        const existingProxy = reactiveMap.get(data);
         if (existingProxy) {
             console.log(`_mvvm-> 已存在代理`);
             return existingProxy;
@@ -172,7 +152,7 @@ class VM {
                 if (_hasChanged(newValue, oldValue)) {
                     // trigger(target,key) // 触发数据变化  修改
                 }
-                
+
                 console.log(`_mvvm-> 【设置】${String(key)} 值为： ${newValue}`);
                 return res;
             },
@@ -188,36 +168,20 @@ class VM {
         });
 
         reactiveMap.set(data, proxy);
+        proxySet.add(proxy);
         return proxy;
     }
 
 
     public bind<T>(target: IMVVM, component: T, attr: AttrBind<T> | WatchPath, formator?: Formator<ReturnValue>) {
-        let _attr = this.parseAttr(component, attr, formator);
-
+        let _attr = this._parseAttr(component, attr, formator);
+        
     }
 
     public label(target: IMVVM, label: Label | Node, attr: AttrBind<Label> | WatchPath, formator?: Formator<string>) {
         let _label: Label = this._typeTransition(label, Label);
-        let _attr = this.parseAttr(label, attr, formator);
+        let _attr = this._parseAttr(label, attr, formator);
         this.bind(target, _label, _attr, formator);
-    }
-
-    private parseAttr<T>(component: T, attr: AttrBind<T> | WatchPath, formator?: Formator<ReturnValue>) {
-        let _attr: AttrBind<any> = null;
-        if (typeof attr === 'string' || _isArray(attr)) {
-            let defKey = this.getObserverKey(component);
-            _attr = {
-                [defKey]: {
-                    watchPath: attr,
-                    formator: formator
-                }
-            }
-        } else {
-            _attr = attr;
-        }
-
-        return _attr;
     }
     private getObserverKey(component: Object) {
         let defKey = "string";
@@ -235,6 +199,58 @@ class VM {
         return comp;
     }
 
+
+    
+    private _parseObserveArgs(targetOrData: IMVVM | object, data?: object | string, tag?: string) {
+        let target: IMVVM = null;
+        if (!tag) {
+            if (typeof data === 'string') {
+                tag = data;
+                if (targetOrData instanceof Component) {
+                    target = targetOrData as any as IMVVM;
+                    target._vmTag = tag;
+                    data = target.data;
+                } else {
+                    data = targetOrData;
+                }
+            } else {
+                if (typeof data !== 'undefined') {
+                    target = targetOrData as IMVVM;
+                    this.VMTag(target);
+                    tag = target._vmTag;
+                    data = data as object;
+                } else {
+                    target = targetOrData as IMVVM;
+                    this.VMTag(target);
+                    tag = target._vmTag;
+                    data = target.data;
+                }
+            }
+        } else {
+            target = targetOrData as IMVVM;
+            target._vmTag = tag;
+            data = data as object;
+        }
+
+        return { target, data: data as object, tag }
+    }
+
+    private _parseAttr<T>(component: T, attr: AttrBind<T> | WatchPath, formator?: Formator<ReturnValue>) {
+        let _attr: AttrBind<any> = null;
+        if (typeof attr === 'string' || _isArray(attr)) {
+            let defKey = this.getObserverKey(component);
+            _attr = {
+                [defKey]: {
+                    watchPath: attr,
+                    formator: formator
+                }
+            }
+        } else {
+            _attr = attr;
+        }
+
+        return _attr;
+    }
     private static _instance: VM = null
     public static getInstance(): VM {
         if (!this._instance) {
