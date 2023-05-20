@@ -15,4 +15,9 @@ export const SceneConfig = [
         button: "截屏",
         bundle: "capture-example"
     },
+    {
+        scene: "MVVMScene",
+        button: "MVVM",
+        bundle: "mvvm-example"
+    },
 ]

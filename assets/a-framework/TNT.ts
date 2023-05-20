@@ -9,6 +9,8 @@ declare global {
     interface IUtils { }
 
     interface ITNT {
+        tnt: {};
+        [x: string]: {};
         options: IStartupOptions;
 
         /**表格全局 */
