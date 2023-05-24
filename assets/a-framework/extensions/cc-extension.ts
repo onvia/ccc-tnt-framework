@@ -54,7 +54,7 @@ if (!EDITOR) {
         });
     }
 
-
+    
     Object.defineProperty(UITransform.prototype, 'priority', {
         get: function () {
             return this.__priority || 0;
@@ -86,7 +86,7 @@ if (!EDITOR) {
                 this.__$50priorityDirty = false;
                 this._$50_event_before_commit_priority_callback = null;
             }
-
+            
             director.once(Director.EVENT_BEFORE_COMMIT, this._$50_event_before_commit_priority_callback, this);
         },
         enumerable: false,

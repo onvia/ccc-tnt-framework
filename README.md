@@ -402,6 +402,7 @@ tnt.touch.off(touchImpl);  // 取消监听
 4. 快速访问组件
 5. vec2 增加方法 copyAsVec3
 6. vec3 增加方法 copyAsVec2
+7. UITransform 恢复 priority 的使用
 
 
 

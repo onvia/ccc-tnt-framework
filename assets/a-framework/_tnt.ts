@@ -46,7 +46,8 @@ import "./utils/TweenUtils";
 import "./utils/DebugUtils";
 import "./task/TaskMgr";
 import "./task/LoadingTaskQueue";
+import "./mvvm/_mvvm";
 
-if(!EDITOR){
+if (!EDITOR) {
     tnt.eventMgr.emit(tnt.EVENT_FRAMEWORK_INITED);
 }

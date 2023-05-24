@@ -33,50 +33,55 @@ export class MVVMScene extends tnt.SceneBase implements IMVVM {
         // this.data.name
         // this.data.name = "123";
         // this.data.obj.progress
-        // this.data.obj.progress = 1;
+        this.data.obj.progress = 1;
         // this.data.index[0];
         // this.data.index.push(8);
         // this.data.index.splice(0,1);
-        // let idx = this.data.index.indexOf(6);
-        this.data.index.length = 20;
-        console.log(`MVVMScene-> `);
-        
+      
         // this.data.array[0].age;
         // this.data.array[1].age = 22;
 
         // proxy.obj.progress
         // proxy.obj.progress = 1;
 
-        // let label: Label = this.getLabelByName("label");
-        // let sprite: Sprite = this.getSpriteByName("sprite");
-        // // tnt.vm.bind(this, label, "*.name");
-        // // tnt.vm.bind(this, label, {
-        // //     color: "*.color"
-        // // });
-        // // tnt.vm.bind(this, label, {
-        // //     'string': {
-        // //         watchPath: "",
-        // //         // tween: 
-        // //         formator(options) {
-        // //             return "";
-        // //         },
-        // //     },
-        // //     'color': "*.color"
-        // // });
-        // tnt.vm.label(this, label, "*.array.0.age", () => {
-        //     return Promise.resolve("");
+        let label: Label = this.getLabelByName("label");
+        let sprite: Sprite = this.getSpriteByName("sprite");
+        let content: Node = this.getNodeByName("content");
+        // tnt.vm.bind(this, label, "*.name");
+        // tnt.vm.bind(this, label, {
+        //     color: "*.color"
         // });
-
-
-        // tnt.vm.bind(this, sprite, {
-        //     'spriteFrame': {
+        // tnt.vm.bind(this, label, {
+        //     'string': {
         //         watchPath: "",
-        //         formator: async (options) => {
-        //             return Promise.resolve(new SpriteFrame());
+        //         // tween: 
+        //         formator(options) {
+        //             return "";
         //         },
-        //     }
+        //     },
+        //     'color': "*.color"
         // });
+        tnt.vm.label(this, label, "*.array.0.age", () => {
+            return Promise.resolve("");
+        });
 
+
+        tnt.vm.bind(this, sprite, {
+            'spriteFrame': {
+                watchPath: "*.array.0.age",
+                formator: async (options) => {
+                    return Promise.resolve(new SpriteFrame());
+                },
+            }
+        });
+
+        tnt.vm.for(this,content,{
+            watchPath: '*.index',
+            component: null,
+            onChange(operate) {
+                
+            },
+        })
         // tnt.vm.observe(this);
         // tnt.vm.observe(this, "MVVMScene");
         // tnt.vm.observe(this.data, "MvvmData");
