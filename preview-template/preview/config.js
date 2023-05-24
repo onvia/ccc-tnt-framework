@@ -464,39 +464,39 @@ let getCache = function () {
     for (let k in rawCacheData) {
         let item = rawCacheData[k];
         if (item.type !== 'js' && item.type !== 'json') {
-            let itemName = '_';
+            let itemName = '';
             let preview = '';
             let content = item.__classname__;
             let formatSize = 0;
-            if (item.type === 'png' || item.type === 'jpg') {
-                let texture = rawCacheData[k.replace('.' + item.type, '.json')];
-                if (texture && texture._owner && texture._owner._name) {
-                    itemName = texture._owner._name;
-                    preview = texture.content.url;
-                }
+            if (k.includes('.jpg') || k.includes('.png')) {
+                itemName = item._name;
+                preview = item.nativeUrl;
             } else {
                 if (item._name) {
                     itemName = item._name;
-                } else if (item._owner) {
-                    itemName = (item._owner && item._owner.name) || '_';
                 }
                 if (content === 'cc.Texture2D') {
-                    preview = item.nativeUrl;
+                    preview = item.image?.nativeUrl;
                     let textureSize = item.width * item.height * ((item._native === '.jpg' ? 3 : 4) / 1024 / 1024);
                     totalTextureSize += textureSize;
                     // sizeStr = textureSize.toFixed(3) + 'M';
                     formatSize = Math.round(textureSize * 1000) / 1000;
                 } else if (content === 'cc.SpriteFrame') {
-                    preview = item._texture.nativeUrl;
+                    preview = item._texture?.image?.nativeUrl || "";
                 }
             }
+            if (itemName == "" || !itemName) {
+                itemName = "---"
+            }
             cacheData.push({
+                source: item,
                 queueId: item.queueId,
                 type: content,
                 name: itemName,
                 preview: preview,
                 id: item._uuid,
-                size: formatSize
+                size: formatSize,
+                ref: item.refCount,
             });
         }
     }
