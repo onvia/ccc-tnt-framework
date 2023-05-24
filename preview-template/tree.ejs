@@ -1,0 +1,59 @@
+<div id="tree-panel" v-if="showPanel">
+    <el-input type="text" placeholder="搜索..." v-model="filterText"></el-input>
+    <div id="tree-box">
+        <el-tree class="filter-tree" :data="nodeTreeData" node-key="id" :props="defaultProps"
+            :default-expanded-keys="nodeTreeExpandedKeys" @node-click="clickNodeItem" @node-expand="clickNodeExpand"
+            @node-collapse="clickNodeCollapse" :filter-node-method="filterNode" ref="tree"
+            :expand-on-click-node="false">
+            <span slot-scope="{node,data}"
+                v-bind:class="['el-tree-node__label',{'node-tree-item-color':!data.node.active}]">
+                <span v-text="data.label"></span>
+            </span>
+        </el-tree>
+    </div>
+</div>
+<div id="info-panel" v-if="showPanel && getCurrentNode">
+    <div v-if="getCurrentNode" class="info-box">
+        <div class="line-item">
+            <el-checkbox v-model="getCurrentNode.active"></el-checkbox>
+            <el-input type="text" v-model="getCurrentNode.name"></el-input>
+        </div>
+        <el-collapse v-model="collapseNames" ref="collapse">
+            <el-collapse-item v-for="(item,index) in allComp" :name="item.index">
+                <template slot="title">
+                    <el-checkbox v-if="item.name!='Node'" v-model="item.comp.enabled" style="width: 20px;">
+                    </el-checkbox>
+                    <div style="width: 100%; height: 30px;">
+                        <span v-text="(item.name=='Node'?'':'cc.')+getCompName(item.name)" style="padding-bottom: 5px;"
+                            :title="(item.name=='Node'?'':'cc.')+item.name"></span>
+                        <el-button class="log-comp" @click="(e)=>{logComp(item,e)}">
+                            <i class="el-icon-warning"></i>
+                        </el-button>
+                        <el-button class="log-comp" @click="(e)=>{exportComp(item,e)}">
+                            <i class="el-icon-s-opportunity"></i>
+                        </el-button>
+                    </div>
+                </template>
+                <div class="comp-value" v-for="c in item.values">
+                    <div class="comp-value-line">
+                        <div class="comp-value-label">
+                            <span v-text="wrapName(c.name)" :title="c.name"></span>
+                        </div>
+                        <div class="comp-value-line" v-for="v in c.values">
+                            <span style="padding-left: 4px;padding-right: 4px;" v-text="v.name"></span>
+                            <el-input v-if="c.type=='value'" type="text" :value="item.comp[v.key]"
+                                @input="e=>{onInput(e,item,v)}" :disabled="v.lock"></el-input>
+                            <el-color-picker v-if="c.type=='color'" v-model="item.comp[v.key]">
+                            </el-color-picker>
+                            <el-select v-if="c.type=='list'" v-model="item.comp[v.key]">
+                                <el-option v-for="option in c.list()" :key="option" :label="option" :value="option">
+                                </el-option>
+                            </el-select>
+                            <el-checkbox v-if="c.type=='check'" v-model="item.comp[v.key]"></el-checkbox>
+                        </div>
+                    </div>
+                </div>
+            </el-collapse-item>
+        </el-collapse>
+    </div>
+</div>

@@ -1,0 +1,49 @@
+<div id="content" class="content" style="overflow: auto;height: calc(100% - 34px);flex-direction: row;">
+    <%- include("./tree.ejs") %>
+    <div class="contentWrap">
+        <div id="GameDiv" class="wrapper">
+            <div id="Cocos3dGameContainer">
+                <canvas id="GameCanvas" tabindex="-1" style="background-color: '';"></canvas>
+            </div>
+            <div id="splash">
+                <div class="progress-bar stripes"><span></span></div>
+            </div>
+            <div id="bulletin">
+                <div id="sceneIsEmpty" class="inner"><%=tip_sceneIsEmpty%></div>
+            </div>
+            <div class="error" id="error">
+                <div class="title">Error <i>(Please open the console to see detailed errors)</i></div>
+                <div class="error-main"></div>
+                <div class="error-stack"></div>
+            </div>
+        </div>
+    </div>
+    <el-dialog class="custom-dialog" :title="cacheInfo" :visible.sync="centerDialogVisible">
+        <div id="texture-content">
+            <div>
+                <div style="float: right; margin-right: 2px;">
+                    <el-input class="cache-search" v-model="cacheSearch"></el-input>
+                </div>
+            </div>
+            <div id="texture-list">
+                <el-table :data="getCacheData" height="100%" border :default-sort="{prop:'size',order:'descending'}"
+                    style="width: 100%;">
+                    <el-table-column prop="type" label="Type" width="180" :filters="cacheFilters" :filter-method="(v,r)=>{return r.type==v}">
+                    </el-table-column>
+                    <el-table-column prop="name" label="Name" width="180">
+                    </el-table-column>
+                    <el-table-column label="Preview">
+                        <template slot-scope="scope" width="180">
+                            <img :src="getImgUrl(scope.row.preview)" style="max-height: 60px;max-width: 120px;"
+                                v-if="scope.row.preview">
+                        </template>
+                    </el-table-column>
+                    <el-table-column prop="id" label="ID" width="280">
+                    </el-table-column>
+                    <el-table-column prop="size" label="Size(MB)" width="180" sortable>
+                    </el-table-column>
+                </el-table>
+            </div>
+        </div>
+    </el-dialog>
+</div>

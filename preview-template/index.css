@@ -1,0 +1,485 @@
+body {
+    cursor: default;
+    color: #888888;
+    background-color: #171717;
+    display: flex;
+    flex-direction: column;
+    height: 100%; /* for firefox */
+    width: 100%;
+    position: absolute;
+    padding: 0;
+    border: 0;
+    margin: 0;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+/* Remove spin of input type number */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+    /* display: none; <- Crashes Chrome on hover */
+    -webkit-appearance: none;
+    margin: 0; /* <-- Apparently some margin are still there even though it's hidden */
+}
+
+body,
+canvas,
+div {
+    outline: none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    -khtml-user-select: none;
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+}
+
+canvas {
+    background-color: rgba(0, 0, 0, 0);
+}
+
+.toolbar.disabled {
+    pointer-events: none;
+    opacity: 0.4;
+}
+
+.content {
+    display: -webkit-flex;
+    display: flex;
+    -webkit-justify-content: center;
+    justify-content: center;
+    -webkit-align-items: center;
+    align-items: center;
+    -webkit-flex-direction: column;
+    flex-direction: column;
+    -webkit-flex: auto;
+    flex: auto;
+}
+
+.contentWrap {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+#GameDiv,
+#Cocos3dGameContainer,
+#GameCanvas {
+    width: 100%;
+    height: 100%;
+}
+
+#GameDiv {
+    overflow: hidden;
+}
+
+.wrapper {
+    position: relative;
+    /* border: 1px solid #444444; */
+}
+
+.toolbar {
+    /* position: absolute; */
+
+    /* left: 10px; */
+
+    /* top: 10px; */
+    min-height: 27px;
+    padding: 4px 0 4px 10px;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-align-items: center;
+    align-items: center;
+    -webkit-flex-direction: row;
+    flex-direction: row;
+    z-index: 999;
+    height: 34px;
+}
+
+.toolbar * {
+    font-size: 12px;
+    font-family: /* https:
+//www.smashingmagazine.com/2015/11/using-system-ui-fonts-practical-guide/ */
+        -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans',
+        'Helvetica Neue', 'SourceHanSansCN-Normal', sans-serif;
+}
+
+.toolbar .item {
+    display: inline-block;
+    margin-right: 10px;
+}
+
+.toolbar select {
+    height: 25px;
+    padding: 0 8px;
+    box-shadow: none;
+    background-image: none;
+    border: 1px solid #171717;
+    background: #444444;
+    color: #aaaaaa;
+}
+
+.toolbar select:focus {
+    outline: none;
+
+    /* border: 1px solid #09f; */
+}
+
+.toolbar .view-select-container {
+    user-select: none !important;
+    box-sizing: border-box;
+    display: flex;
+    position: relative;
+    cursor: pointer;
+    line-height: 25px;
+    width: 175px;
+    height: 25px;
+    padding: 0 8px;
+    background: #444444;
+    box-shadow: none;
+    background-image: none;
+    color: #aaaaaa;
+    outline: none;
+}
+
+.view-select-container .view-select {
+    display: flex;
+    flex: 1;
+    padding-left: 6px;
+    padding-right: 20px;
+    width: 100%;
+    box-sizing: border-box;
+    outline: none;
+}
+
+.view-select-container .view-select .arrow-trangle::after {
+    width: 5px;
+    height: 5px;
+    border-right: 1px solid #cccccc;
+    border-top: 1px solid #cccccc;
+    transform: rotate(135deg);
+    position: absolute;
+    right: 7px;
+    top: 7px;
+    content: '';
+}
+
+.view-select-container .view-select .label {
+    overflow: hidden;
+}
+
+.view-select-container .view-select .label > span {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    display: block;
+}
+
+.view-select-container .options {
+    background-color: #444444;
+    position: absolute;
+    will-change: top, left;
+    transform-origin: center top 0;
+    top: 28px;
+    left: 0;
+    max-height: 300px;
+    overflow: auto;
+    padding: 5px 0;
+    border: 1px solid #707070;
+    box-sizing: border-box;
+    z-index: 99;
+    display: none;
+}
+
+.view-select-container .options[open] {
+    display: block;
+}
+
+.view-select-container .options ul {
+    width: 100%;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    padding: 0;
+}
+
+.view-select-container ul > li {
+    margin: 0;
+    padding: 0 8px;
+    clear: both;
+    font-size: inherit;
+    white-space: nowrap;
+    list-style: none;
+    cursor: pointer;
+    transition: background 0.2s ease-in-out;
+    height: 24px;
+    line-height: 24px;
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+.view-select-container ul > li:hover {
+    background: #0099ff;
+    color: #ffffff;
+}
+
+.view-select-container ul > .selected {
+    background-color: #0099ff;
+    color: #ffffff;
+}
+
+.view-select-container ul > .separator {
+    font-size: 0;
+    height: 1px;
+    width: calc(100% - 8px);
+    overflow: hidden;
+    background-color: #cccccc;
+    pointer-events: none;
+    margin: 4px 0;
+    align-self: center;
+}
+
+.toolbar .view-select-container:focus {
+    outline: none;
+
+    /* border: 1px solid #09f; */
+}
+
+.toolbar button {
+    border: 1px solid #171717;
+    border-radius: 2px;
+    text-align: center;
+    padding: 4px 8px;
+    cursor: pointer;
+    color: #bdbdbd;
+    font-weight: bold;
+    background-image: linear-gradient(#5a5a5a, #444444);
+}
+
+.toolbar button.checked {
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
+    color: #0099ff;
+    background-image: linear-gradient(#333333, #222222);
+}
+
+#btn-pause.checked {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+#step-length {
+    display: none;
+}
+
+#step-length.show {
+    display: inline-block;
+}
+
+#btn-step {
+    display: none;
+    border-top-right-radius: 2px;
+    border-bottom-right-radius: 2px;
+}
+
+#btn-step.show {
+    display: inline-block;
+}
+
+.toolbar button:focus {
+    outline: none;
+}
+
+.toolbar button:active {
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
+    color: #888888;
+    background-image: linear-gradient(#333333, #222222);
+}
+
+.toolbar input {
+    width: 41px;
+    height: 24px;
+    padding: 4px 4px;
+    box-shadow: inset 0 0 2px 1px rgba(0, 0, 0, 0.3);
+    border: 1px solid #171717;
+    background: #444444;
+    color: #aaaaaa;
+}
+
+.footer a {
+    color: white;
+}
+
+#bulletin {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    display: none;
+}
+
+#bulletin .inner {
+    position: relative;
+    left: -50%;
+    top: -50%;
+    display: none;
+}
+
+#recompiling {
+    position: relative;
+
+    /* left: 50%;
+    top: 50%; */
+    display: none;
+}
+
+
+#splash {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    visibility: hidden;
+}
+
+.progress-bar {
+    background-color: #646f76;
+    height: 3px;
+    border-radius: 2px;
+    width: 67%;
+    position: absolute;
+    left: 0;
+    right: 0;
+    margin: auto;
+    top: 90%;
+}
+
+#splash.portrait > .progress-bar {
+    top: 83%;
+    width: 60%;
+}
+
+.progress-bar span {
+    display: block;
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.4s ease-in-out;
+    background-color: #3dc5de;
+}
+
+.stripes span {
+    background-size: 30px 30px;
+    background-image: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.15) 25%,
+        transparent 25%,
+        transparent 50%,
+        rgba(255, 255, 255, 0.15) 50%,
+        rgba(255, 255, 255, 0.15) 75%,
+        transparent 75%,
+        transparent
+    );
+    animation: animate-stripes 1s linear infinite;
+}
+
+@keyframes animate-stripes {
+    0% {
+        background-position: 0 0;
+    }
+
+    100% {
+        background-position: 60px 0;
+    }
+}
+
+.error {
+    color: white;
+    position: absolute;
+    width: 70%;
+    max-width: 960px;
+    top: 5vh;
+    right: 0;
+    left: 0;
+    margin: auto;
+    display: none;
+    z-index: 2;
+}
+
+.error .title {
+    font-size: 35px;
+    border-bottom: 1px solid;
+    margin-bottom: 15px;
+}
+
+.error .title i {
+    font-size: 10px;
+}
+
+.error {
+    word-break: break-all;
+    background-color: #171717;
+    padding: 16px;
+    border-radius: 4px;
+}
+
+.error-stack {
+    overflow-y: auto;
+    max-height: 50vh;
+}
+
+.error div {
+    margin-top: 10px;
+}
+
+.hide {
+    display: none;
+}
+
+.max-wh {
+    width: 100%;
+    height: 100%;
+}
+
+#container{
+    width: 100%;
+    height: calc(100% -34px);
+}
+
+::-webkit-scrollbar {
+    height: 11px;
+    width: 11px;
+}
+
+::-webkit-scrollbar-button {
+    display: none;
+}
+
+::-webkit-scrollbar-corner {
+    display: none;
+}
+
+::-webkit-scrollbar-thumb {
+    border-radius: 5px;
+    border: 4px solid transparent;
+    background: #7d7d7d;
+    background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    border-radius: 5px;
+    border: 4px solid transparent;
+    background: #227f9b;
+    background-clip: content-box;
+}
+
+::-webkit-scrollbar-track {
+    border: 5px solid transparent;
+    background: rgba(0,0,0,.5);
+    background-clip: content-box;
+}

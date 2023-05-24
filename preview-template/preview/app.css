@@ -1,0 +1,297 @@
+/* 节点树 */
+#tree-panel {
+    height: 100%;
+    width: 245px;
+    box-sizing: border-box;
+    border-right: 1px solid black;
+    max-width: 245px;
+}
+
+/* 输入框 */
+.el-input__inner {
+    background-color: #171717 !important;
+    height: 30px !important;
+    line-height: 30px !important;
+    border: 1px solid black !important;
+    color: #fafafa !important;
+    padding: 4px 4px !important;
+}
+
+/* 节点树包围盒 */
+#tree-box {
+    min-width: 244px;
+    height: calc(100% - 30px);
+    overflow: auto;
+    max-width: 244px;
+}
+
+.el-tree {
+    background: #171717 !important;
+    min-width: 100%;
+    box-sizing: border-box;
+    display: inline;
+}
+
+.el-tree>.el-tree-node {
+    min-width: 100%;
+    display: inline-block;
+}
+
+/* 默认颜色 */
+.el-tree-node__label {
+    color: #bebebe
+}
+
+/* 聚焦时颜色 */
+.el-tree-node__label:focus {
+    color: #ffffff !important
+}
+
+/* 节点隐藏时颜色 */
+.node-tree-item-color {
+    color: #4b4b4b !important
+}
+
+.el-tree-node__content:hover {
+    background: #227f9b !important;
+}
+
+.el-tree-node__content:hover .el-tree-node__label {
+    color: #fafafa !important;
+}
+
+.el-tree-node__content:focus {
+    background: #227f9b !important;
+}
+
+.el-tree-node:focus>.el-tree-node__content {
+    background: #227f9b !important;
+}
+
+.el-tree--highlight-current .el-tree-node.is-current>.el-tree-node__content {
+    background: #fafafa !important;
+}
+
+/* 节点详情 */
+#info-panel {
+    min-width: 244px;
+    height: 100%;
+    max-width: 244px;
+    border-right: 1px solid black;
+    box-sizing: border-box;
+    overflow: auto;
+}
+
+.line-item {
+    display: flex;
+}
+
+.line-item .el-checkbox {
+    padding-top: 8px;
+    width: 17px;
+}
+
+/* 组件属性 */
+.el-collapse-item .el-checkbox__inner {
+    transform: translateX(-4px);
+}
+
+.el-collapse {
+    border-top: 1px solid black !important;
+    border-bottom: 1px solid black !important;
+}
+
+.el-collapse-item__header {
+    background-color: #171717 !important;
+    border-bottom: 1px solid black !important;
+    color: #bdbdbd !important;
+    height: 30px !important;
+    padding-left: 8px;
+    line-height: 30px !important;
+}
+
+.el-collapse-item__content {
+    background-color: #171717 !important;
+    padding-bottom: 8px !important;
+    color: #bdbdbd !important;
+    padding: 8px;
+}
+
+.el-collapse-item__wrap {
+    border-bottom: 1px solid black !important;
+}
+
+/* 组件属性 */
+.comp-value-line {
+    display: flex;
+    height: 30px;
+    line-height: initial;
+}
+
+.comp-value span {
+    padding-top: 4px;
+}
+
+.comp-value-label {
+    padding-top: 5px;
+    min-width: 60px;
+}
+
+.comp-value-label span {
+    white-space: nowrap;
+    overflow: hidden;
+    font-size: smaller;
+}
+
+.comp-value-line>.el-input>input {
+    padding: 2px 2px !important;
+    font-size: 10px !important;
+    height: 26px !important;
+}
+
+/* 缓存表 */
+.custom-dialog>.el-dialog {
+    margin-top: calc(50vh) !important;
+    transform: translateY(-50%);
+    height: 80%;
+    width: 80%;
+    background: #171717;
+}
+
+.el-dialog__wrapper {
+    overflow: hidden !important;
+}
+
+.custom-dialog .el-dialog__title {
+    color: #bdbdbd !important;
+}
+
+.custom-dialog .el-dialog__body {
+    padding: 0px !important;
+    height: 100% !important;
+}
+
+#texture-content {
+    height: calc(100% - 54px);
+    width: 100%;
+}
+
+#texture-list {
+    height: 90%;
+    width: 100%;
+    overflow-y: auto;
+}
+
+#texture-list .el-table {
+    border: unset !important;
+}
+
+
+#texture-list .el-table__cell .cell {
+    user-select: text !important;
+    -webkit-user-select: text !important;
+}
+
+#texture-list .el-table::before {
+    background-color: unset !important
+}
+
+#texture-list .el-table__cell {
+    background-color: #171717 !important;
+    border: unset !important;
+    border-bottom: 1px solid #333333 !important;
+    color: #bdbdbd !important;
+    font-size: 12px !important;
+
+}
+
+#texture-list {
+    background-color: #171717 !important;
+}
+
+#texture-list .el-table--border::after,
+.el-table--group::after,
+.el-table__body-wrapper {
+    background-color: #171717 !important;
+}
+
+
+#texture-list .el-table th.el-table__cell>.cell.highlight {
+    color: #227f9b !important;
+}
+
+#texture-list .el-table .ascending .sort-caret.ascending {
+    border-bottom-color: #227f9b !important;
+}
+
+#texture-list .el-table .descending .sort-caret.descending {
+    border-top-color: #227f9b !important;
+}
+
+.el-table-filter {
+    width: 160px !important;
+    background: #171717 !important;
+    border: unset !important;
+}
+
+/*颜色选择器  */
+.el-color-picker__trigger {
+    width: 80px !important;
+    height: 25px !important;
+}
+
+/*列表选择器  */
+.el-select-dropdown__list {
+    background-color: #262626 !important;
+    border: 1px solid #262626 !important;
+}
+
+.el-select-dropdown {
+    border: 1px solid #262626 !important;
+}
+
+.el-select-dropdown__item.hover,
+.el-select-dropdown__item:hover {
+    background-color: #333333 !important;
+}
+
+.el-select-dropdown__item.selected {
+    color: #227f9b !important
+}
+
+.el-select-dropdown__item {
+    color: #bdbdbd !important;
+}
+
+.el-input__suffix-inner>.el-input__icon {
+    height: 80% !important;
+    line-height: unset !important;
+}
+
+/* 信息按钮 */
+.log-comp {
+    float: right;
+    background: #171717 !important;
+    padding: 4px 3px !important;
+    margin-top: 2px !important;
+    border: 1px solid #171717 !important;
+    margin-right: 5px;
+}
+
+.el-collapse-item .el-button {
+    color: unset !important;
+}
+
+.el-collapse-item .el-button:hover {
+    color: unset !important;
+}
+
+.el-collapse-item .el-button:focus {
+    color: unset !important;
+}
+
+/* 属性选择器 */
+.comp-value-line .el-checkbox {
+    padding-top: 3px;
+    padding-left: 5px;
+}
