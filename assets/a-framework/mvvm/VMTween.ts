@@ -5,7 +5,7 @@ export type VMTweenValueResults = (newValue: any, oldValue: any, path: any) => v
 // 接口
 declare global {
     interface IVMTween {
-        onEnable();
+        onLoad();
         onDestroy();
         onTransition(newValue: any, oldValue: any, path: any, resolve: VMTweenValueResults);
     }
@@ -28,7 +28,7 @@ export class GVMTween implements IVMTween {
         }
     }
 
-    onEnable() {
+    onLoad() {
 
     }
     onDestroy() {

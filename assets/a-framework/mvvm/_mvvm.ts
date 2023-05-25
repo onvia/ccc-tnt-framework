@@ -1,47 +1,17 @@
 import { CCObject, Component, Label, ValueType, Node, Sprite, EditBox, ProgressBar, RichText, Slider, Toggle, UIOpacity, UIRenderer, js, UITransform, isValid } from "cc";
 import { DEV } from "cc/env";
+import { TriggerName, TriggerOpTypes } from "./VMOperations";
 import { ViewModel } from "./ViewModel";
+import { VMTrigger } from "./triggers/VMTrigger";
 import { GVMTween } from "./VMTween";
+import { _isObject, _isArray, _isIntegerKey, _hasOwn, _hasChanged } from "./VMGeneral";
+import { VMBaseAttr, AttrBind, WatchPath, Formator, ReturnValue, VMForAttr } from "./_mv_declare";
+import { VMFatory } from "./VMFactory";
 
-type WatchPath = string | string[];
-type ReturnValue = string | number | boolean | CCObject | ValueType;
-
-type FormatorOpts = { newValue: any, oldValue?: any, node?: Node, nodeIdx?: number, watchPath?: WatchPath };
-type Formator<T> = (options: FormatorOpts) => T | Promise<T>;
-interface IVMItem {
-    updateItem(data, index, ...args);
-}
-
-// 观察属性选项
-interface VMBaseAttr<T> {
-    watchPath: WatchPath;
-    tween?: IVMTween;
-    formator?: Formator<T>;
-}
-
-// 观察属性选项
-interface VMForAttr extends VMBaseAttr<any> {
-    watchPath: WatchPath;
-    component: GConstructor<tnt.UIBase & IVMItem>;
-
-    /** @deprecated 在 VMForAttr 中不要使用这个属性*/
-    tween?: null;
-
-    /** @deprecated 在 VMForAttr 中不要使用这个属性 */
-    formator?: null;
-
-    /** 数据发生改变 */
-    onChange: (operate: TriggerOpTypes) => void;
-}
-
-// 属性绑定
-type AttrBind<T> = {
-    [P in keyof T]?: WatchPath | VMBaseAttr<T[P]>;
-}
 
 
 declare global {
-    interface IMVVM {
+    interface IMVVMObject {
         _vmTag?: string;
         data: any;
     }
@@ -51,89 +21,58 @@ declare global {
     }
 }
 
-const _isArray = Array.isArray;
-const _isObject = (val) => val !== null && typeof val === "object";
-const _isString = (val: unknown): val is string => typeof val === 'string';
-const _isIntegerKey = (key: unknown) => _isString(key) && key !== 'NaN' && key[0] !== '-' && '' + parseInt(key, 10) === key;
-const _hasChanged = (value: any, oldValue: any): boolean => !Object.is(value, oldValue)
-
-const hasOwnProperty = Object.prototype.hasOwnProperty
-const hasOwn = (
-    val: object,
-    key: PropertyKey
-): key is keyof typeof val => hasOwnProperty.call(val, key);
-
-
 interface Target {
 
 }
-
-const enum TriggerOpTypes {
-    SET = 'set',
-    ADD = 'add',
-    DELETE = 'delete',
-    CLEAR = 'clear'
-}
-
 // 缓存代理
-const reactiveMap = new WeakMap<Target, any>();
+const proxyMap = new WeakMap<Target, any>();
 // 防止重复注册
 const proxySet = new WeakSet();
 // 数据依赖
-const depsMap = new WeakMap<object, object>();
-// 对象名称
-const objectNameMap = new WeakMap<object, PropertyKey>();
-// 
-const targetMap = new WeakMap<object, Array<Component | Node>>();
-const targetOptMap = new WeakMap<Component | Node, VMBaseAttr<any>>();
+const depsMap = new WeakMap<Target, Target>(); // key 为原始数据对象 value 为原始数据对象
+// 数据对象名称
+const objectNameMap = new WeakMap<Target, PropertyKey>();  // key 为原始数据对象 value 为数据名称
+const targetMap = new WeakMap<Target, Set<Component | Node>>(); // key 为原始数据对象
+const triggerMap = new WeakMap<Component | Node, VMTrigger<any>>();
 
 
+const _defaultKey: WeakMap<Object, string> = new WeakMap();
+_defaultKey.set(Label, "string");
+_defaultKey.set(RichText, "string");
+_defaultKey.set(EditBox, "string");
+_defaultKey.set(Sprite, "spriteFrame");
+_defaultKey.set(ProgressBar, "progress");
+_defaultKey.set(Slider, "progress");
+_defaultKey.set(Toggle, "isChecked");
+_defaultKey.set(Node, "active");
+_defaultKey.set(UIOpacity, "opacity");
+_defaultKey.set(UIRenderer, "color");
+_defaultKey.set(UITransform, "contentSize");
+
+window['tntWeakMap'] = {
+    proxyMap,proxySet,objectNameMap,targetMap,triggerMap
+};
+
+let _vmId = 0;
 class VM {
-    private static id = 0;
-    private _defObserverKey: WeakMap<Object, string> = new WeakMap();
     private _mvMap: Map<string, ViewModel<any>> = new Map();
-    private _triggerTargetFunc: Map<string, Function> = new Map()
 
     constructor() {
-        this._defObserverKey.set(Label, "string");
-        this._defObserverKey.set(RichText, "string");
-        this._defObserverKey.set(EditBox, "string");
-        this._defObserverKey.set(Sprite, "spriteFrame");
-        this._defObserverKey.set(ProgressBar, "progress");
-        this._defObserverKey.set(Slider, "progress");
-        this._defObserverKey.set(Toggle, "isChecked");
-        this._defObserverKey.set(Node, "active");
-        this._defObserverKey.set(UIOpacity, "opacity");
-        this._defObserverKey.set(UIRenderer, "color");
-        this._defObserverKey.set(UITransform, "contentSize");
-
-
-        this.setTriggerFunc(Label, this._triggerLabel);
-        this.setTriggerFunc(RichText, this._triggerLabel);
-    }
-
-    setTriggerFunc<T extends Component | Node>(ctor: GConstructor<T>, fn: Function) {
-        this._triggerTargetFunc.set(js.getClassName(ctor), fn);
-    }
-
-    public VMTag(target: IMVVM) {
-        if (!target._vmTag) {
-            target._vmTag = `VM-AUTO-${VM.id}`;
-            VM.id++;
-        }
     }
 
     public VMTween(duration?: number) {
         return new GVMTween(duration);
     }
 
-    public observe(target: IMVVM)
-    public observe(target: IMVVM, tag: string)
+    public VMTag = VMTag;
+
+    public observe(target: IMVVMObject)
+    public observe(target: IMVVMObject, tag: string)
     public observe(data: object, tag: string)
-    public observe(target: IMVVM, data: object)
-    public observe(target: IMVVM, data: object, tag: string)
-    public observe(targetOrData: IMVVM | object, data?: object | string, tag?: string) {
-        let { target: _target, data: _data, tag: _tag } = this._parseObserveArgs(targetOrData, data, tag);
+    public observe(target: IMVVMObject, data: object)
+    public observe(target: IMVVMObject, data: object, tag: string)
+    public observe(targetOrData: IMVVMObject | object, data?: object | string, tag?: string) {
+        let { target: _target, data: _data, tag: _tag } = _parseObserveArgs(targetOrData, data, tag);
 
         if (_tag == undefined || _tag == null) {
             console.error(`VM-> tag is null`);
@@ -147,17 +86,19 @@ class VM {
         }
 
         this._add(_data, _tag);
+
+        return proxy;
     }
 
-    public violate(target: IMVVM | string, ...tags: string[]) {
+    public violate(mvvmObject: IMVVMObject | string, ...tags: string[]) {
         tags.forEach(tag => {
             this._remove(tag);
         })
 
-        if (typeof target === 'string') {
-            this._remove(target);
+        if (typeof mvvmObject === 'string') {
+            this._remove(mvvmObject);
         } else {
-            this._remove(target._vmTag);
+            this._remove(mvvmObject._vmTag);
         }
     }
 
@@ -172,7 +113,7 @@ class VM {
             return data;
         }
 
-        const existingProxy = reactiveMap.get(data);
+        const existingProxy = proxyMap.get(data);
         if (existingProxy) {
             return existingProxy;
         }
@@ -193,7 +134,7 @@ class VM {
             set(target, key: PropertyKey, newValue, receiver?: any) {
                 let oldValue = target[key];
                 const isObject = _isObject(newValue);
-                const hadKey = _isArray(target) && _isIntegerKey(key) ? Number(key) < target.length : hasOwn(target, key);
+                const hadKey = _isArray(target) && _isIntegerKey(key) ? Number(key) < target.length : _hasOwn(target, key);
                 const res = Reflect.set(target, key, newValue, receiver);
                 if (!hadKey) {
                     if (isObject) {
@@ -219,7 +160,7 @@ class VM {
             },
             deleteProperty(target, key: PropertyKey) {
                 console.log(`_mvvm-> 【删除】${String(key)}`);
-                const hadKey = hasOwn(target, key)
+                const hadKey = _hasOwn(target, key)
                 const oldValue = (target as any)[key]
                 const result = Reflect.deleteProperty(target, key);
                 if (result && hadKey) {
@@ -229,195 +170,158 @@ class VM {
             }
         });
 
-        reactiveMap.set(data, proxy);
+        proxyMap.set(data, proxy);
         proxySet.add(proxy);
         return proxy;
     }
 
 
-    public bind<T extends Component | Node>(target: IMVVM, component: T, attr: AttrBind<T> | WatchPath, formator?: Formator<ReturnValue>) {
-        if (!component) {
-            console.error(`_mvvm-> `);
+    /**
+     * 根据
+     *
+     * @template T
+     * @param {IMVVMObject} mvvmObject
+     * @param {T} bindObject
+     * @param {(AttrBind<T> | WatchPath)} attr
+     * @param {Formator<ReturnValue>} [formator]
+     * @return {*} 
+     * @memberof VM
+     */
+    public bind<T extends Component | Node>(mvvmObject: IMVVMObject, bindObject: T, attr: AttrBind<T> | WatchPath, formator?: Formator<ReturnValue>) {
+        if (!bindObject) {
+            console.error(`_mvvm-> 绑定对象不存在`);
             return;
         }
-        let _attr = this._formatAttr(target, component, attr, formator);
-        let collectFn = (watchPath: string, opt: VMBaseAttr<any>) => {
-            let rs = watchPath.split(".").map(val => val.trim());
-            let data = this._mvMap.get(rs[0]);
-            let targetData = data.data;
-            // 掐头去尾
-            for (let i = 1; i < rs.length - 1; i++) {
-                targetData = targetData[rs[i]];
-            }
-            let comps = targetMap.get(targetData);
-            if (!comps) {
-                comps = [];
-            }
-            comps.push(component);
-            targetMap.set(targetData, comps);
-            targetOptMap.set(component, opt);
-            // TODO: 初始化赋值
+        let _attrs = _formatAttr(mvvmObject, bindObject, attr, formator);
+        for (const key in _attrs) {
+            const opt = _attrs[key] as VMBaseAttr<any>;
+            this._track(mvvmObject, bindObject, opt);
+        }
+    }
 
+    private _track<T extends Component | Node>(mvvmObject: IMVVMObject, bindObject: T, attr: VMBaseAttr<any>) {
+        if (!_isArray(attr.watchPath)) {
+            this.__track(mvvmObject, bindObject, attr, attr.watchPath);
+        } else {
+            for (let i = 0; i < attr.watchPath.length; i++) {
+                const watchPath = attr.watchPath[i];
+                this.__track(mvvmObject, bindObject, attr, watchPath);
+            }
+        }
+    }
+    private __track<T extends Component | Node>(mvvmObject: IMVVMObject, bindObject: T, attr: VMBaseAttr<any>, watchPath: string) {
+        let targetData = this._getDataByPath(watchPath);
+        if (!targetData) {
+            console.log(`_mvvm-> track [${watchPath}] 找不到数据`);
+            return;
+        }
+        let comps = targetMap.get(targetData);
+        if (!comps) { // 使用 Set 天然去重
+            comps = new Set();
+        }
+        // 设置默认的处理方法
+        if (!attr._trigger) {
+            attr._trigger = TriggerName.Common;
         }
 
-        for (const key in _attr) {
-            const opt = _attr[key] as VMBaseAttr<any>;
-            if (!_isArray(opt.watchPath)) {
-                collectFn(opt.watchPath, opt);
-            } else {
-                for (let i = 0; i < opt.watchPath.length; i++) {
-                    const watchPath = opt.watchPath[i];
-                    collectFn(watchPath, opt);
+        comps.add(bindObject);
+        targetMap.set(targetData, comps);
+        let _VMTrigger = VMFatory.getVMTrigger(attr._trigger);
+        let vmTrigger = new _VMTrigger(bindObject, attr);
+        vmTrigger.userControllerComponent = mvvmObject;
+        triggerMap.set(bindObject, vmTrigger);
+        vmTrigger.bind();
+
+    }
+
+    private _trigger(target: object, type: TriggerOpTypes, key: PropertyKey, newValue: any, oldValue: any) {
+        let targets = targetMap.get(target); //
+        if (targets) {
+            let _deleteArr: any[] = null;
+            let fullPath = _getFullWatchPath(target, key);
+            // let proxy = this._reactive(target);
+            targets.forEach((_target) => {
+                if (!isValid(_target)) {
+                    _deleteArr = _deleteArr || [];
+                    _deleteArr.push(_target);
+                    return;
                 }
+                let vmTrigger = triggerMap.get(_target);
+                vmTrigger.trigger(newValue, oldValue, type, fullPath);
+            });
+
+            if (_deleteArr) {
+                for (let i = 0; i < _deleteArr.length; i++) {
+                    const element = _deleteArr[i];
+                    targets.delete(element);
+                }
+                _deleteArr = null;
             }
         }
     }
 
-    public label(target: IMVVM, label: Label | Node, attr: AttrBind<Label> | WatchPath, formator?: Formator<string>) {
-        let _label: Label = this._typeTransition(label, Label);
-        this.bind(target, _label, attr, formator);
+    public label(mvvmObject: IMVVMObject, bindObject: Label | Node, attr: AttrBind<Label> | WatchPath, formator?: Formator<string>) {
+        let _label: Label = _typeTransition(bindObject, Label);
+        this.bind(mvvmObject, _label, attr, formator);
     }
 
-    public node(target: IMVVM, node: Node,){
-        
+    public node(mvvmObject: IMVVMObject, node: Node, attr: AttrBind<Node> | WatchPath, formator?: Formator<boolean>) {
+        this.bind(mvvmObject, node, attr, formator);
     }
+
 
     /**
      * 关联子节点数量
      *
      * @template T
-     * @param {IMVVM} target
+     * @param {IMVVMObject} target
      * @param {Node} parent
      * @param {VMForAttr} attr
      * @memberof VM
      */
-    public for<T>(target: IMVVM, parent: Node, attr: VMForAttr) {
-
+    public for<T>(target: IMVVMObject, parent: Node, attr: VMForAttr) {
+        attr.watchPath = _parseWatchPath(attr.watchPath, target._vmTag);
+        this._track(target, parent, attr);
     }
 
-    public click() {
+    // public click() {
 
-    }
+    // }
 
-    // ------------------------------- 以下私有方法 -------------------------------
-    private _getObserverKey(component: Object) {
-        let defKey = "string";
-        let clazz = js.getClassByName(js.getClassName(component));
-        if (this._defObserverKey.has(clazz)) {
-            defKey = this._defObserverKey.get(clazz);
+    public setValue(path: string, value: any) {
+        let targetData = this._getDataByPath(path);
+        if (!targetData) {
+            console.log(`_mvvm-> [${path}] 找不到数据`);
+            return;
         }
-        return defKey;
+        let proxy = this._reactive(targetData);
+        let rs = path.split(".").map(val => val.trim());
+        let key = rs[rs.length - 1];
+        proxy[key] = value;
     }
 
-    private _typeTransition<T extends Component>(comp: T | Node, clazz: GConstructor<T>) {
-        if (comp instanceof Node) {
-            comp = comp.getComponent(clazz);
+    public getValue(path: string,defaultValue: any) {
+        let targetData = this._getDataByPath(path);
+        if (!targetData) {
+            console.log(`_mvvm-> [${path}] 找不到数据`);
+            return defaultValue;
         }
-        return comp;
+        let proxy = this._reactive(targetData);
+        let rs = path.split(".").map(val => val.trim());
+        let key = rs[rs.length - 1];
+        return proxy[key];
     }
 
-    private _parseObserveArgs(targetOrData: IMVVM | object, data?: object | string, tag?: string) {
-        let target: IMVVM = null;
-        if (!tag) {
-            if (typeof data === 'string') {
-                tag = data;
-                if (targetOrData instanceof Component) {
-                    target = targetOrData as any as IMVVM;
-                    target._vmTag = tag;
-                    data = target.data;
-                } else {
-                    data = targetOrData;
-                }
-            } else {
-                if (typeof data !== 'undefined') {
-                    target = targetOrData as IMVVM;
-                    this.VMTag(target);
-                    tag = target._vmTag;
-                    data = data as object;
-                } else {
-                    target = targetOrData as IMVVM;
-                    this.VMTag(target);
-                    tag = target._vmTag;
-                    data = target.data;
-                }
-            }
-        } else {
-            target = targetOrData as IMVVM;
-            target._vmTag = tag;
-            data = data as object;
+    private _getDataByPath(path: string) {
+        let rs = path.split(".").map(val => val.trim());
+        let data = this._mvMap.get(rs[0]);
+        let targetData = data.data;
+        // 掐头去尾
+        for (let i = 1; i < rs.length - 1; i++) {
+            targetData = targetData[rs[i]];
         }
-
-        return { target, data: data as object, tag }
+        return targetData;
     }
-
-    private _formatAttr<T>(target: IMVVM, component: T, attr: AttrBind<T> | WatchPath, formator?: Formator<ReturnValue>) {
-        let _attr: AttrBind<any> = null;
-        if (typeof attr === 'string' || _isArray(attr)) {
-            let defKey = this._getObserverKey(component);
-            _attr = {
-                [defKey]: {
-                    watchPath: this._parseWatchPath(attr, target._vmTag),
-                    formator: formator
-                }
-            }
-        } else {
-            for (const key in attr) {
-                const element = attr[key];
-                if (typeof element === 'string' || _isArray(element)) {
-                    let observeAttr: VMBaseAttr<any> = {
-                        watchPath: this._parseWatchPath(element as string, target._vmTag),
-                        formator: null,
-                    }
-                    attr[key] = observeAttr;
-                } else {
-                    element.watchPath = this._parseWatchPath(element.watchPath, target._vmTag);
-                }
-            }
-            _attr = attr;
-        }
-        return _attr;
-    }
-
-    private _parseWatchPath(watchPath: string | string[], tag: string) {
-        let path: string | string[] = watchPath;
-        if (typeof path == 'string') {
-            path = path.trim();
-            if (!path) {
-                console.error(`_mvvm->[${tag}] watchPath is err`);
-            }
-            //遇到特殊 path 就优先替换路径
-            if (path.startsWith('*')) {
-                watchPath = path.replace('*', tag);
-            }
-        } else if (Array.isArray(path)) {
-            for (let j = 0; j < path.length; j++) {
-                const _path = path[j].trim();
-                if (!_path) {
-                    console.error(`_mvvm->[${tag}] watchPath is err`);
-                }
-                if (_path.startsWith('*')) {
-                    path[j] = _path.replace('*', tag);
-                }
-            }
-            watchPath = path;
-        }
-        return watchPath;
-    }
-
-    private _getFullWatchPath(target: object, propertyKey: PropertyKey) {
-        let parent = target;
-        let objectName: PropertyKey = "";
-        let pathArr = [propertyKey];
-        while (parent) {
-            objectName = objectNameMap.get(parent); // 先获取对象名称（属性名）
-            parent = depsMap.get(parent); // 获取被依赖的数据
-            pathArr.unshift(objectName); // 最前面插入名称
-        }
-
-        let pathStr = pathArr.join(".");
-        return pathStr;
-    }
-
     private _add<T>(data: T, tag: string) {
         if (tag.includes('.')) {
             console.warn('tag 中不能包含 [.] : ', tag);
@@ -435,53 +339,37 @@ class VM {
     }
 
     private _remove(tag: string) {
-        let deleted = this._mvMap.delete(tag);
-        if (!deleted) {
+        let has = this._mvMap.has(tag);
+        if (!has) {
             console.warn(`_mvvm-> 不存在 ${tag} 数据`);
+            return;
         }
+        // let mv = this._mvMap.get(tag);
+        this._mvMap.delete(tag);
+
+        // this.__remove(mv.data);
     }
 
-    private _trigger(target: object, type: TriggerOpTypes, key: PropertyKey, newValue: any, oldValue: any) {
-        let targets = targetMap.get(target);
-        if (targets) {
-            for (let i = 0; i < targets.length; i++) {
-                const _target = targets[i];
-                if (!isValid(_target)) {
-                    targets.splice(i, 1);
-                    i--;
-                    continue;
-                }
-                this._triggerTarget(_target, type, key, newValue, oldValue);
-            }
-        }
-    }
+    // private __remove(data: object) {
+    //     if (!_isObject(data)) {
+    //         return;
+    //     }
+    //     if (!targetMap.has(data)) {
+    //         for (const key in data) {
+    //             this.__remove(data[key]);
+    //         }
+    //         return;
+    //     }
+    //     let comps = targetMap.get(data);
+    //     comps.forEach((bindObject) => {
+    //         let vmTrigger = triggerMap.get(bindObject);
+    //         vmTrigger.unbind();
+    //         triggerMap.delete(bindObject);
+    //     });
+    //     comps.clear();
+    //     targetMap.delete(comps);
+    // }
 
-
-    private _triggerTarget(target: Component | Node, type: TriggerOpTypes, key: PropertyKey, newValue: any, oldValue: any) {
-        let name = js.getClassName(target);
-        let fn: Function = null;
-        if (this._triggerTargetFunc.has(name)) {
-            fn = this._triggerTargetFunc.get(name);
-        } else {
-            fn = this._triggerCommon;
-        }
-
-        fn(target, type, key, newValue, oldValue);
-    }
-
-    private _triggerCommon(target: Component | Node, type: TriggerOpTypes, key: PropertyKey, newValue: any, oldValue: any) {
-        let opts = targetOptMap.get(target);
-        // opts.watchPath
-        // opts.formator
-
-    }
-
-    private _triggerLabel(target: Component | Node, type: TriggerOpTypes, key: PropertyKey, newValue: any, oldValue: any) {
-        let opts = targetOptMap.get(target);
-        // opts.watchPath
-        // opts.formator
-
-    }
 
 
     private static _instance: VM = null
@@ -491,6 +379,137 @@ class VM {
         }
         return this._instance;
     }
+}
+
+function VMTag(target: IMVVMObject) {
+    if (!target._vmTag) {
+        target._vmTag = `VM-AUTO-${_vmId}`;
+        _vmId++;
+    }
+}
+
+
+
+function _getDefaultKey(component: Object) {
+    let defKey = "string";
+    let clazz = js.getClassByName(js.getClassName(component));
+    if (_defaultKey.has(clazz)) {
+        defKey = _defaultKey.get(clazz);
+    }
+    return defKey;
+}
+
+function _typeTransition<T extends Component>(comp: T | Node, clazz: GConstructor<T>) {
+    if (comp instanceof Node) {
+        comp = comp.getComponent(clazz);
+    }
+    return comp;
+}
+
+function _parseObserveArgs(mvvmObjectOrData: IMVVMObject | object, data?: object | string, tag?: string) {
+    let target: IMVVMObject = null;
+    if (!tag) {
+        if (typeof data === 'string') {
+            tag = data;
+            if (mvvmObjectOrData instanceof Component) {
+                target = mvvmObjectOrData as any as IMVVMObject;
+                target._vmTag = tag;
+                data = target.data;
+            } else {
+                data = mvvmObjectOrData;
+            }
+        } else {
+            if (typeof data !== 'undefined') {
+                target = mvvmObjectOrData as IMVVMObject;
+                VMTag(target);
+                tag = target._vmTag;
+                data = data as object;
+            } else {
+                target = mvvmObjectOrData as IMVVMObject;
+                VMTag(target);
+                tag = target._vmTag;
+                data = target.data;
+            }
+        }
+    } else {
+        target = mvvmObjectOrData as IMVVMObject;
+        target._vmTag = tag;
+        data = data as object;
+    }
+
+    return { target, data: data as object, tag }
+}
+
+function _formatAttr<T>(mvvmObject: IMVVMObject, component: T, attr: AttrBind<T> | WatchPath, formator?: Formator<ReturnValue>) {
+    let _attr: AttrBind<any> = null;
+    if (typeof attr === 'string' || _isArray(attr)) {
+        let defKey = _getDefaultKey(component);
+        _attr = {
+            [defKey]: {
+                _targetPropertyKey: defKey,
+                watchPath: _parseWatchPath(attr, mvvmObject._vmTag),
+                formator: formator
+            }
+        }
+    } else {
+        for (const key in attr) {
+            const element = attr[key];
+            if (typeof element === 'string' || _isArray(element)) {
+                let observeAttr: VMBaseAttr<any> = {
+                    watchPath: _parseWatchPath(element as string, mvvmObject._vmTag),
+                    formator: null,
+                    _targetPropertyKey: key,
+                }
+                attr[key] = observeAttr;
+            } else {
+                element.watchPath = _parseWatchPath(element.watchPath, mvvmObject._vmTag);
+                element._targetPropertyKey = key;
+            }
+        }
+        _attr = attr;
+    }
+    return _attr;
+}
+
+function _parseWatchPath(watchPath: string | string[], tag: string) {
+    let path: string | string[] = watchPath;
+    if (typeof path == 'string') {
+        path = path.trim();
+        if (!path) {
+            console.error(`_mvvm->[${tag}] watchPath is err`);
+        }
+        //遇到特殊 path 就优先替换路径
+        if (path.startsWith('*')) {
+            watchPath = path.replace('*', tag);
+        }
+    } else if (Array.isArray(path)) {
+        for (let j = 0; j < path.length; j++) {
+            const _path = path[j].trim();
+            if (!_path) {
+                console.error(`_mvvm->[${tag}] watchPath is err`);
+            }
+            if (_path.startsWith('*')) {
+                path[j] = _path.replace('*', tag);
+            }
+        }
+        watchPath = path;
+    }
+    return watchPath;
+}
+
+
+function _getFullWatchPath(target: object, propertyKey: PropertyKey) {
+    let parent = target;
+    let objectName: PropertyKey = "";
+    let pathArr = [propertyKey];
+    while (parent) {
+        objectName = objectNameMap.get(parent); // 先获取对象名称（属性名）
+        parent = depsMap.get(parent); // 获取被依赖的数据
+        pathArr.unshift(objectName); // 最前面插入名称
+    }
+
+    let pathStr = pathArr.join(".");
+    return pathStr;
 }
 
 tnt.vm = VM.getInstance();

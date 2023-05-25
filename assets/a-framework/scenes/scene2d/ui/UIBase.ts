@@ -1,5 +1,5 @@
 import "../../../components/GComponent"
-import { _decorator, Button, Node, EditBox, Toggle, Label, Sprite, Slider, ToggleContainer } from "cc";
+import { _decorator, Button, Node, EditBox, Toggle, Label, Sprite, Slider, ToggleContainer, ProgressBar, Layout } from "cc";
 const { ccclass, } = _decorator;
 
 
@@ -76,7 +76,7 @@ class UIBase<Options = any> extends tnt.GComponent<Options> implements IUIAble {
      * @memberof UIBase
      */
     public registerNodeLongTouchEvent(node: NodeNoun<Node>, touchInterval: number, callback: Runnable1<number>, target: any, parent?: Node) {
-        tnt.componentUtils.registerNodeLongTouchEvent(node, touchInterval,callback, target || this, this.node, parent);
+        tnt.componentUtils.registerNodeLongTouchEvent(node, touchInterval, callback, target || this, this.node, parent);
     }
 
     /**
@@ -156,11 +156,19 @@ class UIBase<Options = any> extends tnt.GComponent<Options> implements IUIAble {
         return this.findComponent(name, Toggle, parent);
     }
 
+    public getProgressBarByName(name: string, parent?: Node): ProgressBar {
+        return this.findComponent(name, ProgressBar, parent);
+    }
+
+    public getSilderByName(name: string, parent?: Node): Slider {
+        return this.findComponent(name, Slider, parent);
+    }
+    
     public setLabelText(name: NodeNoun<Node>, text: string, parent?: Node) {
         let label: Label = null;
-        if(name instanceof Node){
+        if (name instanceof Node) {
             label = name.getComponent(Label);
-        }else{
+        } else {
             label = this.getLabelByName(name, parent);
         }
         if (label) {
