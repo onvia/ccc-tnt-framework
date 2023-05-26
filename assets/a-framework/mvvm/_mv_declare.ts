@@ -7,7 +7,7 @@ export type ReturnValue = string | number | boolean | CCObject | ValueType;
 
 export type FormatorOpts = { trigger: VMTrigger, newValue: any, oldValue?: any, node?: Node, nodeIdx?: number, watchPath?: WatchPath };
 export type FormatorSpriteOpts = { trigger: VMTrigger, newValue: any, oldValue?: any, node?: Node, nodeIdx?: number, watchPath?: WatchPath, bundle?: string, loaderKey?: string };
-export type Formator<T, E = any> = (options: FormatorOpts & E) => T | Promise<T>;
+export type Formator<T, E> = (options: FormatorOpts & E) => T | Promise<T>;
 export interface IVMItem {
     updateItem(data, index, ...args);
 }
@@ -35,7 +35,7 @@ export interface VMBaseAttr<R = any> {
     isBidirection?: boolean;
     watchPath: WatchPath;
     tween?: IVMTween;
-    formator?: Formator<R>;
+    formator?: Formator<R,unknown>;
 }
 
 // 观察属性选项

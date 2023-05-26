@@ -50,7 +50,6 @@ export class MVVMScene extends tnt.SceneBase implements IMVVMObject {
         // proxy.obj.progress
         // proxy.obj.progress = 1;
 
-        let label: Label = this.getLabelByName("label");
         let content: Node = this.getNodeByName("content");
         let progressBar: ProgressBar = this.getProgressBarByName("progressBar");
         // tnt.vm.bind(this, label, "*.name");
@@ -62,26 +61,6 @@ export class MVVMScene extends tnt.SceneBase implements IMVVMObject {
         //             return Math.floor(opts.newValue * 100) / 100;
         //         }
         //     }
-        // });
-        // tnt.vm.bind(this, label, {
-        //     color: "*.color"
-        // });
-        // tnt.vm.bind(this, label, {
-        //     'string': {
-        //         watchPath: "",
-        //         // tween: 
-        //         formator(options) {
-        //             return "";
-        //         },
-        //     },
-        //     'color': "*.color"
-        // });
-
-        // tnt.vm.bind(this, label, "*.array.0.age", () => {
-        //     return Promise.resolve("");
-        // });
-        // tnt.vm.label(this, label.node, "*.array.0.age", () => {
-        //     return Promise.resolve("");
         // });
 
 
@@ -109,54 +88,60 @@ export class MVVMScene extends tnt.SceneBase implements IMVVMObject {
         // tnt.vm.observe(this, { xxx: 11, ddd: 22 },"MVVMTag");
 
         // setTimeout(() => {
-        //     this.data.name = "小红"
-        // }, 1000);
-        // setTimeout(() => {
-        //     label.node.destroy();
-        //     label = null;
-        // }, 2000);
-
-        // setTimeout(() => {
         //     this.data.progress = 0.5;
         // }, 500);
 
         // setTimeout(() => {
         //     this.data.progress = 1;
         // }, 1000);
-
+        this.testLabel();
         this.testSprite();
     }
 
+    testLabel() {
+        let label: Label = this.getLabelByName("label");
 
+        tnt.vm.bind(this, label, {
+            "color": "*.color"
+        });
+        tnt.vm.bind(this, label, {
+            "string": {
+                watchPath: "*.array.0.age",
+                tween: tnt.vm.VMTween(3),
+                formator: (opts) => {
+                    return `${Math.floor(opts.newValue)}`;
+                }
+            }
+        });
+        tnt.vm.bind(this, label, "*.array.0.age", (opts) => {
+            return opts.newValue;
+        });
+
+       
+
+        // tnt.vm.label(this,label,{
+        //     "string"
+        // });
+
+        setTimeout(() => {
+            this.data.array[0].age = 99;
+        }, 600);
+    }
     testSprite() {
 
         let sprite: Sprite = this.getSpriteByName("sprite");
         tnt.vm.sprite(this, sprite, {
             'spriteFrame': {
-                watchPath: "*.icon",
-                formator: async (options) => {
-                    let spriteFrame = await new Promise<SpriteFrame>((rs) => {
-                        tnt.loaderMgr.share.load(options.newValue, SpriteFrame, (err, spriteFrame) => {
-                            rs(err ? null : spriteFrame);
-                        });
-                    });
-                    return spriteFrame;
-                },
+                watchPath: "*.icon"
             }
         });
-        tnt.vm.sprite(this, sprite, "*.icon", async (options) => {
-            let spriteFrame = await new Promise<SpriteFrame>((rs) => {
-                tnt.loaderMgr.share.load(options.newValue, SpriteFrame, (err, spriteFrame) => {
-                    rs(err ? null : spriteFrame);
-                });
-            });
-            return spriteFrame;
-        });
+
+        tnt.vm.sprite(this, sprite, "*.icon");
 
 
         setTimeout(() => {
             this.data.icon = "resources#textures/goldcoin";
-        }, 1000);
+        }, 500);
     }
 
 
