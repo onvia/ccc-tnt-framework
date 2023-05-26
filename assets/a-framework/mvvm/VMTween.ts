@@ -38,7 +38,20 @@ export class GVMTween implements IVMTween {
         }
     }
     onTransition(newValue: any, oldValue: any, path: any, resolve: VMTweenValueResults) {
-        let self: GVMTween = this;
+        let isString = typeof newValue === "string";
+        if (!isString && typeof newValue !== "number") {
+            return;
+        }
+        if (isString) {
+            // 检查是否全是数字
+            let regExp = /^[+-]?\d*(\.\d*)?(e[+-]?\d+)?$/;
+            if (!regExp.test(newValue)) {
+                resolve(newValue, oldValue, path);
+                return;
+            }
+        }
+
+
         if (Array.isArray(newValue) && Array.isArray(oldValue)) {
             this.onTransitionArray(newValue, oldValue, path, resolve);
             return;

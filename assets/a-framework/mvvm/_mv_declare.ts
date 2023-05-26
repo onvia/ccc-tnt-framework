@@ -3,7 +3,7 @@ import { VMTrigger } from "./triggers/VMTrigger";
 import { TriggerOpTypes } from "./VMOperations";
 
 export type WatchPath = string | string[];
-export type ReturnValue = string | number | boolean | CCObject | ValueType;
+export type ReturnValue = string | number | boolean | CCObject | ValueType | object;
 
 export type FormatorOpts = { trigger: VMTrigger, newValue: any, oldValue?: any, node?: Node, nodeIdx?: number, watchPath?: WatchPath };
 export type FormatorSpriteOpts = { trigger: VMTrigger, newValue: any, oldValue?: any, node?: Node, nodeIdx?: number, watchPath?: WatchPath, bundle?: string, loaderKey?: string };

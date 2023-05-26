@@ -52,16 +52,43 @@ export class MVVMScene extends tnt.SceneBase implements IMVVMObject {
 
         let content: Node = this.getNodeByName("content");
         let progressBar: ProgressBar = this.getProgressBarByName("progressBar");
+        tnt.vm.bind(this, progressBar, "*.progress", (opts) => {
+            return 1;
+        });
+
+
+        tnt.vm.bind(this, progressBar, {
+            "progress": {
+                watchPath: "*.progress",
+                formator: (ots) => {
+                    return 1;
+                }
+            },
+            "reverse": {
+                watchPath: "",
+                formator: (opts) => {
+                    return false;
+                }
+            }
+        });
+
+
         // tnt.vm.bind(this, label, "*.name");
-        // tnt.vm.bind(this, progressBar, {
-        //     'progress': {
-        //         watchPath: "*.progress",
-        //         tween: tnt.vm.VMTween(3),
-        //         formator: (opts) => {
-        //             return Math.floor(opts.newValue * 100) / 100;
-        //         }
-        //     }
-        // });
+        tnt.vm.progressBar(this, progressBar.node, {
+            'progress': {
+                watchPath: "*.progress",
+                tween: tnt.vm.VMTween(3),
+                formator: (opts) => {
+                    return Math.floor(opts.newValue * 100) / 100;
+                }
+            },
+            "reverse": {
+                watchPath: "",
+                formator: (opts) => {
+                    return false;
+                }
+            }
+        });
 
 
         // tnt.vm.for(this,content,{
@@ -117,7 +144,7 @@ export class MVVMScene extends tnt.SceneBase implements IMVVMObject {
             return opts.newValue;
         });
 
-       
+
 
         // tnt.vm.label(this,label,{
         //     "string"
