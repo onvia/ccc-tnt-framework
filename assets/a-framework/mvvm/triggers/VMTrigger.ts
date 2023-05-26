@@ -111,4 +111,12 @@ export abstract class VMTrigger<T extends object = any>{
     abstract onUnBind();
 
     abstract trigger(newValue: any, oldValue: any, type: TriggerOpTypes, watchPath: string);
+
+    
+    isWatchPath(path: string){
+        if(_isArray(this.attr.watchPath)){
+            return this.attr.watchPath.includes(path);
+        }
+        return this.attr.watchPath == path;
+    }
 }

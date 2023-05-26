@@ -49,9 +49,11 @@ _defaultKey.set(UIOpacity, "opacity");
 _defaultKey.set(UIRenderer, "color");
 _defaultKey.set(UITransform, "contentSize");
 
-window['tntWeakMap'] = {
-    proxyMap,proxySet,objectNameMap,targetMap,triggerMap
-};
+if (DEV) {
+    window['tntWeakMap'] = {
+        proxyMap, proxySet, objectNameMap, targetMap, triggerMap
+    };
+}
 
 let _vmId = 0;
 class VM {
@@ -247,7 +249,9 @@ class VM {
                     return;
                 }
                 let vmTrigger = triggerMap.get(_target);
-                vmTrigger.trigger(newValue, oldValue, type, fullPath);
+                if (vmTrigger.isWatchPath(fullPath)) {
+                    vmTrigger.trigger(newValue, oldValue, type, fullPath);
+                }
             });
 
             if (_deleteArr) {
@@ -300,7 +304,7 @@ class VM {
         proxy[key] = value;
     }
 
-    public getValue(path: string,defaultValue: any) {
+    public getValue(path: string, defaultValue: any) {
         let targetData = this._getDataByPath(path);
         if (!targetData) {
             console.log(`_mvvm-> [${path}] 找不到数据`);

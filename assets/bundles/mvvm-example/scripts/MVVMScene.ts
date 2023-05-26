@@ -58,9 +58,9 @@ export class MVVMScene extends tnt.SceneBase implements IMVVMObject {
         tnt.vm.bind(this, progressBar, {
             'progress': {
                 watchPath: "*.progress",
-                tween: tnt.vm.VMTween(),
+                tween: tnt.vm.VMTween(3),
                 formator: (opts)=>{
-                    return Math.floor(opts.newValue);
+                    return Math.floor(opts.newValue * 100) / 100;
                 }
             }
         });
@@ -127,8 +127,12 @@ export class MVVMScene extends tnt.SceneBase implements IMVVMObject {
         }, 2000);
 
         setTimeout(() => {
-            this.data.progress = 1;
+            this.data.progress = 0.5;
         }, 500);
+        
+        setTimeout(() => {
+            this.data.progress = 1;
+        }, 1000);
     }
     protected onDestroy(): void {
         tnt.vm.violate(this);
