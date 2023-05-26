@@ -1,10 +1,9 @@
 import { CCObject, Component, Label, ValueType, Node, Sprite, EditBox, ProgressBar, RichText, Slider, Toggle, UIOpacity, UIRenderer, js, UITransform, isValid } from "cc";
 import { DEV } from "cc/env";
 import { TriggerName, TriggerOpTypes } from "./VMOperations";
-import { ViewModel } from "./ViewModel";
 import { VMTrigger } from "./triggers/VMTrigger";
 import { GVMTween } from "./VMTween";
-import { _isObject, _isArray, _isIntegerKey, _hasOwn, _hasChanged } from "./VMGeneral";
+import { isObject, isArray, isIntegerKey, hasOwn, hasChanged } from "./VMGeneral";
 import { VMBaseAttr, AttrBind, WatchPath, Formator, ReturnValue, VMForAttr } from "./_mv_declare";
 import { VMFatory } from "./VMFactory";
 
@@ -57,7 +56,7 @@ if (DEV) {
 
 let _vmId = 0;
 class VM {
-    private _mvMap: Map<string, ViewModel<any>> = new Map();
+    private _mvMap: Map<string, { data: object, tag: string }> = new Map();
 
     constructor() {
     }
@@ -110,7 +109,7 @@ class VM {
             console.warn(`_mvvm-> 本身已经是代理`);
             return data;
         }
-        if (!_isObject(data)) {
+        if (!isObject(data)) {
             console.warn(`_mvvm-> 非对象无法进行代理: ${String(data)}`)
             return data;
         }
@@ -124,7 +123,7 @@ class VM {
         const proxy = new Proxy(data, {
             get(target, key: PropertyKey, receiver?: any) {
                 const res = Reflect.get(target, key, receiver);
-                if (_isObject(res)) {
+                if (isObject(res)) {
                     depsMap.set(res as object, target);
                     objectNameMap.set(res as object, key);
                     console.log(`_mvvm->【读取】${String(key)} 值为 ${res?.toString()} 注册代理`);
@@ -135,16 +134,16 @@ class VM {
             },
             set(target, key: PropertyKey, newValue, receiver?: any) {
                 let oldValue = target[key];
-                const isObject = _isObject(newValue);
-                const hadKey = _isArray(target) && _isIntegerKey(key) ? Number(key) < target.length : _hasOwn(target, key);
+                const _isObject = isObject(newValue);
+                const hadKey = isArray(target) && isIntegerKey(key) ? Number(key) < target.length : hasOwn(target, key);
                 const res = Reflect.set(target, key, newValue, receiver);
                 if (!hadKey) {
-                    if (isObject) {
+                    if (_isObject) {
                         depsMap.set(newValue as object, target);
                         objectNameMap.set(newValue as object, key);
                     }
                     self._trigger(target, TriggerOpTypes.ADD, key, newValue, oldValue);
-                } else if (_hasChanged(newValue, oldValue)) {
+                } else if (hasChanged(newValue, oldValue)) {
                     // TODO：对数组进行特殊处理 （length = 0）
 
                     self._trigger(target, TriggerOpTypes.SET, key, newValue, oldValue);
@@ -162,7 +161,7 @@ class VM {
             },
             deleteProperty(target, key: PropertyKey) {
                 console.log(`_mvvm-> 【删除】${String(key)}`);
-                const hadKey = _hasOwn(target, key)
+                const hadKey = hasOwn(target, key)
                 const oldValue = (target as any)[key]
                 const result = Reflect.deleteProperty(target, key);
                 if (result && hadKey) {
@@ -202,7 +201,7 @@ class VM {
     }
 
     private _track<T extends Component | Node>(mvvmObject: IMVVMObject, bindObject: T, attr: VMBaseAttr<any>) {
-        if (!_isArray(attr.watchPath)) {
+        if (!isArray(attr.watchPath)) {
             this.__track(mvvmObject, bindObject, attr, attr.watchPath);
         } else {
             for (let i = 0; i < attr.watchPath.length; i++) {
@@ -326,7 +325,7 @@ class VM {
         }
         return targetData;
     }
-    private _add<T>(data: T, tag: string) {
+    private _add(data: object, tag: string) {
         if (tag.includes('.')) {
             console.warn('tag 中不能包含 [.] : ', tag);
             return;
@@ -338,8 +337,9 @@ class VM {
             return;
         }
 
-        let vm = new ViewModel<T>(data, tag);
-        this._mvMap.set(tag, vm)
+        this._mvMap.set(tag, {
+            data, tag
+        })
     }
 
     private _remove(tag: string) {
@@ -446,7 +446,7 @@ function _parseObserveArgs(mvvmObjectOrData: IMVVMObject | object, data?: object
 
 function _formatAttr<T>(mvvmObject: IMVVMObject, component: T, attr: AttrBind<T> | WatchPath, formator?: Formator<ReturnValue>) {
     let _attr: AttrBind<any> = null;
-    if (typeof attr === 'string' || _isArray(attr)) {
+    if (typeof attr === 'string' || isArray(attr)) {
         let defKey = _getDefaultKey(component);
         _attr = {
             [defKey]: {
@@ -458,7 +458,7 @@ function _formatAttr<T>(mvvmObject: IMVVMObject, component: T, attr: AttrBind<T>
     } else {
         for (const key in attr) {
             const element = attr[key];
-            if (typeof element === 'string' || _isArray(element)) {
+            if (typeof element === 'string' || isArray(element)) {
                 let observeAttr: VMBaseAttr<any> = {
                     watchPath: _parseWatchPath(element as string, mvvmObject._vmTag),
                     formator: null,

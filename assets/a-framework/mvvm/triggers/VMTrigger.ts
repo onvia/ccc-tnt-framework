@@ -1,5 +1,5 @@
 import { Component, Node } from "cc";
-import { _isArray } from "../VMGeneral";
+import { isArray } from "../VMGeneral";
 import { TriggerOpTypes } from "../VMOperations";
 import { VMBaseAttr, WatchPath } from "../_mv_declare";
 
@@ -114,7 +114,7 @@ export abstract class VMTrigger<T extends object = any>{
 
     
     isWatchPath(path: string){
-        if(_isArray(this.attr.watchPath)){
+        if(isArray(this.attr.watchPath)){
             return this.attr.watchPath.includes(path);
         }
         return this.attr.watchPath == path;
