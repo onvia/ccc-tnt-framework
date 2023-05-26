@@ -1,10 +1,10 @@
-import { CCObject, Component, Label, ValueType, Node, Sprite, EditBox, ProgressBar, RichText, Slider, Toggle, UIOpacity, UIRenderer, js, UITransform, isValid } from "cc";
+import { CCObject, Component, Label, ValueType, Node, Sprite, EditBox, ProgressBar, RichText, Slider, Toggle, UIOpacity, UIRenderer, js, UITransform, isValid, SpriteFrame } from "cc";
 import { DEV } from "cc/env";
 import { TriggerName, TriggerOpTypes } from "./VMOperations";
 import { VMTrigger } from "./triggers/VMTrigger";
 import { GVMTween } from "./VMTween";
 import { isObject, isArray, isIntegerKey, hasOwn, hasChanged } from "./VMGeneral";
-import { VMBaseAttr, AttrBind, WatchPath, Formator, ReturnValue, VMForAttr } from "./_mv_declare";
+import { VMBaseAttr, BaseAttrBind, WatchPath, Formator, ReturnValue, VMForAttr, SpriteAttrBind } from "./_mv_declare";
 import { VMFatory } from "./VMFactory";
 
 
@@ -183,12 +183,15 @@ class VM {
      * @template T
      * @param {IMVVMObject} mvvmObject
      * @param {T} bindObject
-     * @param {(AttrBind<T> | WatchPath)} attr
+     * @param {(BaseAttrBind<T> | WatchPath)} attr
      * @param {Formator<ReturnValue>} [formator]
      * @return {*} 
      * @memberof VM
      */
-    public bind<T extends Component | Node>(mvvmObject: IMVVMObject, bindObject: T, attr: AttrBind<T> | WatchPath, formator?: Formator<ReturnValue>) {
+    public bind<T extends Component | Node, A extends BaseAttrBind<T>>(mvvmObject: IMVVMObject, bindObject: T, attr: WatchPath, formator?: Formator<ReturnValue>)
+    public bind<T extends Component | Node, A extends BaseAttrBind<T>>(mvvmObject: IMVVMObject, bindObject: T, attr: A)
+    public bind<T extends Component | Node, A extends BaseAttrBind<T>>(mvvmObject: IMVVMObject, bindObject: T, attr: A | WatchPath, formator?: Formator<ReturnValue>)
+    public bind<T extends Component | Node, A extends BaseAttrBind<T>>(mvvmObject: IMVVMObject, bindObject: T, attr: A | WatchPath, formator?: Formator<ReturnValue>) {
         if (!bindObject) {
             console.error(`_mvvm-> 绑定对象不存在`);
             return;
@@ -263,13 +266,24 @@ class VM {
         }
     }
 
-    public label(mvvmObject: IMVVMObject, bindObject: Label | Node, attr: AttrBind<Label> | WatchPath, formator?: Formator<string>) {
+    public label(mvvmObject: IMVVMObject, bindObject: Label | Node, attr: WatchPath, formator: Formator<string>)
+    public label(mvvmObject: IMVVMObject, bindObject: Label | Node, attr: BaseAttrBind<Label>)
+    public label(mvvmObject: IMVVMObject, bindObject: Label | Node, attr: BaseAttrBind<Label> | WatchPath, formator?: Formator<string>) {
         let _label: Label = _typeTransition(bindObject, Label);
         this.bind(mvvmObject, _label, attr, formator);
     }
 
-    public node(mvvmObject: IMVVMObject, node: Node, attr: AttrBind<Node> | WatchPath, formator?: Formator<boolean>) {
+    public node(mvvmObject: IMVVMObject, node: Node, attr: WatchPath, formator: Formator<boolean>)
+    public node(mvvmObject: IMVVMObject, node: Node, attr: BaseAttrBind<Node>)
+    public node(mvvmObject: IMVVMObject, node: Node, attr: BaseAttrBind<Node> | WatchPath, formator?: Formator<boolean>) {
         this.bind(mvvmObject, node, attr, formator);
+    }
+
+    public sprite(mvvmObject: IMVVMObject, bindObject: Sprite | Node, attr: WatchPath, formator: Formator<SpriteFrame, { bundle?: string, loaderKey?: string }>)
+    public sprite(mvvmObject: IMVVMObject, bindObject: Sprite | Node, attr: SpriteAttrBind<Sprite>)
+    public sprite(mvvmObject: IMVVMObject, bindObject: Sprite | Node, attr: SpriteAttrBind<Sprite> | WatchPath, formator?: Formator<SpriteFrame, { bundle?: string, loaderKey?: string }>) {
+        let _comp: Sprite = _typeTransition(bindObject, Sprite);
+        this.bind(mvvmObject, _comp, attr, formator);
     }
 
 
@@ -444,8 +458,8 @@ function _parseObserveArgs(mvvmObjectOrData: IMVVMObject | object, data?: object
     return { target, data: data as object, tag }
 }
 
-function _formatAttr<T>(mvvmObject: IMVVMObject, component: T, attr: AttrBind<T> | WatchPath, formator?: Formator<ReturnValue>) {
-    let _attr: AttrBind<any> = null;
+function _formatAttr<T>(mvvmObject: IMVVMObject, component: T, attr: BaseAttrBind<T> | WatchPath, formator?: Formator<ReturnValue>) {
+    let _attr: BaseAttrBind<any> = null;
     if (typeof attr === 'string' || isArray(attr)) {
         let defKey = _getDefaultKey(component);
         _attr = {

@@ -62,9 +62,9 @@ export abstract class VMTrigger<T extends object = any>{
         this.templateValuesCache.length = 0;
     }
 
-    protected formatValue(newValue: any, oldValue: any, node: Node, nodeIdx: number, watchPath: WatchPath) {
+    protected async formatValue(newValue: any, oldValue: any, node: Node, nodeIdx: number, watchPath: WatchPath) {
         if (this.attr.formator) {
-            return this.attr.formator.call(this.userControllerComponent, {
+            return await this.attr.formator.call(this.userControllerComponent, {
                 trigger: this,
                 newValue,
                 oldValue,
@@ -99,8 +99,8 @@ export abstract class VMTrigger<T extends object = any>{
      * @param {WatchPath} watchPath
      * @memberof VMTrigger
      */
-    protected _updateValueUseFormator(newValue: any, oldValue: any, watchPath: WatchPath) {
-        let val = this.formatValue(newValue, oldValue, this.node, 0, watchPath);
+    protected async _updateValueUseFormator(newValue: any, oldValue: any, watchPath: WatchPath) {
+        let val = await this.formatValue(newValue, oldValue, this.node, 0, watchPath);
         this._updateValueToView(this.target, val);
     }
 

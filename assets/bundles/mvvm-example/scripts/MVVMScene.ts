@@ -10,7 +10,7 @@ export class MVVMScene extends tnt.SceneBase implements IMVVMObject {
         gold: 0,
         diamond: 9000,
         progress: 0,
-        icon: 0,
+        icon: "resources#textures/content",
         check: {
             selectA: true,
             selectB: false,
@@ -25,7 +25,7 @@ export class MVVMScene extends tnt.SceneBase implements IMVVMObject {
             { name: 's3', age: 12, sex: 2 },
         ],
         index: [2, 1, 6, 3, 7, 5, 4],
-        color: new Color(255, 1, 234, 255)
+        color: new Color(255, 1, 234, 255),
     }
 
     data2 = {
@@ -51,19 +51,18 @@ export class MVVMScene extends tnt.SceneBase implements IMVVMObject {
         // proxy.obj.progress = 1;
 
         let label: Label = this.getLabelByName("label");
-        let sprite: Sprite = this.getSpriteByName("sprite");
         let content: Node = this.getNodeByName("content");
         let progressBar: ProgressBar = this.getProgressBarByName("progressBar");
-        tnt.vm.bind(this, label, "*.name");
-        tnt.vm.bind(this, progressBar, {
-            'progress': {
-                watchPath: "*.progress",
-                tween: tnt.vm.VMTween(3),
-                formator: (opts)=>{
-                    return Math.floor(opts.newValue * 100) / 100;
-                }
-            }
-        });
+        // tnt.vm.bind(this, label, "*.name");
+        // tnt.vm.bind(this, progressBar, {
+        //     'progress': {
+        //         watchPath: "*.progress",
+        //         tween: tnt.vm.VMTween(3),
+        //         formator: (opts) => {
+        //             return Math.floor(opts.newValue * 100) / 100;
+        //         }
+        //     }
+        // });
         // tnt.vm.bind(this, label, {
         //     color: "*.color"
         // });
@@ -85,15 +84,6 @@ export class MVVMScene extends tnt.SceneBase implements IMVVMObject {
         //     return Promise.resolve("");
         // });
 
-
-        // tnt.vm.bind(this, sprite, {
-        //     'spriteFrame': {
-        //         watchPath: "*.array.0.age",
-        //         formator: async (options) => {
-        //             return Promise.resolve(new SpriteFrame());
-        //         },
-        //     }
-        // });
 
         // tnt.vm.for(this,content,{
         //     watchPath: '*.index',
@@ -118,22 +108,58 @@ export class MVVMScene extends tnt.SceneBase implements IMVVMObject {
         // tnt.vm.observe(this, { xxx: 11, ddd: 22 });
         // tnt.vm.observe(this, { xxx: 11, ddd: 22 },"MVVMTag");
 
-        setTimeout(() => {
-            this.data.name = "小红"
-        }, 1000);
-        setTimeout(() => {
-            label.node.destroy();
-            label = null;
-        }, 2000);
+        // setTimeout(() => {
+        //     this.data.name = "小红"
+        // }, 1000);
+        // setTimeout(() => {
+        //     label.node.destroy();
+        //     label = null;
+        // }, 2000);
+
+        // setTimeout(() => {
+        //     this.data.progress = 0.5;
+        // }, 500);
+
+        // setTimeout(() => {
+        //     this.data.progress = 1;
+        // }, 1000);
+
+        this.testSprite();
+    }
+
+
+    testSprite() {
+
+        let sprite: Sprite = this.getSpriteByName("sprite");
+        tnt.vm.sprite(this, sprite, {
+            'spriteFrame': {
+                watchPath: "*.icon",
+                formator: async (options) => {
+                    let spriteFrame = await new Promise<SpriteFrame>((rs) => {
+                        tnt.loaderMgr.share.load(options.newValue, SpriteFrame, (err, spriteFrame) => {
+                            rs(err ? null : spriteFrame);
+                        });
+                    });
+                    return spriteFrame;
+                },
+            }
+        });
+        tnt.vm.sprite(this, sprite, "*.icon", async (options) => {
+            let spriteFrame = await new Promise<SpriteFrame>((rs) => {
+                tnt.loaderMgr.share.load(options.newValue, SpriteFrame, (err, spriteFrame) => {
+                    rs(err ? null : spriteFrame);
+                });
+            });
+            return spriteFrame;
+        });
+
 
         setTimeout(() => {
-            this.data.progress = 0.5;
-        }, 500);
-        
-        setTimeout(() => {
-            this.data.progress = 1;
+            this.data.icon = "resources#textures/goldcoin";
         }, 1000);
     }
+
+
     protected onDestroy(): void {
         tnt.vm.violate(this);
         tnt.vm.violate("data2");
