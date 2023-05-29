@@ -3,7 +3,7 @@ import { isArray } from "../VMGeneral";
 import { TriggerOpTypes } from "../VMOperations";
 import { VMBaseAttr, WatchPath } from "../_mv_declare";
 
-export abstract class VMTrigger<T extends object = any>{
+export abstract class VMBaseHandler<T extends object = any>{
 
     // 用户组件
     declare userControllerComponent: any;
@@ -110,7 +110,7 @@ export abstract class VMTrigger<T extends object = any>{
 
     abstract onUnBind();
 
-    abstract trigger(newValue: any, oldValue: any, type: TriggerOpTypes, watchPath: string);
+    abstract handle(newValue: any, oldValue: any, type: TriggerOpTypes, watchPath: string);
 
     
     isWatchPath(path: string){

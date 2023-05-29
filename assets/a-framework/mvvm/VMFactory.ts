@@ -1,18 +1,18 @@
-import { VMCustomTrigger } from "./triggers/VMCustomTrigger";
-import { VMTrigger } from "./triggers/VMTrigger";
-import { TriggerName } from "./VMOperations";
+import { VMCustomHandler } from "./handlers/VMCustomHandler";
+import { VMBaseHandler } from "./handlers/VMBaseHandler";
+import { VMHandlerName } from "./VMOperations";
 
 
 export class VMFatory {
 
-    public registerVMTrigger<T extends VMTrigger<any>>(type: string, listenerClass: GConstructor<T>) {
+    public registerVMHandler<T extends VMBaseHandler<any>>(type: string, listenerClass: GConstructor<T>) {
         if (!type) {
             throw new Error('VMFatory registerVMTrigger [type] is null');
         }
         producers[type] = listenerClass;
     }
 
-    public getVMTrigger<T extends VMTrigger<any>>(type: string): GConstructor<T> {
+    public getVMHandler<T extends VMBaseHandler<any>>(type: string): GConstructor<T> {
         if (type in producers) {
             return producers[type];
         }
@@ -29,7 +29,7 @@ export class VMFatory {
 }
 
 let producers = {
-    [TriggerName.Common]: VMCustomTrigger,
+    [VMHandlerName.Common]: VMCustomHandler,
 
 }
 

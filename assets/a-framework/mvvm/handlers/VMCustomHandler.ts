@@ -1,8 +1,8 @@
 import { TriggerOpTypes } from "../VMOperations";
 import { WatchPath } from "../_mv_declare";
-import { VMTrigger } from "./VMTrigger";
+import { VMBaseHandler } from "./VMBaseHandler";
 
-export class VMCustomTrigger extends VMTrigger {
+export class VMCustomHandler extends VMBaseHandler {
 
     onInitValue() {
         let _watchPath = this.attr.watchPath;
@@ -28,7 +28,7 @@ export class VMCustomTrigger extends VMTrigger {
 
     }
 
-    trigger(newValue: any, oldValue: any, type: TriggerOpTypes, watchPath: WatchPath) {
+    handle(newValue: any, oldValue: any, type: TriggerOpTypes, watchPath: WatchPath) {
         let path = watchPath;
         let _watchPath = this.attr.watchPath;
         let vmTween = this.attr.tween;

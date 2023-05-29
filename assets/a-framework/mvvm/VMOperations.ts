@@ -7,7 +7,7 @@ export const enum TriggerOpTypes {
   CLEAR = 'clear'
 }
 
-export const enum TriggerName {
+export const enum VMHandlerName {
   Common = 'common',
   String = 'string',
   For = 'for',

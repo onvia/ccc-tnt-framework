@@ -1,12 +1,12 @@
 import { CCObject, ValueType, Node, SpriteFrame, Sprite } from "cc";
-import { VMTrigger } from "./triggers/VMTrigger";
+import { VMBaseHandler } from "./handlers/VMBaseHandler";
 import { TriggerOpTypes } from "./VMOperations";
 
 export type WatchPath = string | string[];
 export type ReturnValue = string | number | boolean | CCObject | ValueType | object;
 
-export type FormatorOpts = { trigger: VMTrigger, newValue: any, oldValue?: any, node?: Node, nodeIdx?: number, watchPath?: WatchPath };
-export type FormatorSpriteOpts = { trigger: VMTrigger, newValue: any, oldValue?: any, node?: Node, nodeIdx?: number, watchPath?: WatchPath, bundle?: string, loaderKey?: string };
+export type FormatorOpts = { trigger: VMBaseHandler, newValue: any, oldValue?: any, node?: Node, nodeIdx?: number, watchPath?: WatchPath };
+export type FormatorSpriteOpts = { trigger: VMBaseHandler, newValue: any, oldValue?: any, node?: Node, nodeIdx?: number, watchPath?: WatchPath, bundle?: string, loaderKey?: string };
 export type Formator<T, E> = (options: FormatorOpts & E) => T | Promise<T>;
 export interface IVMItem {
     updateItem(data, index, ...args);
@@ -18,7 +18,7 @@ export interface VMBaseAttr<R = any> {
      * @type {string}
      * @memberof VMBaseAttr
      */
-    _trigger?: string;
+    _handler?: string;
     /**
      * 目标属性，不需要手动设置
      * @type {string}

@@ -1,7 +1,7 @@
-import { CCObject, Component, Label, ValueType, Node, Sprite, EditBox, ProgressBar, RichText, Slider, Toggle, UIOpacity, UIRenderer, js, UITransform, isValid, SpriteFrame } from "cc";
+import { Component, Label, Node, Sprite, EditBox, ProgressBar, RichText, Slider, Toggle, UIOpacity, UIRenderer, js, UITransform, isValid, SpriteFrame } from "cc";
 import { DEBUG } from "cc/env";
-import { TriggerName, TriggerOpTypes } from "./VMOperations";
-import { VMTrigger } from "./triggers/VMTrigger";
+import { VMHandlerName, TriggerOpTypes } from "./VMOperations";
+import { VMBaseHandler } from "./handlers/VMBaseHandler";
 import { GVMTween } from "./VMTween";
 import { isObject, isArray, isIntegerKey, hasOwn, hasChanged } from "./VMGeneral";
 import { VMBaseAttr, BaseAttrBind, WatchPath, Formator, ReturnValue, VMForAttr, SpriteAttrBind, VMSpriteAttr } from "./_mv_declare";
@@ -41,7 +41,7 @@ const depsMap = new WeakMap<Target, Target>(); // key 为原始数据对象 valu
 // 数据对象名称
 const objectNameMap = new WeakMap<Target, PropertyKey>();  // key 为原始数据对象 value 为数据名称
 const targetMap = new WeakMap<Target, Set<Component | Node>>(); // key 为原始数据对象
-const triggerMap = new WeakMap<Component | Node, Array<VMTrigger<any>>>();
+const handlerMap = new WeakMap<Component | Node, Array<VMBaseHandler<any>>>();
 const unbindMap = new WeakMap<Component | Node, IVMObserveAutoUnbind>();
 
 
@@ -72,7 +72,7 @@ _defaultFormator.set(Sprite, async (options) => {
 
 if (DEBUG) {
     window['tntWeakMap'] = {
-        proxyMap, proxySet, objectNameMap, targetMap, triggerMap, unbindMap
+        proxyMap, proxySet, objectNameMap, targetMap, handlerMap, unbindMap
     };
 }
 
@@ -88,6 +88,13 @@ class VM {
     }
 
     public VMTag = VMTag;
+
+    /**
+     * 注册默认格式化方法
+     *
+     * @memberof VM
+     */
+    public registerDefaultFormator = registerDefaultFormator;
 
     public get fatory() {
         return VMFatory.getInstance();
@@ -203,7 +210,8 @@ class VM {
             set(target, key: PropertyKey, newValue, receiver?: any) {
                 let oldValue = target[key];
                 const _isObject = isObject(newValue);
-                const hadKey = isArray(target) && isIntegerKey(key) ? Number(key) < target.length : hasOwn(target, key);
+                const _isArray = isArray(target);
+                const hadKey = _isArray && isIntegerKey(key) ? Number(key) < target.length : hasOwn(target, key);
                 const res = Reflect.set(target, key, newValue, receiver);
                 if (!hadKey) {
                     if (_isObject) {
@@ -212,8 +220,10 @@ class VM {
                     }
                     self._trigger(target, TriggerOpTypes.ADD, key, newValue, oldValue);
                 } else if (hasChanged(newValue, oldValue)) {
-                    // TODO：对数组进行特殊处理 （length = 0）
+                    // TODO：对数组进行特殊处理 length
+                    if (_isArray && key === 'length') {
 
+                    }
                     self._trigger(target, TriggerOpTypes.SET, key, newValue, oldValue);
                 }
 
@@ -352,7 +362,7 @@ class VM {
             return;
         }
 
-        let triggerArray = triggerMap.get(bindObject) || [];
+        let triggerArray = handlerMap.get(bindObject) || [];
         for (let i = 0; i < triggerArray.length; i++) {
             const _vmTrigger = triggerArray[i];
             if (_vmTrigger.isWatchPath(watchPath) && _vmTrigger.attr._targetPropertyKey === attr._targetPropertyKey) {
@@ -362,8 +372,8 @@ class VM {
         }
 
         // 设置默认的处理方法
-        if (!attr._trigger) {
-            attr._trigger = TriggerName.Common;
+        if (!attr._handler) {
+            attr._handler = VMHandlerName.Common;
         }
         let comps = targetMap.get(targetData);
         if (!comps) { // 使用 Set 天然去重
@@ -371,11 +381,11 @@ class VM {
         }
         comps.add(bindObject);
         targetMap.set(targetData, comps);
-        let _VMTrigger = this.fatory.getVMTrigger(attr._trigger);
-        let vmTrigger = new _VMTrigger(bindObject, attr);
+        let _VMHandler = this.fatory.getVMHandler(attr._handler);
+        let vmTrigger = new _VMHandler(bindObject, attr);
         vmTrigger.userControllerComponent = mvvmObject;
         triggerArray.push(vmTrigger);
-        triggerMap.set(bindObject, triggerArray);
+        handlerMap.set(bindObject, triggerArray);
         vmTrigger.bind();
 
     }
@@ -392,11 +402,11 @@ class VM {
                     _deleteArr.push(_target);
                     return;
                 }
-                let vmTriggerArray = triggerMap.get(_target);
+                let vmTriggerArray = handlerMap.get(_target);
                 for (let i = 0; i < vmTriggerArray.length; i++) {
                     const vmTrigger = vmTriggerArray[i];
                     if (vmTrigger.isWatchPath(fullPath)) {
-                        vmTrigger.trigger(newValue, oldValue, type, fullPath);
+                        vmTrigger.handle(newValue, oldValue, type, fullPath);
                     }
                 }
             });
@@ -465,7 +475,7 @@ class VM {
     private _remove(tag: string) {
         let has = this._mvMap.has(tag);
         if (!has) {
-            DEBUG && console.warn(`_mvvm-> 不存在 ${tag} 数据`);
+            DEBUG && console.warn(`_mvvm-> 不存在 ${tag} 数据，无法移除`);
             return;
         }
         // let mv = this._mvMap.get(tag);
@@ -522,7 +532,20 @@ function _getDefaultKey(component: Object) {
     }
     return defKey;
 }
-
+/**
+ * 注册默认格式化方法
+ *
+ * @template T
+ * @param {GConstructor<T>} clazz
+ * @param {Formator<any, any>} formator
+ * @return {*} 
+ */
+function registerDefaultFormator<T>(clazz: GConstructor<T>, formator: Formator<any, any>) {
+    if (!clazz || !formator) {
+        return;
+    }
+    _defaultFormator.set(clazz, formator)
+}
 function _getDefaultFormator(component: Object) {
     let defFormator = null;
     let clazz = js.getClassByName(js.getClassName(component));
