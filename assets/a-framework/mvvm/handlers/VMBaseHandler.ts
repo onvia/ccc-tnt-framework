@@ -1,4 +1,5 @@
-import { Component, Node } from "cc";
+import { Component, isValid, Node } from "cc";
+import { DEV } from "cc/env";
 import { isArray } from "../VMGeneral";
 import { TriggerOpTypes } from "../VMOperations";
 import { VMBaseAttr, WatchPath } from "../_mv_declare";
@@ -46,6 +47,8 @@ export abstract class VMBaseHandler<T extends object = any>{
         }
         this.onInitValue();
         this.onBind();
+
+        DEV && this._onCheckForDev();
     }
     public unbind() {
         if (!this.isValid) {
@@ -60,6 +63,10 @@ export abstract class VMBaseHandler<T extends object = any>{
         }
 
         this.templateValuesCache.length = 0;
+    }
+
+    protected _onCheckForDev(){
+
     }
 
     protected async formatValue(newValue: any, oldValue: any, node: Node, nodeIdx: number, watchPath: WatchPath) {
@@ -84,8 +91,11 @@ export abstract class VMBaseHandler<T extends object = any>{
      * @param {*} value
      * @memberof VMTrigger
      */
-    protected _updateValueToView(target: T, value: any) {
+    protected _updateTargetValue(target: T, value: any) {
         let key = this.attr._targetPropertyKey;
+        if(!this.isValid){
+            return;
+        }
         if (key in target) {
             target[key] = value;
         }
@@ -101,7 +111,7 @@ export abstract class VMBaseHandler<T extends object = any>{
      */
     protected async _updateValueUseFormator(newValue: any, oldValue: any, watchPath: WatchPath) {
         let val = await this.formatValue(newValue, oldValue, this.node, 0, watchPath);
-        this._updateValueToView(this.target, val);
+        this._updateTargetValue(this.target, val);
     }
 
     abstract onInitValue();

@@ -5,6 +5,7 @@ import { VMBaseHandler } from "./VMBaseHandler";
 export class VMCustomHandler extends VMBaseHandler {
 
     onInitValue() {
+        this.templateValuesCache = [];
         let _watchPath = this.attr.watchPath;
         if (Array.isArray(_watchPath)) {
             let max = _watchPath.length;
@@ -15,7 +16,7 @@ export class VMCustomHandler extends VMBaseHandler {
             this._updateValueUseFormator(this.templateValuesCache, null, _watchPath); // 重新解析
         } else {
             let val = tnt.vm.getValue(_watchPath as string, null);
-            // this.templateValuesCache[0] = val;
+            this.templateValuesCache[0] = val;
             this._updateValueUseFormator(val, null, _watchPath);
         }
     }
@@ -52,7 +53,7 @@ export class VMCustomHandler extends VMBaseHandler {
             }
 
         } else {
-            // this.templateValuesCache[0] = newValue;
+            this.templateValuesCache[0] = newValue;
             if (vmTween) {
                 vmTween.onTransition(newValue, oldValue, _watchPath, _resolve);
             } else {

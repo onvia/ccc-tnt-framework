@@ -4,7 +4,7 @@ import { VMHandlerName, TriggerOpTypes } from "./VMOperations";
 import { VMBaseHandler } from "./handlers/VMBaseHandler";
 import { GVMTween } from "./VMTween";
 import { isObject, isArray, isIntegerKey, hasOwn, hasChanged } from "./VMGeneral";
-import { VMBaseAttr, BaseAttrBind, WatchPath, Formator, ReturnValue, VMForAttr, SpriteAttrBind, VMSpriteAttr } from "./_mv_declare";
+import { VMBaseAttr, BaseAttrBind, WatchPath, Formator, ReturnValue, VMForAttr, SpriteAttrBind, VMSpriteAttr, LabelAttrBind } from "./_mv_declare";
 import { VMFatory } from "./VMFactory";
 
 
@@ -282,11 +282,19 @@ class VM {
     }
 
 
-    public label(mvvmObject: IMVVMObject, bindObject: Label | Node, attr: BaseAttrBind<Label>)
+    public label(mvvmObject: IMVVMObject, bindObject: Label | Node, attr: LabelAttrBind<Label>)
     public label(mvvmObject: IMVVMObject, bindObject: Label | Node, attr: WatchPath, formator: Formator<string, unknown>)
-    public label(mvvmObject: IMVVMObject, bindObject: Label | Node, attr: BaseAttrBind<Label> | WatchPath, formator?: Formator<string, unknown>) {
-        // 有 formator 的时候，一般使用默认属性， Label 为 label.string 类型为 string
+    public label(mvvmObject: IMVVMObject, bindObject: Label | Node, attr: LabelAttrBind<Label> | WatchPath, formator?: Formator<string, unknown>) {
+        // 有 formator 的时候，一般使用默认属性， label.string 类型为 string
         let _label: Label = _typeTransition(bindObject, Label);
+        this.bind(mvvmObject, _label, attr, formator);
+    }
+
+    public richText(mvvmObject: IMVVMObject, bindObject: RichText | Node, attr: LabelAttrBind<RichText>)
+    public richText(mvvmObject: IMVVMObject, bindObject: RichText | Node, attr: WatchPath, formator: Formator<string, unknown>)
+    public richText(mvvmObject: IMVVMObject, bindObject: RichText | Node, attr: LabelAttrBind<RichText> | WatchPath, formator?: Formator<string, unknown>) {
+        // 有 formator 的时候，一般使用默认属性， richText.string 类型为 string
+        let _label: RichText = _typeTransition(bindObject, RichText);
         this.bind(mvvmObject, _label, attr, formator);
     }
 
@@ -373,7 +381,9 @@ class VM {
 
         // 设置默认的处理方法
         if (!attr._handler) {
-            attr._handler = VMHandlerName.Common;
+            // 首先判断是否有 属性 对应的处理方法
+            // 没有就直接用通用的方法
+            attr._handler = this.fatory.hasVMHandler(attr._targetPropertyKey) ? attr._targetPropertyKey : VMHandlerName.Common;
         }
         let comps = targetMap.get(targetData);
         if (!comps) { // 使用 Set 天然去重
@@ -382,6 +392,11 @@ class VM {
         comps.add(bindObject);
         targetMap.set(targetData, comps);
         let _VMHandler = this.fatory.getVMHandler(attr._handler);
+        if(!_VMHandler){
+            console.error(`_mvvm-> [${bindObject.name}] [${attr._targetPropertyKey}] [${attr.watchPath}] 错误`);
+            
+            return;
+        }
         let vmTrigger = new _VMHandler(bindObject, attr);
         vmTrigger.userControllerComponent = mvvmObject;
         triggerArray.push(vmTrigger);

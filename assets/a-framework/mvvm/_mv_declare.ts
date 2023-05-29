@@ -1,4 +1,4 @@
-import { CCObject, ValueType, Node, SpriteFrame, Sprite } from "cc";
+import { CCObject, ValueType, Node, SpriteFrame, Sprite, Label, RichText } from "cc";
 import { VMBaseHandler } from "./handlers/VMBaseHandler";
 import { TriggerOpTypes } from "./VMOperations";
 
@@ -35,7 +35,7 @@ export interface VMBaseAttr<R = any> {
     isBidirection?: boolean;
     watchPath: WatchPath;
     tween?: IVMTween;
-    formator?: Formator<R,unknown>;
+    formator?: Formator<R, unknown>;
 }
 
 // 观察属性选项
@@ -64,6 +64,13 @@ export interface VMSpriteAttr<R> extends VMBaseAttr<R> {
     formator?: Formator<R, { bundle?: string, loaderKey?: string }>;
 }
 
+export interface VMLabelAttr<R> extends VMBaseAttr<R> {
+    /**
+     * 最大字符串长度
+     * */ 
+    maxLength?: number;
+}
+
 
 // 属性绑定
 export type BaseAttrBind<T> = {
@@ -73,4 +80,9 @@ export type BaseAttrBind<T> = {
 // 属性绑定
 export type SpriteAttrBind<T = Sprite> = {
     [P in keyof T]?: WatchPath | VMSpriteAttr<T[P]>;
+};
+
+// 属性绑定
+export type LabelAttrBind<T = Label | RichText> = {
+    [P in keyof T]?: WatchPath | VMLabelAttr<T[P]>;
 };

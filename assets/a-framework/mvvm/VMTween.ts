@@ -38,18 +38,6 @@ export class GVMTween implements IVMTween {
         }
     }
     onTransition(newValue: any, oldValue: any, path: any, resolve: VMTweenValueResults) {
-        let isString = typeof newValue === "string";
-        if (!isString && typeof newValue !== "number") {
-            return;
-        }
-        if (isString) {
-            // 检查是否全是数字
-            let regExp = /^[+-]?\d*(\.\d*)?(e[+-]?\d+)?$/;
-            if (!regExp.test(newValue)) {
-                resolve(newValue, oldValue, path);
-                return;
-            }
-        }
 
 
         if (Array.isArray(newValue) && Array.isArray(oldValue)) {
@@ -57,6 +45,10 @@ export class GVMTween implements IVMTween {
             return;
         }
 
+        if(!this.check(newValue)){
+            resolve(newValue,oldValue,path);
+            return;
+        }
 
         let data = this.datas[path];
         if (data) {
@@ -99,8 +91,16 @@ export class GVMTween implements IVMTween {
         let idx = newValue.findIndex((value, index) => {
             return oldValue[index] != value;
         });
-        let path = watchPaths[idx];
+        
+        if(!this.check(newValue[idx])){
+            resolve(newValue,oldValue,watchPaths);
+            return;
+        }
 
+        let path = watchPaths[idx];
+        let _newValue = [...newValue];
+        let _oldValue = [...oldValue];
+        
         let data = this.datas[`${path}.${idx}`];
         if (data) {
             Tween.stopAllByTarget(data);
@@ -112,8 +112,6 @@ export class GVMTween implements IVMTween {
         data.value = oldValue[idx];
         data.targetValue = newValue[idx];
 
-        let _newValue = [...newValue];
-        let _oldValue = [...oldValue];
 
         let t = tween(data);
         t.to(this.duration, { value: newValue[idx] }, {
@@ -134,5 +132,23 @@ export class GVMTween implements IVMTween {
                 return current;
             }
         }).start();
+    }
+
+
+    check(newValue) {
+
+        let isString = typeof newValue === "string";
+        if (!isString && typeof newValue !== "number") {
+            return false;
+        }
+        if (isString) {
+            // 检查是否全是数字
+            let regExp = /^[+-]?\d*(\.\d*)?(e[+-]?\d+)?$/;
+            if (!regExp.test(newValue)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

@@ -1,6 +1,8 @@
 import { VMCustomHandler } from "./handlers/VMCustomHandler";
 import { VMBaseHandler } from "./handlers/VMBaseHandler";
 import { VMHandlerName } from "./VMOperations";
+import { VMLabelHandler } from "./handlers/VMLabelHandler";
+import { VMProgressHandler } from "./handlers/VMProgressHandler";
 
 
 export class VMFatory {
@@ -19,6 +21,10 @@ export class VMFatory {
         return null
     }
 
+    public hasVMHandler(type: string){
+        return type in producers;
+    }
+
     private static _instance: VMFatory = null
     public static getInstance(): VMFatory {
         if (!this._instance) {
@@ -30,6 +36,8 @@ export class VMFatory {
 
 let producers = {
     [VMHandlerName.Common]: VMCustomHandler,
+    [VMHandlerName.String]: VMLabelHandler,
+    // [VMHandlerName.Progress]: VMProgressHandler,
 
 }
 

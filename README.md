@@ -362,6 +362,10 @@ tnt.touch.off(touchImpl);  // 取消监听
 
 ### MVVM
 
+tnt.vm.observe(...);  
+tnt.vm.violate(...);
+
+
 ### 装饰器
 `./assets/framework/decorators/_decorator.ts`
 

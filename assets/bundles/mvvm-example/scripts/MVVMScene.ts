@@ -90,25 +90,27 @@ export class MVVMScene extends tnt.SceneBase implements IMVVMObject {
     testLabel() {
         let label: Label = this.getLabelByName("label");
 
-        tnt.vm.bind(this, label, {
-            // "color": "*.color"
-            "color": {
-                watchPath: "*.array.0.age",
-                formator: (opt)=>{
-                    if(opt.newValue > 45){
-                        return Color.BLUE
-                    }
-                    return Color.GREEN
-                }   
-            }
-        });
-        tnt.vm.bind(this, label, {
+        // tnt.vm.bind(this, label, {
+        //     // "color": "*.color"
+        //     "color": {
+        //         watchPath: "*.array.0.age",
+        //         tween: tnt.vm.VMTween(3),
+        //         formator: (opt)=>{
+        //             if(opt.newValue > 45){
+        //                 return Color.BLUE
+        //             }
+        //             return Color.GREEN
+        //         }   
+        //     }
+        // });
+        tnt.vm.label(this, label, {
             "string": {
-                watchPath: "*.array.0.age",
+                watchPath: ["*.array.0.age","*.gold"],
                 tween: tnt.vm.VMTween(3),
-                formator: (opts) => {
-                    return `${Math.floor(opts.newValue)}`;
-                }
+                // maxLength: 8,
+                // formator: (opts) => {
+                //     return `${Math.floor(opts.newValue[0])}`;
+                // },
             }
         });
         tnt.vm.bind(this, label, "*.array.0.age", (opts) => {
@@ -122,7 +124,8 @@ export class MVVMScene extends tnt.SceneBase implements IMVVMObject {
         // });
 
         setTimeout(() => {
-            this.data.array[0].age = 99;
+            // this.data.array[0].age = 99;
+            this.data.gold = 998;
         }, 600);
     }
     testSprite() {
