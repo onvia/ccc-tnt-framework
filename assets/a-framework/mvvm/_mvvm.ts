@@ -1,5 +1,5 @@
 import { CCObject, Component, Label, ValueType, Node, Sprite, EditBox, ProgressBar, RichText, Slider, Toggle, UIOpacity, UIRenderer, js, UITransform, isValid, SpriteFrame } from "cc";
-import { DEV } from "cc/env";
+import { DEBUG } from "cc/env";
 import { TriggerName, TriggerOpTypes } from "./VMOperations";
 import { VMTrigger } from "./triggers/VMTrigger";
 import { GVMTween } from "./VMTween";
@@ -25,6 +25,13 @@ declare global {
 interface Target {
 
 }
+
+interface IVMObserveAutoUnbind {
+    removeComponent(comp: Component);
+    nodeDestroyed();
+    unbind();
+}
+
 // 缓存代理
 const proxyMap = new WeakMap<Target, any>();
 // 防止重复注册
@@ -35,6 +42,7 @@ const depsMap = new WeakMap<Target, Target>(); // key 为原始数据对象 valu
 const objectNameMap = new WeakMap<Target, PropertyKey>();  // key 为原始数据对象 value 为数据名称
 const targetMap = new WeakMap<Target, Set<Component | Node>>(); // key 为原始数据对象
 const triggerMap = new WeakMap<Component | Node, Array<VMTrigger<any>>>();
+const unbindMap = new WeakMap<Component | Node, IVMObserveAutoUnbind>();
 
 
 const _defaultKey: WeakMap<Object, string> = new WeakMap();
@@ -62,9 +70,9 @@ _defaultFormator.set(Sprite, async (options) => {
 });
 
 
-if (DEV) {
+if (DEBUG) {
     window['tntWeakMap'] = {
-        proxyMap, proxySet, objectNameMap, targetMap, triggerMap
+        proxyMap, proxySet, objectNameMap, targetMap, triggerMap, unbindMap
     };
 }
 
@@ -106,10 +114,53 @@ class VM {
 
         this._add(_data, _tag);
 
+
+        let node: Node = null;
+        if (_target) {
+            if (_target instanceof Component) {
+                node = _target.node;
+            } else if (_target instanceof Node) {
+                node = _target;
+            }
+        }
+        // 添加自动解绑监听
+        if (node) {
+            let _$50VMObserveAutoUnbind: IVMObserveAutoUnbind = {
+                removeComponent: (comp) => {
+                    if (_target instanceof Component && _target == comp) {
+                        _$50VMObserveAutoUnbind.unbind();
+                    }
+                },
+                nodeDestroyed: () => {
+                    _$50VMObserveAutoUnbind.unbind();
+                },
+                unbind: () => {
+                    console.log(`_mvvm-> 解除绑定`);
+                    tnt.vm._violate(_target);
+                    node.targetOff(_$50VMObserveAutoUnbind);
+                }
+            }
+            if (_target instanceof Component) {
+                node.on(Node.EventType.COMPONENT_REMOVED, _$50VMObserveAutoUnbind.removeComponent, _$50VMObserveAutoUnbind);
+            }
+            node.on(Node.EventType.NODE_DESTROYED, _$50VMObserveAutoUnbind.nodeDestroyed, _$50VMObserveAutoUnbind);
+
+            unbindMap.set(_target as any, _$50VMObserveAutoUnbind);
+        }
+
         return proxy;
     }
 
     public violate(mvvmObject: IMVVMObject | string, ...tags: string[]) {
+        if (mvvmObject instanceof Component || mvvmObject instanceof Node) {
+            let _$50VMObserveAutoUnbind = unbindMap.get(mvvmObject);
+            _$50VMObserveAutoUnbind?.unbind();
+        } else {
+            this._violate(mvvmObject, ...tags);
+        }
+    }
+
+    private _violate(mvvmObject: IMVVMObject | string, ...tags: string[]) {
         tags.forEach(tag => {
             this._remove(tag);
         })
@@ -120,7 +171,6 @@ class VM {
             this._remove(mvvmObject._vmTag);
         }
     }
-
 
     private _reactive<T extends object>(data: T): T {
         if (proxySet.has(data)) {
@@ -144,10 +194,10 @@ class VM {
                 if (isObject(res)) {
                     depsMap.set(res as object, target);
                     objectNameMap.set(res as object, key);
-                    console.log(`_mvvm->【读取】${String(key)} 值为 ${res?.toString()} 注册代理`);
+                    // console.log(`_mvvm->【读取】${String(key)} 值为 ${res?.toString()} 注册代理`);
                     return self._reactive(res as object);
                 }
-                console.log(`_mvvm->【读取】 ${String(key)}  不用注册代理`);
+                // console.log(`_mvvm->【读取】 ${String(key)}  不用注册代理`);
                 return res;
             },
             set(target, key: PropertyKey, newValue, receiver?: any) {
@@ -167,7 +217,7 @@ class VM {
                     self._trigger(target, TriggerOpTypes.SET, key, newValue, oldValue);
                 }
 
-                console.log(`_mvvm-> 【设置】${String(key)} 值为： ${newValue}`);
+                // console.log(`_mvvm-> 【设置】${String(key)} 值为： ${newValue}`);
                 return res;
             },
             has(target, p) {
@@ -178,7 +228,7 @@ class VM {
                 return Reflect.ownKeys(target);
             },
             deleteProperty(target, key: PropertyKey) {
-                console.log(`_mvvm-> 【删除】${String(key)}`);
+                // console.log(`_mvvm-> 【删除】${String(key)}`);
                 const hadKey = hasOwn(target, key)
                 const oldValue = (target as any)[key]
                 const result = Reflect.deleteProperty(target, key);
@@ -266,7 +316,7 @@ class VM {
         let _comp = _typeTransition(bindObject, Slider);
         this.bind(mvvmObject, _comp, attr, formator);
     }
-    
+
 
     /**
      * 关联子节点数量
@@ -298,15 +348,15 @@ class VM {
     private __track<T extends Component | Node>(mvvmObject: IMVVMObject, bindObject: T, attr: VMBaseAttr<any>, watchPath: string) {
         let targetData = this._getDataByPath(watchPath);
         if (!targetData) {
-            console.log(`_mvvm-> track [${watchPath}] 找不到数据`);
+            DEBUG && console.log(`_mvvm-> track [${watchPath}] 找不到数据`);
             return;
         }
 
         let triggerArray = triggerMap.get(bindObject) || [];
         for (let i = 0; i < triggerArray.length; i++) {
             const _vmTrigger = triggerArray[i];
-            if (_vmTrigger.isWatchPath(watchPath)) {
-                console.warn(`_mvvm-> 同一个组件已经监听了相同的 路径 ${watchPath}`);
+            if (_vmTrigger.isWatchPath(watchPath) && _vmTrigger.attr._targetPropertyKey === attr._targetPropertyKey) {
+                DEBUG && console.warn(`_mvvm-> 组件的属性 [${attr._targetPropertyKey}] 已经监听了相同的 路径 ${watchPath}`);
                 return;
             }
         }
@@ -364,7 +414,7 @@ class VM {
     public setValue(path: string, value: any) {
         let targetData = this._getDataByPath(path);
         if (!targetData) {
-            console.log(`_mvvm-> [${path}] 找不到数据`);
+            DEBUG && console.log(`_mvvm-> [${path}] 找不到数据`);
             return;
         }
         let proxy = this._reactive(targetData);
@@ -376,7 +426,7 @@ class VM {
     public getValue(path: string, defaultValue: any) {
         let targetData = this._getDataByPath(path);
         if (!targetData) {
-            console.log(`_mvvm-> [${path}] 找不到数据`);
+            DEBUG && console.log(`_mvvm-> [${path}] 找不到数据`);
             return defaultValue;
         }
         let proxy = this._reactive(targetData);
@@ -415,7 +465,7 @@ class VM {
     private _remove(tag: string) {
         let has = this._mvMap.has(tag);
         if (!has) {
-            console.warn(`_mvvm-> 不存在 ${tag} 数据`);
+            DEBUG && console.warn(`_mvvm-> 不存在 ${tag} 数据`);
             return;
         }
         // let mv = this._mvMap.get(tag);
@@ -560,7 +610,11 @@ function _parseWatchPath(watchPath: string | string[], tag: string) {
     if (typeof path == 'string') {
         path = path.trim();
         if (!path) {
-            console.error(`_mvvm->[${tag}] watchPath is err`);
+            if (DEBUG) {
+                throw new Error(`[${tag}] watchPath is err`);
+            } else {
+                console.error(`_mvvm->[${tag}] watchPath is err`);
+            }
         }
         //遇到特殊 path 就优先替换路径
         if (path.startsWith('*')) {
@@ -570,7 +624,11 @@ function _parseWatchPath(watchPath: string | string[], tag: string) {
         for (let j = 0; j < path.length; j++) {
             const _path = path[j].trim();
             if (!_path) {
-                console.error(`_mvvm->[${tag}] watchPath is err`);
+                if (DEBUG) {
+                    throw new Error(`[${tag}] watchPath is err`);
+                } else {
+                    console.error(`_mvvm->[${tag}] watchPath is err`);
+                }
             }
             if (_path.startsWith('*')) {
                 path[j] = _path.replace('*', tag);

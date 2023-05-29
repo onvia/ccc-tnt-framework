@@ -51,45 +51,6 @@ export class MVVMScene extends tnt.SceneBase implements IMVVMObject {
         // proxy.obj.progress = 1;
 
         let content: Node = this.getNodeByName("content");
-        let progressBar: ProgressBar = this.getProgressBarByName("progressBar");
-        tnt.vm.bind(this, progressBar, "*.progress", (opts) => {
-            return 1;
-        });
-
-
-        tnt.vm.bind(this, progressBar, {
-            "progress": {
-                watchPath: "*.progress",
-                formator: (ots) => {
-                    return 1;
-                }
-            },
-            "reverse": {
-                watchPath: "",
-                formator: (opts) => {
-                    return false;
-                }
-            }
-        });
-
-
-        // tnt.vm.bind(this, label, "*.name");
-        tnt.vm.progressBar(this, progressBar.node, {
-            'progress': {
-                watchPath: "*.progress",
-                tween: tnt.vm.VMTween(3),
-                formator: (opts) => {
-                    return Math.floor(opts.newValue * 100) / 100;
-                }
-            },
-            "reverse": {
-                watchPath: "",
-                formator: (opts) => {
-                    return false;
-                }
-            }
-        });
-
 
         // tnt.vm.for(this,content,{
         //     watchPath: '*.index',
@@ -121,15 +82,25 @@ export class MVVMScene extends tnt.SceneBase implements IMVVMObject {
         // setTimeout(() => {
         //     this.data.progress = 1;
         // }, 1000);
+        // this.testProgressBar();
         this.testLabel();
-        this.testSprite();
+        // this.testSprite();
     }
 
     testLabel() {
         let label: Label = this.getLabelByName("label");
 
         tnt.vm.bind(this, label, {
-            "color": "*.color"
+            // "color": "*.color"
+            "color": {
+                watchPath: "*.array.0.age",
+                formator: (opt)=>{
+                    if(opt.newValue > 45){
+                        return Color.BLUE
+                    }
+                    return Color.GREEN
+                }   
+            }
         });
         tnt.vm.bind(this, label, {
             "string": {
@@ -171,6 +142,37 @@ export class MVVMScene extends tnt.SceneBase implements IMVVMObject {
         }, 500);
     }
 
+
+    testProgressBar() {
+        let progressBar: ProgressBar = this.getProgressBarByName("progressBar");
+        tnt.vm.bind(this, progressBar, "*.progress", (opts) => {
+            return 1;
+        });
+
+
+        tnt.vm.bind(this, progressBar, {
+            "progress": {
+                watchPath: "*.progress",
+                formator: (ots) => {
+                    return 1;
+                }
+            }
+        });
+
+
+        // tnt.vm.bind(this, label, "*.name");
+        tnt.vm.progressBar(this, progressBar.node, {
+            'progress': {
+                watchPath: "*.progress",
+                tween: tnt.vm.VMTween(3),
+                formator: (opts) => {
+                    return Math.floor(opts.newValue * 100) / 100;
+                }
+            }
+        });
+
+
+    }
 
     protected onDestroy(): void {
         tnt.vm.violate(this);
