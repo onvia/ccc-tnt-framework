@@ -12,7 +12,8 @@ declare global {
 }
 
 class VMTweenData {
-    currentValue: number;
+    newValue: number;
+    oldValue: number;
     targetValue: number;
     value: number;
 }
@@ -20,7 +21,7 @@ class VMTweenData {
 // 数字滚动
 export class GVMTween implements IVMTween {
 
-    datas: Record<string, VMTweenData> = {};
+    datas: Record<string, VMTweenData> = null;
     duration = 0.3;
     constructor(_duration?: number) {
         if (_duration != undefined) {
@@ -45,10 +46,12 @@ export class GVMTween implements IVMTween {
             return;
         }
 
-        if(!this.check(newValue)){
-            resolve(newValue,oldValue,path);
+        if (!this.check(newValue)) {
+            resolve(newValue, oldValue, path);
             return;
         }
+
+        this.initDatas(newValue,oldValue,path);
 
         let data = this.datas[path];
         if (data) {
@@ -58,8 +61,8 @@ export class GVMTween implements IVMTween {
             this.datas[path] = data;
         }
 
-
-        data.currentValue = oldValue;
+        data.newValue = oldValue;
+        data.oldValue = oldValue;
         data.value = oldValue;
         data.targetValue = newValue;
 
@@ -76,14 +79,16 @@ export class GVMTween implements IVMTween {
 
                     start.lerp(end, t, current);
                 }
-                resolve(current, data.currentValue, path);
-                data.currentValue = current;
+                data.newValue = current;
+                resolve(data.newValue, data.oldValue, path);
+                data.oldValue = current;
                 return current;
             }
         }).start();
     }
 
     onTransitionArray(newValue: any[], oldValue: any[], watchPaths: any[], resolve: VMTweenValueResults) {
+        let self = this;
         if (newValue.length != oldValue.length) {
             error(`VMTween-> 数据错误`);
             return;
@@ -91,24 +96,24 @@ export class GVMTween implements IVMTween {
         let idx = newValue.findIndex((value, index) => {
             return oldValue[index] != value;
         });
-        
-        if(!this.check(newValue[idx])){
-            resolve(newValue,oldValue,watchPaths);
+
+        if (!this.check(newValue[idx])) {
+            resolve(newValue, oldValue, watchPaths);
             return;
         }
 
+        this.initDatas(newValue,oldValue,watchPaths);
+
         let path = watchPaths[idx];
-        let _newValue = [...newValue];
-        let _oldValue = [...oldValue];
-        
         let data = this.datas[`${path}.${idx}`];
         if (data) {
             Tween.stopAllByTarget(data);
         } else {
             data = new VMTweenData();
-            this.datas[path] = data;
+            this.datas[`${path}.${idx}`] = data;
         }
-        data.currentValue = oldValue[idx];
+        data.newValue = oldValue[idx];
+        data.oldValue = oldValue[idx];
         data.value = oldValue[idx];
         data.targetValue = newValue[idx];
 
@@ -125,15 +130,52 @@ export class GVMTween implements IVMTween {
                 else {
                     start.lerp(end, t, current);
                 }
-                _newValue[idx] = current;
-                resolve(_newValue, _oldValue, watchPaths);
-                data.currentValue = current;
-                _oldValue[idx] = current;
+                data.newValue = current;
+                let { newValue: __newValue, oldValue: __oldValue } = self.getValue4Array();
+                resolve(__newValue, __oldValue, watchPaths);
+                data.oldValue = current;
                 return current;
             }
         }).start();
     }
 
+    initDatas(newValue,oldValue,path: string | string[]){
+        if(this.datas !== null){
+            return;
+        }
+        this.datas = {};
+        if(Array.isArray(path)){
+            for (let i = 0; i < path.length; i++) {
+                const element = path[i];
+                let data = new VMTweenData();
+                
+                data.newValue = oldValue[i];
+                data.oldValue = oldValue[i];
+                data.value = oldValue[i];
+                data.targetValue = newValue[i];
+                
+                this.datas[`${element}.${i}`] = data;
+            }
+            return;
+        }
+        let data = new VMTweenData();
+        data.newValue = oldValue;
+        data.oldValue = oldValue;
+        data.value = oldValue;
+        data.targetValue = newValue;
+        this.datas[path] = data;
+    }
+    getValue4Array() {
+        let newValue = [];
+        let oldValue = [];
+        for (const key in this.datas) {
+            let keyArr = key.split(".");
+            let idx = parseInt(keyArr[keyArr.length - 1]);
+            newValue[idx] = this.datas[key].newValue;
+            oldValue[idx] = this.datas[key].oldValue;
+        }
+        return { newValue, oldValue };
+    }
 
     check(newValue) {
 

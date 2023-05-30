@@ -283,16 +283,16 @@ class VM {
 
 
     public label(mvvmObject: IMVVMObject, bindObject: Label | Node, attr: LabelAttrBind<Label>)
-    public label(mvvmObject: IMVVMObject, bindObject: Label | Node, attr: WatchPath, formator: Formator<string, unknown>)
-    public label(mvvmObject: IMVVMObject, bindObject: Label | Node, attr: LabelAttrBind<Label> | WatchPath, formator?: Formator<string, unknown>) {
+    public label(mvvmObject: IMVVMObject, bindObject: Label | Node, attr: WatchPath, formator: Formator<string | string[] | number | number[], unknown>)
+    public label(mvvmObject: IMVVMObject, bindObject: Label | Node, attr: LabelAttrBind<Label> | WatchPath, formator?: Formator<string | string[] | number | number[], unknown>) {
         // 有 formator 的时候，一般使用默认属性， label.string 类型为 string
         let _label: Label = _typeTransition(bindObject, Label);
         this.bind(mvvmObject, _label, attr, formator);
     }
 
     public richText(mvvmObject: IMVVMObject, bindObject: RichText | Node, attr: LabelAttrBind<RichText>)
-    public richText(mvvmObject: IMVVMObject, bindObject: RichText | Node, attr: WatchPath, formator: Formator<string, unknown>)
-    public richText(mvvmObject: IMVVMObject, bindObject: RichText | Node, attr: LabelAttrBind<RichText> | WatchPath, formator?: Formator<string, unknown>) {
+    public richText(mvvmObject: IMVVMObject, bindObject: RichText | Node, attr: WatchPath, formator: Formator<string | string[] | number | number[], unknown>)
+    public richText(mvvmObject: IMVVMObject, bindObject: RichText | Node, attr: LabelAttrBind<RichText> | WatchPath, formator?: Formator<string | string[] | number | number[], unknown>) {
         // 有 formator 的时候，一般使用默认属性， richText.string 类型为 string
         let _label: RichText = _typeTransition(bindObject, RichText);
         this.bind(mvvmObject, _label, attr, formator);
@@ -354,27 +354,23 @@ class VM {
     // }
 
     private _track<T extends Component | Node>(mvvmObject: IMVVMObject, bindObject: T, attr: VMBaseAttr<any>) {
-        if (!isArray(attr.watchPath)) {
-            this.__track(mvvmObject, bindObject, attr, attr.watchPath);
-        } else {
-            for (let i = 0; i < attr.watchPath.length; i++) {
-                const watchPath = attr.watchPath[i];
-                this.__track(mvvmObject, bindObject, attr, watchPath);
-            }
-        }
-    }
-    private __track<T extends Component | Node>(mvvmObject: IMVVMObject, bindObject: T, attr: VMBaseAttr<any>, watchPath: string) {
-        let targetData = this._getDataByPath(watchPath);
-        if (!targetData) {
-            DEBUG && console.log(`_mvvm-> track [${watchPath}] 找不到数据`);
-            return;
-        }
+        // if (!isArray(attr.watchPath)) {
+        //     this.__track(mvvmObject, bindObject, attr, attr.watchPath);
+        // } else {
+        //     for (let i = 0; i < attr.watchPath.length; i++) {
+        //         const watchPath = attr.watchPath[i];
+        //         this.__track(mvvmObject, bindObject, attr, watchPath);
+        //     }
+        // }
 
+        this.__track(mvvmObject, bindObject, attr);
+    }
+    private __track<T extends Component | Node>(mvvmObject: IMVVMObject, bindObject: T, attr: VMBaseAttr<any>) {
         let triggerArray = handlerMap.get(bindObject) || [];
         for (let i = 0; i < triggerArray.length; i++) {
             const _vmTrigger = triggerArray[i];
-            if (_vmTrigger.isWatchPath(watchPath) && _vmTrigger.attr._targetPropertyKey === attr._targetPropertyKey) {
-                DEBUG && console.warn(`_mvvm-> 组件的属性 [${attr._targetPropertyKey}] 已经监听了相同的 路径 ${watchPath}`);
+            if (_vmTrigger.attr._targetPropertyKey === attr._targetPropertyKey) {
+                DEBUG && console.warn(`_mvvm-> [${bindObject.name}] 组件的属性 [${attr._targetPropertyKey}] 已经有相同的处理`);
                 return;
             }
         }
@@ -385,16 +381,20 @@ class VM {
             // 没有就直接用通用的方法
             attr._handler = this.fatory.hasVMHandler(attr._targetPropertyKey) ? attr._targetPropertyKey : VMHandlerName.Common;
         }
-        let comps = targetMap.get(targetData);
-        if (!comps) { // 使用 Set 天然去重
-            comps = new Set();
+
+        if (isArray(attr.watchPath)) {
+            for (let j = 0; j < attr.watchPath.length; j++) {
+                const watchPath = attr.watchPath[j];
+                this._collectTarget(bindObject, watchPath);
+            }
+        } else {
+            this._collectTarget(bindObject, attr.watchPath);
         }
-        comps.add(bindObject);
-        targetMap.set(targetData, comps);
+
         let _VMHandler = this.fatory.getVMHandler(attr._handler);
-        if(!_VMHandler){
+        if (!_VMHandler) {
             console.error(`_mvvm-> [${bindObject.name}] [${attr._targetPropertyKey}] [${attr.watchPath}] 错误`);
-            
+
             return;
         }
         let vmTrigger = new _VMHandler(bindObject, attr);
@@ -403,6 +403,20 @@ class VM {
         handlerMap.set(bindObject, triggerArray);
         vmTrigger.bind();
 
+    }
+
+    private _collectTarget<T extends Component | Node>(bindObject: T, watchPath: string) {
+        let targetData = this._getDataByPath(watchPath);
+        if (!targetData) {
+            DEBUG && console.log(`_mvvm-> track [${watchPath}] 找不到数据`);
+            return;
+        }
+        let comps = targetMap.get(targetData);
+        if (!comps) { // 使用 Set 天然去重
+            comps = new Set();
+        }
+        comps.add(bindObject);
+        targetMap.set(targetData, comps);
     }
 
     private _trigger(target: object, type: TriggerOpTypes, key: PropertyKey, newValue: any, oldValue: any) {

@@ -8,22 +8,22 @@ export class VMLabelHandler extends VMCustomHandler {
 
     originText: string = "";
     //保存着字符模板格式的数组 (只会影响显示参数)
-    templateFormatArr: string[] = [];
+    templateParamCount: number = 0;
     // 是否是模板模式，需要
     templateMode: boolean = false;
 
-    initOriginText(){
+    initOriginText() {
         if (!this.originText) {
-            this.originText = this.getStringValue(); 
+            this.originText = this.getStringValue();
         }
     }
     onInitValue(): void {
-        
+
         this.initOriginText();
         this.parseTemplate();
-        this.templateMode = this.templateFormatArr.length > 1 && this.templateFormatArr.length == this.attr.watchPath.length;
+        this.templateMode = this.templateParamCount > 1 && this.templateParamCount == this.attr.watchPath.length;
         if (!this.attr.formator) {
-            if (!this.templateMode || (this.templateFormatArr.length == 1 && this.templateFormatArr.length !== this.attr.watchPath.length)) {
+            if (!this.templateMode || (this.templateParamCount == 1 && this.templateParamCount !== this.attr.watchPath.length)) {
                 let msg = `VMLabelHandler-> [${this.node.name}] 模板参数与输入参数[${JSON.stringify(this.attr.watchPath)}]数量不一致，请实现 formator 方法`;
                 if (DEV) {
                     throw new Error(msg);
@@ -71,20 +71,13 @@ export class VMLabelHandler extends VMCustomHandler {
     //解析模板 获取初始格式化字符串格式 的信息
     parseTemplate() {
         let regexAll = /\{(.+?)\}/g; //匹配： 所有的{value}
-        let regex = /\{(.+?)\}/;//匹配： {value} 中的 value
         let res = this.originText.match(regexAll);//匹配结果数组
         if (res == null) return;
-        for (let i = 0; i < res.length; i++) {
-            const e = res[i];
-            let arr = e.match(regex);
-            let matchName = arr[1];
-            let matchInfo = matchName.split(':')[1] || '';
-            this.templateFormatArr[i] = matchInfo;
-        }
+        this.templateParamCount = res.length;
     }
 
     getFormatText(value): string {
-        if (!this.templateFormatArr.length) {
+        if (!this.templateParamCount) {
             return value;
         }
         if (!this.originText) {

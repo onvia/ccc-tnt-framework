@@ -7,7 +7,7 @@ export type ReturnValue = string | number | boolean | CCObject | ValueType | obj
 
 export type FormatorOpts = { trigger: VMBaseHandler, newValue: any, oldValue?: any, node?: Node, nodeIdx?: number, watchPath?: WatchPath };
 export type FormatorSpriteOpts = { trigger: VMBaseHandler, newValue: any, oldValue?: any, node?: Node, nodeIdx?: number, watchPath?: WatchPath, bundle?: string, loaderKey?: string };
-export type Formator<T, E> = (options: FormatorOpts & E) => T | Promise<T>;
+export type Formator<T, E> = (options: FormatorOpts & E) => T | Promise<T> | T[] | Promise<T[]>;
 export interface IVMItem {
     updateItem(data, index, ...args);
 }

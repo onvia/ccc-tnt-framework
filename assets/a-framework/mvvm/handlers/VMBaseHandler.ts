@@ -65,7 +65,7 @@ export abstract class VMBaseHandler<T extends object = any>{
         this.templateValuesCache.length = 0;
     }
 
-    protected _onCheckForDev(){
+    protected _onCheckForDev() {
 
     }
 
@@ -93,7 +93,7 @@ export abstract class VMBaseHandler<T extends object = any>{
      */
     protected _updateTargetValue(target: T, value: any) {
         let key = this.attr._targetPropertyKey;
-        if(!this.isValid){
+        if (!this.isValid) {
             return;
         }
         if (key in target) {
@@ -122,10 +122,17 @@ export abstract class VMBaseHandler<T extends object = any>{
 
     abstract handle(newValue: any, oldValue: any, type: TriggerOpTypes, watchPath: string);
 
-    
-    isWatchPath(path: string){
-        if(isArray(this.attr.watchPath)){
-            return this.attr.watchPath.includes(path);
+
+    isWatchPath(path: string | string[]) {
+        if (isArray(this.attr.watchPath)) {
+            if (isArray(path)) {
+                let has = path.some((value) => {
+                    return this.attr.watchPath.includes(value);
+                });
+                return has;
+            } else {
+                return this.attr.watchPath.includes(path);
+            }
         }
         return this.attr.watchPath == path;
     }

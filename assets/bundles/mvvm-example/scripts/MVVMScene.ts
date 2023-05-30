@@ -8,6 +8,7 @@ export class MVVMScene extends tnt.SceneBase implements IMVVMObject {
         name: '小明',
         info: 'xin',
         gold: 0,
+        maxGold: 999,
         diamond: 9000,
         progress: 0,
         icon: "resources#textures/content",
@@ -105,17 +106,17 @@ export class MVVMScene extends tnt.SceneBase implements IMVVMObject {
         // });
         tnt.vm.label(this, label, {
             "string": {
-                watchPath: ["*.array.0.age","*.gold"],
+                watchPath: ["*.array.0.age","*.gold","*.maxGold"],
                 tween: tnt.vm.VMTween(3),
                 // maxLength: 8,
-                // formator: (opts) => {
-                //     return `${Math.floor(opts.newValue[0])}`;
-                // },
+                formator: (opts) => {
+                    return [Math.floor(opts.newValue[0]),Math.floor(opts.newValue[1])/Math.floor(opts.newValue[2])] as any;
+                },
             }
         });
-        tnt.vm.bind(this, label, "*.array.0.age", (opts) => {
-            return opts.newValue;
-        });
+        // tnt.vm.bind(this, label, "*.array.0.age", (opts) => {
+        //     return opts.newValue;
+        // });
 
 
 
@@ -124,8 +125,8 @@ export class MVVMScene extends tnt.SceneBase implements IMVVMObject {
         // });
 
         setTimeout(() => {
-            // this.data.array[0].age = 99;
-            this.data.gold = 998;
+            this.data.gold = 199;
+            this.data.array[0].age = 99;
         }, 600);
     }
     testSprite() {
