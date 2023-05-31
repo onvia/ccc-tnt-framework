@@ -1,7 +1,7 @@
 import { CCObject, ValueType, Node, SpriteFrame, Sprite, Label, RichText } from "cc";
 import { VMBaseHandler } from "./handlers/VMBaseHandler";
-import { TriggerOpTypes } from "./VMOperations";
 
+export type ForOpType = "init" | "add" | "delete" | "refresh";
 export type WatchPath = string | string[];
 export type BaseValueType = string[] | string | number | number[];
 export type ReturnValueType = BaseValueType | boolean | CCObject | ValueType | object;
@@ -50,7 +50,7 @@ export interface VMForAttr extends VMBaseAttr {
     formator?: null;
 
     /** 数据发生改变 */
-    onChange: (operate: TriggerOpTypes) => void;
+    onChange: (operate: ForOpType) => void;
 }
 
 export interface VMSpriteAttr<R> extends VMBaseAttr<R> {

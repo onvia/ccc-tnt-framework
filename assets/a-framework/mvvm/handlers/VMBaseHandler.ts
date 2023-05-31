@@ -32,7 +32,7 @@ export abstract class VMBaseHandler<T extends object = any>{
         return this._tween;
     }
 
-    
+
     public get node(): Node {
         if (this._node) {
             return this._node;
@@ -122,14 +122,14 @@ export abstract class VMBaseHandler<T extends object = any>{
     }
 
     /**
-     * 使用格式化处理器进行更新数据
+     * 一般是使用格式化处理器进行更新数据
      * @protected
      * @param {*} newValue
      * @param {*} oldValue
      * @param {WatchPath} watchPath
      * @memberof VMTrigger
      */
-    protected async _updateValueUseFormator(newValue: any, oldValue: any, watchPath: WatchPath) {
+    protected async _updateValue(newValue: any, oldValue: any, watchPath: WatchPath) {
         let val = await this.formatValue(newValue, oldValue, this.node, 0, watchPath);
         this._updateTargetValue(this.target, val);
     }

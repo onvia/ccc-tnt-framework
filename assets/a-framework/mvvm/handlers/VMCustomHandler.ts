@@ -13,11 +13,11 @@ export class VMCustomHandler extends VMBaseHandler {
                 let val = tnt.vm.getValue(_watchPath[i], null);
                 this.templateValuesCache[i] = val;
             }
-            this._updateValueUseFormator(this.templateValuesCache, null, _watchPath); // 重新解析
+            this._updateValue(this.templateValuesCache, null, _watchPath); // 重新解析
         } else {
             let val = tnt.vm.getValue(_watchPath as string, null);
             this.templateValuesCache[0] = val;
-            this._updateValueUseFormator(val, null, _watchPath);
+            this._updateValue(val, null, _watchPath);
         }
     }
 
@@ -34,7 +34,7 @@ export class VMCustomHandler extends VMBaseHandler {
         let _watchPath = this.attr.watchPath;
         let vmTween = this.tween;
         let _resolve = (_newValue: any, _oldValue: any, _path: any) => {
-            this._updateValueUseFormator(_newValue, _oldValue, _path); // 重新解析
+            this._updateValue(_newValue, _oldValue, _path); // 重新解析
         }
 
         if (Array.isArray(_watchPath)) {

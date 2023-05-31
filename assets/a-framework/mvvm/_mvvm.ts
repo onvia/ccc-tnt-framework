@@ -72,7 +72,7 @@ _defaultFormator.set(Sprite, async (options) => {
 
 if (DEBUG) {
     window['tntWeakMap'] = {
-        proxyMap, proxySet, objectNameMap, targetMap, handlerMap, unbindMap
+        proxyMap, proxySet, objectNameMap, targetMap, handlerMap, unbindMap, depsMap
     };
 }
 
@@ -202,6 +202,8 @@ class VM {
         let self = this;
         const proxy = new Proxy(data, {
             get(target, key: PropertyKey, receiver?: any) {
+                console.log(`_mvvm-> get `, key, target[key]);
+
                 const res = Reflect.get(target, key, receiver);
                 if (isObject(res)) {
                     depsMap.set(res as object, target);
@@ -214,6 +216,7 @@ class VM {
             },
             set(target, key: PropertyKey, newValue, receiver?: any) {
                 let oldValue = target[key];
+                console.log(`_mvvm-> set `, key, " newValue: ", newValue, "oldValue: ", oldValue);
                 const _isObject = isObject(newValue);
                 const _isArray = isArray(target);
                 const hadKey = _isArray && isIntegerKey(key) ? Number(key) < target.length : hasOwn(target, key);
@@ -353,7 +356,8 @@ class VM {
      */
     public for(target: IMVVMObject, parent: Node, attr: VMForAttr) {
         attr.watchPath = _parseWatchPath(attr.watchPath, target._vmTag);
-        attr._handler = "for";
+        // 
+        attr._handler = VMHandlerName.For;
         this._track(target, parent, attr);
     }
 
@@ -440,6 +444,10 @@ class VM {
                     return;
                 }
                 let vmTriggerArray = handlerMap.get(_target);
+                if (!vmTriggerArray) {
+                    console.error(`_mvvm-> [${_target.name}] trigger 错误`);
+                    return;
+                }
                 for (let i = 0; i < vmTriggerArray.length; i++) {
                     const vmTrigger = vmTriggerArray[i];
                     if (vmTrigger.isWatchPath(fullPath)) {

@@ -3,6 +3,7 @@ import { VMBaseHandler } from "./handlers/VMBaseHandler";
 import { VMHandlerName } from "./VMOperations";
 import { VMLabelHandler } from "./handlers/VMLabelHandler";
 import { VMProgressHandler } from "./handlers/VMProgressHandler";
+import { VMForHandler } from "./handlers/VMForHandler";
 
 
 export class VMFatory {
@@ -38,6 +39,7 @@ let producers = {
     [VMHandlerName.Common]: VMCustomHandler,
     [VMHandlerName.String]: VMLabelHandler,
     [VMHandlerName.Progress]: VMProgressHandler,
+    [VMHandlerName.For]: VMForHandler,
 
 }
 

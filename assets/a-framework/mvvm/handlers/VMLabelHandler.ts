@@ -9,8 +9,6 @@ export class VMLabelHandler extends VMCustomHandler {
     originText: string = "";
     //保存着字符模板格式的数组 (只会影响显示参数)
     templateParamCount: number = 0;
-    // 是否是模板模式，需要
-    templateMode: boolean = false;
 
     initOriginText() {
         if (!this.originText) {
@@ -21,9 +19,13 @@ export class VMLabelHandler extends VMCustomHandler {
 
         this.initOriginText();
         this.parseTemplate();
-        this.templateMode = this.templateParamCount > 1 && this.templateParamCount == this.attr.watchPath.length;
-        if (!this.attr.formator) {
-            if (!this.templateMode || (this.templateParamCount == 1 && this.templateParamCount !== this.attr.watchPath.length)) {
+        let watchPathCount = 1;
+        if (Array.isArray(this.attr.watchPath)) {
+            watchPathCount = this.attr.watchPath.length;
+        }
+
+        if (!this.attr.formator && this.templateParamCount >= 1) {
+            if (this.templateParamCount !== watchPathCount) {
                 let msg = `VMLabelHandler-> [${this.node.name}] 模板参数与输入参数[${JSON.stringify(this.attr.watchPath)}]数量不一致，请实现 formator 方法`;
                 if (DEV) {
                     throw new Error(msg);
@@ -36,11 +38,11 @@ export class VMLabelHandler extends VMCustomHandler {
     }
 
     onBind(): void {
-
+        super.onBind();
     }
 
     onUnBind(): void {
-
+        super.onUnBind();
     }
 
     protected async formatValue(newValue: any, oldValue: any, node: Node, nodeIdx: number, watchPath: WatchPath) {

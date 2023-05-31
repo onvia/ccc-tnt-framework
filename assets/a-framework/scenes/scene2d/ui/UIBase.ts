@@ -164,7 +164,7 @@ class UIBase<Options = any> extends tnt.GComponent<Options> implements IUIAble {
         return this.findComponent(name, Slider, parent);
     }
     
-    public setLabelText(name: NodeNoun<Node>, text: string, parent?: Node) {
+    public setLabelText(name: NodeNoun<Node>, text: string | number, parent?: Node) {
         let label: Label = null;
         if (name instanceof Node) {
             label = name.getComponent(Label);
@@ -172,7 +172,7 @@ class UIBase<Options = any> extends tnt.GComponent<Options> implements IUIAble {
             label = this.getLabelByName(name, parent);
         }
         if (label) {
-            label.string = text;
+            label.string = text.toString();
         } else {
             console.error(`GComponent-> 无法找到 label ${name}`);
         }

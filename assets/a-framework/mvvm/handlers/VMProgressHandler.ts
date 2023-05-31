@@ -19,12 +19,13 @@ export class VMProgressHandler extends VMCustomHandler {
     }
 
     onBind(): void {
-
+        super.onBind();
     }
 
     onUnBind(): void {
-
+        super.onUnBind();
     }
+
     protected async formatValue(newValue: any, oldValue: any, node: Node, nodeIdx: number, watchPath: WatchPath) {
         if (this.attr.formator) {
             return await super.formatValue(newValue, oldValue, node, nodeIdx, watchPath);
