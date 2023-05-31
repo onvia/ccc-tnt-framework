@@ -241,6 +241,7 @@ class AssetLoader {
         return this._cache;
     }
 
+    private _level = 0;
     private _loadCount = 0;
     public get loadCount() {
         return this._loadCount;
@@ -250,9 +251,17 @@ class AssetLoader {
     protected _addCount() {
         this._loadCount++;
     }
-    protected _checkDecCount() {
+    protected _decCount() {
         this._loadCount--;
-        return this.isValid;
+    }
+    /**
+     * 升维，不会释放资源。  
+     * 正在加载的资源不会执行 onProgress & onComplete 回调
+     *
+     * @memberof AssetLoader
+     */
+    public boost() {
+        this._level++;
     }
 
     public static registerPluginAuto(plugins: ILoaderPlugin | ILoaderPlugin[]) {
@@ -528,9 +537,10 @@ class AssetLoader {
         let { onProgress, onComplete, bundle } = this.parsingLoadArgs(_onProgress, _onComplete, _bundle);
 
 
-
+        let _level = this._level;
         this.loadBundleWrap(bundle, (err, bundleWrap) => {
             if (err) {
+                this._decCount();
                 onComplete?.(err, null);
                 return;
             }
@@ -544,8 +554,12 @@ class AssetLoader {
                 paths[i] = this.formatPath(paths[i], type);
             }
             bundleWrap.bundle.load(paths, type, (finish: number, total: number, item) => {
+                if (_level != this._level || !this.isValid) {
+                    return;
+                }
                 onProgress?.(finish, total, item);
             }, (error: Error, assets: T[]) => {
+                this._decCount();
                 if (error) {
                     onComplete?.(error, assets);
                     return;
@@ -574,10 +588,13 @@ class AssetLoader {
                     return asset;
                 });
 
-                if (!this._checkDecCount()) {
+                if (!this.isValid) {
                     return;
                 }
 
+                if (_level != this._level) {
+                    return;
+                }
                 this.onLoadArrayComplete(paths, assets, bundleWrap.bundle);
                 onComplete?.(error, assets);
             });
@@ -592,7 +609,7 @@ class AssetLoader {
 
         // const id = this.computeLoadCount();
         this._addCount();
-
+        let _level = this._level;
         let pathObj = this.parsePath(path);
         path = pathObj.path;
 
@@ -609,6 +626,7 @@ class AssetLoader {
 
         this.loadBundleWrap(bundle, (err, bundleWrap) => {
             if (err) {
+                this._decCount();
                 onComplete?.(err, null);
                 return;
             }
@@ -627,13 +645,17 @@ class AssetLoader {
             // }
 
             bundleWrap.bundle.load(path, type as any, (finish: number, total: number, item) => {
+                if (_level != this._level || !this.isValid) {
+                    return;
+                }
                 onProgress?.(finish, total, item);
             }, (error: Error, asset: T) => {
+                this._decCount();
                 if (error) {
                     onComplete?.(error, asset);
                 } else {
 
-                    if (!this._checkDecCount()) {
+                    if (!this.isValid) {
                         asset.addRef();
                         asset.decRef();
                         return;
@@ -654,6 +676,10 @@ class AssetLoader {
                     assetWrap = new AssetWrap(path, asset, bundleWrap);
                     assetWrap.addRef();
                     this._cache.set(u_path, assetWrap);
+
+                    if (_level != this._level) {
+                        return;
+                    }
                     this.onLoadComplete(path, asset, bundleWrap.bundle);
                     onComplete?.(error, asset);
                 }
@@ -697,7 +723,7 @@ class AssetLoader {
 
         // const id = this.computeLoadCount();
         this._addCount();
-
+        let _level = this._level;
         let pathObj = this.parsePath(dir);
         let path = pathObj.path;
 
@@ -708,13 +734,17 @@ class AssetLoader {
         }
         this.loadBundleWrap(bundle, (err, bundleWrap) => {
             if (err) {
+                this._decCount();
                 onComplete?.(err, null);
                 return;
             }
             bundleWrap.bundle.loadDir(path, type as any, (finish: number, total: number, item: RequestItem) => {
-                // this.onProgress(finish,total,item);
+                if (_level != this._level || !this.isValid) {
+                    return;
+                }
                 onProgress?.(finish, total, item);
             }, (error: Error, assets: Array<T>) => {
+                this._decCount();
                 if (error) {
                     onComplete?.(error, assets);
                     return;
@@ -745,7 +775,11 @@ class AssetLoader {
                     return asset;
                 });
 
-                if (!this._checkDecCount()) {
+                if (!this.isValid) {
+                    return;
+                }
+
+                if (_level != this._level) {
                     return;
                 }
                 this.onLoadDirComplete(path, assets, bundleWrap.bundle);
@@ -902,9 +936,9 @@ class AssetLoader {
 
     formatPath<T extends Asset>(path: string, type: CCAssetType<T>) {
 
-        if(!path){
+        if (!path) {
             console.log(`AssetLoader-> `);
-            
+
         }
         // 如果有扩展名，则删除
         let index = path.lastIndexOf('.');
