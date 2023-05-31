@@ -4,7 +4,7 @@ import { VMHandlerName, TriggerOpTypes } from "./VMOperations";
 import { VMBaseHandler } from "./handlers/VMBaseHandler";
 import { GVMTween } from "./VMTween";
 import { isObject, isArray, isIntegerKey, hasOwn, hasChanged } from "./VMGeneral";
-import { VMBaseAttr, BaseAttrBind, WatchPath, Formator, ReturnValue, VMForAttr, SpriteAttrBind, VMSpriteAttr, LabelAttrBind } from "./_mv_declare";
+import { VMBaseAttr, BaseAttrBind, WatchPath, Formator, ReturnValueType, VMForAttr, SpriteAttrBind, VMSpriteAttr, LabelAttrBind, BaseValueType } from "./_mv_declare";
 import { VMFatory } from "./VMFactory";
 
 
@@ -42,7 +42,7 @@ const depsMap = new WeakMap<Target, Target>(); // key 为原始数据对象 valu
 const objectNameMap = new WeakMap<Target, PropertyKey>();  // key 为原始数据对象 value 为数据名称
 const targetMap = new WeakMap<Target, Set<Component | Node>>(); // key 为原始数据对象
 const handlerMap = new WeakMap<Component | Node, Array<VMBaseHandler<any>>>();
-const unbindMap = new WeakMap<Component | Node, IVMObserveAutoUnbind>();
+const unbindMap = new WeakMap<IMVVMObject, IVMObserveAutoUnbind>();
 
 
 const _defaultKey: WeakMap<Object, string> = new WeakMap();
@@ -112,6 +112,10 @@ class VM {
             console.error(`VM-> tag is null`);
             return;
         }
+        if (proxySet.has(_data)) {
+            console.warn(`_mvvm-> 数据本身已经是代理`);
+            return data;
+        }
 
         objectNameMap.set(_data, _tag);
         let proxy = this._reactive(_data);
@@ -142,7 +146,6 @@ class VM {
                     _$50VMObserveAutoUnbind.unbind();
                 },
                 unbind: () => {
-                    console.log(`_mvvm-> 解除绑定`);
                     tnt.vm._violate(_target);
                     node.targetOff(_$50VMObserveAutoUnbind);
                 }
@@ -152,22 +155,23 @@ class VM {
             }
             node.on(Node.EventType.NODE_DESTROYED, _$50VMObserveAutoUnbind.nodeDestroyed, _$50VMObserveAutoUnbind);
 
-            unbindMap.set(_target as any, _$50VMObserveAutoUnbind);
+            unbindMap.set(_target, _$50VMObserveAutoUnbind);
         }
 
         return proxy;
     }
 
     public violate(mvvmObject: IMVVMObject | string, ...tags: string[]) {
-        if (mvvmObject instanceof Component || mvvmObject instanceof Node) {
+        if (typeof mvvmObject === 'string') {
+            this._violate(mvvmObject, ...tags);
+        } else {
             let _$50VMObserveAutoUnbind = unbindMap.get(mvvmObject);
             _$50VMObserveAutoUnbind?.unbind();
-        } else {
-            this._violate(mvvmObject, ...tags);
         }
     }
 
     private _violate(mvvmObject: IMVVMObject | string, ...tags: string[]) {
+
         tags.forEach(tag => {
             this._remove(tag);
         })
@@ -176,6 +180,7 @@ class VM {
             this._remove(mvvmObject);
         } else {
             this._remove(mvvmObject._vmTag);
+            unbindMap.delete(mvvmObject);
         }
     }
 
@@ -262,14 +267,15 @@ class VM {
      * @param {IMVVMObject} mvvmObject
      * @param {T} bindObject
      * @param {(BaseAttrBind<T> | WatchPath)} attr
-     * @param {Formator<ReturnValue>} [formator]
+     * @param {Formator<ReturnValueType>} [formator]
      * @return {*} 
      * @memberof VM
      */
     public bind<T extends Component | Node, A extends BaseAttrBind<T>>(mvvmObject: IMVVMObject, bindObject: T, attr: A)
-    public bind<T extends Component | Node, A extends BaseAttrBind<T>>(mvvmObject: IMVVMObject, bindObject: T, attr: WatchPath, formator?: Formator<ReturnValue, unknown>)
-    public bind<T extends Component | Node, A extends BaseAttrBind<T>>(mvvmObject: IMVVMObject, bindObject: T, attr: A | WatchPath, formator?: Formator<ReturnValue, unknown>)
-    public bind<T extends Component | Node, A extends BaseAttrBind<T>>(mvvmObject: IMVVMObject, bindObject: T, attr: A | WatchPath, formator?: Formator<ReturnValue, unknown>) {
+    public bind<T extends Component | Node, A extends BaseAttrBind<T>>(mvvmObject: IMVVMObject, bindObject: T, attr: WatchPath)
+    public bind<T extends Component | Node, A extends BaseAttrBind<T>>(mvvmObject: IMVVMObject, bindObject: T, attr: WatchPath, formator: Formator<ReturnValueType, unknown>)
+    public bind<T extends Component | Node, A extends BaseAttrBind<T>>(mvvmObject: IMVVMObject, bindObject: T, attr: A | WatchPath, formator: Formator<ReturnValueType, unknown>)
+    public bind<T extends Component | Node, A extends BaseAttrBind<T>>(mvvmObject: IMVVMObject, bindObject: T, attr: A | WatchPath, formator?: Formator<ReturnValueType, unknown>) {
         if (!bindObject) {
             console.error(`_mvvm-> 绑定对象不存在`);
             return;
@@ -283,23 +289,24 @@ class VM {
 
 
     public label(mvvmObject: IMVVMObject, bindObject: Label | Node, attr: LabelAttrBind<Label>)
-    public label(mvvmObject: IMVVMObject, bindObject: Label | Node, attr: WatchPath, formator: Formator<string | string[] | number | number[], unknown>)
-    public label(mvvmObject: IMVVMObject, bindObject: Label | Node, attr: LabelAttrBind<Label> | WatchPath, formator?: Formator<string | string[] | number | number[], unknown>) {
+    public label(mvvmObject: IMVVMObject, bindObject: Label | Node, attr: WatchPath, formator?: Formator<BaseValueType, unknown>)
+    public label(mvvmObject: IMVVMObject, bindObject: Label | Node, attr: LabelAttrBind<Label> | WatchPath, formator?: Formator<BaseValueType, unknown>) {
         // 有 formator 的时候，一般使用默认属性， label.string 类型为 string
         let _label: Label = _typeTransition(bindObject, Label);
         this.bind(mvvmObject, _label, attr, formator);
     }
 
     public richText(mvvmObject: IMVVMObject, bindObject: RichText | Node, attr: LabelAttrBind<RichText>)
-    public richText(mvvmObject: IMVVMObject, bindObject: RichText | Node, attr: WatchPath, formator: Formator<string | string[] | number | number[], unknown>)
-    public richText(mvvmObject: IMVVMObject, bindObject: RichText | Node, attr: LabelAttrBind<RichText> | WatchPath, formator?: Formator<string | string[] | number | number[], unknown>) {
+    public richText(mvvmObject: IMVVMObject, bindObject: RichText | Node, attr: WatchPath, formator?: Formator<BaseValueType, unknown>)
+    public richText(mvvmObject: IMVVMObject, bindObject: RichText | Node, attr: LabelAttrBind<RichText> | WatchPath, formator?: Formator<BaseValueType, unknown>) {
         // 有 formator 的时候，一般使用默认属性， richText.string 类型为 string
         let _label: RichText = _typeTransition(bindObject, RichText);
         this.bind(mvvmObject, _label, attr, formator);
     }
 
+
     public node(mvvmObject: IMVVMObject, node: Node, attr: BaseAttrBind<Node>)
-    public node(mvvmObject: IMVVMObject, node: Node, attr: WatchPath, formator: Formator<boolean, unknown>)
+    public node(mvvmObject: IMVVMObject, node: Node, attr: WatchPath, formator?: Formator<boolean, unknown>)
     public node(mvvmObject: IMVVMObject, node: Node, attr: BaseAttrBind<Node> | WatchPath, formator?: Formator<boolean, unknown>) {
         // 有 formator 的时候，一般使用默认属性， Node 为 node.active 类型为 boolean
         this.bind(mvvmObject, node, attr, formator);
@@ -507,31 +514,8 @@ class VM {
             DEBUG && console.warn(`_mvvm-> 不存在 ${tag} 数据，无法移除`);
             return;
         }
-        // let mv = this._mvMap.get(tag);
         this._mvMap.delete(tag);
-
-        // this.__remove(mv.data);
     }
-
-    // private __remove(data: object) {
-    //     if (!_isObject(data)) {
-    //         return;
-    //     }
-    //     if (!targetMap.has(data)) {
-    //         for (const key in data) {
-    //             this.__remove(data[key]);
-    //         }
-    //         return;
-    //     }
-    //     let comps = targetMap.get(data);
-    //     comps.forEach((bindObject) => {
-    //         let vmTrigger = triggerMap.get(bindObject);
-    //         vmTrigger.unbind();
-    //         triggerMap.delete(bindObject);
-    //     });
-    //     comps.clear();
-    //     targetMap.delete(comps);
-    // }
 
 
 
@@ -624,7 +608,7 @@ function _parseObserveArgs(mvvmObjectOrData: IMVVMObject | object, data?: object
     return { target, data: data as object, tag }
 }
 
-function _formatAttr<T>(mvvmObject: IMVVMObject, component: T, attr: BaseAttrBind<T> | WatchPath, formator?: Formator<ReturnValue, unknown>) {
+function _formatAttr<T>(mvvmObject: IMVVMObject, component: T, attr: BaseAttrBind<T> | WatchPath, formator?: Formator<ReturnValueType, unknown>) {
     let _attr: BaseAttrBind<any> = null;
     if (typeof attr === 'string' || isArray(attr)) {
         let defKey = _getDefaultKey(component);

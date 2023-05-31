@@ -2,6 +2,7 @@ import { Component, isValid, Node } from "cc";
 import { DEV } from "cc/env";
 import { isArray } from "../VMGeneral";
 import { TriggerOpTypes } from "../VMOperations";
+import { GVMTween } from "../VMTween";
 import { VMBaseAttr, WatchPath } from "../_mv_declare";
 
 export abstract class VMBaseHandler<T extends object = any>{
@@ -13,7 +14,25 @@ export abstract class VMBaseHandler<T extends object = any>{
     public declare isValid: boolean;
     private declare _node: Node;
     protected declare templateValuesCache: string[] | number[] | boolean[];
+    private _tween: IVMTween = null;
+    protected get tween() {
+        if (this._tween) {
+            return this._tween;
+        }
 
+        if (typeof this.attr.tween == 'boolean') {
+            if (this.attr.tween) {
+                this._tween = new GVMTween();
+            }
+        } else if (typeof this.attr.tween == 'number') {
+            this._tween = new GVMTween(this.attr.tween);
+        } else {
+            this._tween = this.attr.tween;
+        }
+        return this._tween;
+    }
+
+    
     public get node(): Node {
         if (this._node) {
             return this._node;
@@ -36,7 +55,8 @@ export abstract class VMBaseHandler<T extends object = any>{
             return;
         }
         this.isValid = true;
-        this.attr.tween?.onLoad();
+
+        this.tween?.onLoad();
         this.templateValuesCache = [];
 
         if (this.node) {
@@ -57,7 +77,7 @@ export abstract class VMBaseHandler<T extends object = any>{
         this.isValid = false;
         this.onUnBind();
 
-        this.attr.tween?.onDestroy();
+        this.tween?.onDestroy();
         if (this.node) {
             this.node.targetOff(this);
         }

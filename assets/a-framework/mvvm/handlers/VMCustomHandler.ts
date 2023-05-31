@@ -32,7 +32,7 @@ export class VMCustomHandler extends VMBaseHandler {
     handle(newValue: any, oldValue: any, type: TriggerOpTypes, watchPath: WatchPath) {
         let path = watchPath;
         let _watchPath = this.attr.watchPath;
-        let vmTween = this.attr.tween;
+        let vmTween = this.tween;
         let _resolve = (_newValue: any, _oldValue: any, _path: any) => {
             this._updateValueUseFormator(_newValue, _oldValue, _path); // 重新解析
         }

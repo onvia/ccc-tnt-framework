@@ -89,6 +89,7 @@ export class VMLabelHandler extends VMCustomHandler {
         let _string = this.stringFormat(this.originText, ...value);
         return _string;
     }
+
     stringFormat(key: string, ...args) {
         return tnt.stringUtils.format_0(key, ...args);
     }

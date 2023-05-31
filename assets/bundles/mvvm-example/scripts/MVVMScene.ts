@@ -76,16 +76,9 @@ export class MVVMScene extends tnt.SceneBase implements IMVVMObject {
         // tnt.vm.observe(this, { xxx: 11, ddd: 22 });
         // tnt.vm.observe(this, { xxx: 11, ddd: 22 },"MVVMTag");
 
-        // setTimeout(() => {
-        //     this.data.progress = 0.5;
-        // }, 500);
-
-        // setTimeout(() => {
-        //     this.data.progress = 1;
-        // }, 1000);
-        // this.testProgressBar();
+        this.testProgressBar();
         this.testLabel();
-        // this.testSprite();
+        this.testSprite();
     }
 
     testLabel() {
@@ -106,17 +99,18 @@ export class MVVMScene extends tnt.SceneBase implements IMVVMObject {
         // });
         tnt.vm.label(this, label, {
             "string": {
-                watchPath: ["*.array.0.age","*.gold","*.maxGold"],
+                watchPath: ["*.array.0.age", "*.gold", "*.maxGold"],
                 tween: tnt.vm.VMTween(3),
                 // maxLength: 8,
                 formator: (opts) => {
-                    return [Math.floor(opts.newValue[0]),Math.floor(opts.newValue[1])/Math.floor(opts.newValue[2])] as any;
+                    return [Math.floor(opts.newValue[0]), Math.floor(opts.newValue[1]) / Math.floor(opts.newValue[2])];
                 },
             }
         });
-        // tnt.vm.bind(this, label, "*.array.0.age", (opts) => {
-        //     return opts.newValue;
-        // });
+
+        tnt.vm.bind(this, label, "*.array.0.age", (opts) => {
+            return opts.newValue;
+        });
 
 
 
@@ -132,11 +126,11 @@ export class MVVMScene extends tnt.SceneBase implements IMVVMObject {
     testSprite() {
 
         let sprite: Sprite = this.getSpriteByName("sprite");
-        tnt.vm.sprite(this, sprite, {
-            'spriteFrame': {
-                watchPath: "*.icon"
-            }
-        });
+        // tnt.vm.sprite(this, sprite, {
+        //     'spriteFrame': {
+        //         watchPath: "*.icon"
+        //     }
+        // });
 
         tnt.vm.sprite(this, sprite, "*.icon");
 
@@ -144,31 +138,18 @@ export class MVVMScene extends tnt.SceneBase implements IMVVMObject {
         setTimeout(() => {
             this.data.icon = "resources#textures/goldcoin";
         }, 500);
+
     }
 
 
     testProgressBar() {
         let progressBar: ProgressBar = this.getProgressBarByName("progressBar");
-        tnt.vm.bind(this, progressBar, "*.progress", (opts) => {
-            return 1;
-        });
-
-
-        tnt.vm.bind(this, progressBar, {
-            "progress": {
-                watchPath: "*.progress",
-                formator: (ots) => {
-                    return 1;
-                }
-            }
-        });
-
 
         // tnt.vm.bind(this, label, "*.name");
         tnt.vm.progressBar(this, progressBar.node, {
             'progress': {
                 watchPath: "*.progress",
-                tween: tnt.vm.VMTween(3),
+                tween: 10,
                 formator: (opts) => {
                     return Math.floor(opts.newValue * 100) / 100;
                 }
@@ -176,6 +157,7 @@ export class MVVMScene extends tnt.SceneBase implements IMVVMObject {
         });
 
 
+        this.data.progress = 1;
     }
 
     protected onDestroy(): void {
