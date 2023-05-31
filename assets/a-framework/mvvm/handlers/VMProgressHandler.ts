@@ -1,7 +1,6 @@
 import { Component, Node } from "cc";
 import { DEV } from "cc/env";
-import { TriggerOpTypes } from "../VMOperations";
-import { VMLabelAttr, WatchPath } from "../_mv_declare";
+import { WatchPath } from "../_mv_declare";
 import { VMCustomHandler } from "./VMCustomHandler";
 
 export class VMProgressHandler extends VMCustomHandler {
@@ -9,7 +8,7 @@ export class VMProgressHandler extends VMCustomHandler {
 
     onInitValue(): void {
         if (this._isProgress && !this.attr.formator && this.attr.watchPath.length > 2) {
-            let msg = `VMProgressHandler-> [${this.node.name}] 输入参数数量过多，请实现 formator 方法`;
+            let msg = `VMProgressHandler-> [${this.node.name}] 输入参数 (watchPath) 数量过多，请实现 formator 方法`;
             if (DEV) {
                 throw new Error(msg);
             } else {
@@ -52,7 +51,7 @@ export class VMProgressHandler extends VMCustomHandler {
         return newValue;
     }
 
-    private get _isProgress(){
+    private get _isProgress() {
         return this.attr._targetPropertyKey === 'progress'
     }
 }

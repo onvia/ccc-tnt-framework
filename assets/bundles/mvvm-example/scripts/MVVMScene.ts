@@ -79,6 +79,14 @@ export class MVVMScene extends tnt.SceneBase implements IMVVMObject {
         this.testProgressBar();
         this.testLabel();
         this.testSprite();
+
+
+
+        setTimeout(() => {
+            this.data.gold = 199;
+            this.data.maxGold = 199;
+            this.data.array[0].age = 99;
+        }, 600);
     }
 
     testLabel() {
@@ -98,27 +106,24 @@ export class MVVMScene extends tnt.SceneBase implements IMVVMObject {
         //         }   
         //     }
         // });
-        tnt.vm.label(this, label1, {
-            "string": {
-                watchPath: ["*.array.0.age", "*.gold", "*.maxGold"],
-                tween: tnt.vm.VMTween(3),
-                // maxLength: 8,
-                formator: (opts) => {
-                    return [Math.floor(opts.newValue[0]), Math.floor(opts.newValue[1]) / Math.floor(opts.newValue[2])];
-                },
-            }
-        });
 
         tnt.vm.label(this, label2, {
             "string": {
                 watchPath: ["*.array.0.age", "*.gold", "*.maxGold"],
-                tween: 10,
+                tween: 3,
                 // maxLength: 8,
                 formator: (opts) => {
                     return [Math.floor(opts.newValue[0]), Math.floor(opts.newValue[1]) / Math.floor(opts.newValue[2])];
                 },
             }
         });
+        tnt.vm.label(this, label1, {
+            "string": {
+                watchPath: ["*.gold", "*.maxGold"],
+                tween: tnt.vm.VMTween(4),
+            }
+        });
+
         tnt.vm.bind(this, label1, "*.array.0.age", (opts) => {
             return opts.newValue;
         });
@@ -129,10 +134,6 @@ export class MVVMScene extends tnt.SceneBase implements IMVVMObject {
         //     "string"
         // });
 
-        setTimeout(() => {
-            this.data.gold = 199;
-            this.data.array[0].age = 99;
-        }, 600);
     }
     testSprite() {
 
@@ -159,16 +160,13 @@ export class MVVMScene extends tnt.SceneBase implements IMVVMObject {
         // tnt.vm.bind(this, label, "*.name");
         tnt.vm.progressBar(this, progressBar.node, {
             'progress': {
-                watchPath: "*.progress",
-                tween: 10,
-                formator: (opts) => {
-                    return Math.floor(opts.newValue * 100) / 100;
-                }
+                watchPath: ["*.gold", "*.maxGold"],
+                tween: 4,
+                // formator: (opts) => {
+                //     return Math.floor(opts.newValue * 100) / 100;
+                // }
             }
         });
-
-
-        this.data.progress = 1;
     }
 
     protected onDestroy(): void {

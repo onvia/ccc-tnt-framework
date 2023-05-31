@@ -37,7 +37,7 @@ export class VMFatory {
 let producers = {
     [VMHandlerName.Common]: VMCustomHandler,
     [VMHandlerName.String]: VMLabelHandler,
-    // [VMHandlerName.Progress]: VMProgressHandler,
+    [VMHandlerName.Progress]: VMProgressHandler,
 
 }
 

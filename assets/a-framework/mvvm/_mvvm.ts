@@ -353,6 +353,7 @@ class VM {
      */
     public for(target: IMVVMObject, parent: Node, attr: VMForAttr) {
         attr.watchPath = _parseWatchPath(attr.watchPath, target._vmTag);
+        attr._handler = "for";
         this._track(target, parent, attr);
     }
 
