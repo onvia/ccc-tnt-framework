@@ -32,6 +32,8 @@ interface IVMObserveAutoUnbind {
     unbind();
 }
 
+const ArrayFns = ['push', 'pop', 'shift', 'unshift', 'sort', 'reverse', 'splice'];
+
 // 缓存代理
 const proxyMap = new WeakMap<Target, any>();
 // 防止重复注册
@@ -203,7 +205,7 @@ class VM {
         const proxy = new Proxy(data, {
             get(target, key: PropertyKey, receiver?: any) {
                 console.log(`_mvvm-> get `, key, target[key]);
-
+                
                 const res = Reflect.get(target, key, receiver);
                 if (isObject(res)) {
                     depsMap.set(res as object, target);
@@ -234,7 +236,7 @@ class VM {
                     }
                     self._trigger(target, TriggerOpTypes.SET, key, newValue, oldValue);
                 }
-
+                
                 // console.log(`_mvvm-> 【设置】${String(key)} 值为： ${newValue}`);
                 return res;
             },
@@ -286,7 +288,7 @@ class VM {
         let _attrs = _formatAttr(mvvmObject, bindObject, attr, formator);
         for (const key in _attrs) {
             const opt = _attrs[key] as VMBaseAttr<any>;
-            this._track(mvvmObject, bindObject, opt);
+            this._collect(mvvmObject, bindObject, opt);
         }
     }
 
@@ -329,7 +331,7 @@ class VM {
             const opt = _attrs[key] as VMSpriteAttr<any>;
             opt.loaderKey = opt.loaderKey || mvvmObject.loaderKey;
             opt.bundle = opt.bundle || mvvmObject.bundle;
-            this._track(mvvmObject, _comp, opt);
+            this._collect(mvvmObject, _comp, opt);
         }
     }
 
@@ -358,14 +360,14 @@ class VM {
         attr.watchPath = _parseWatchPath(attr.watchPath, target._vmTag);
         // 
         attr._handler = VMHandlerName.For;
-        this._track(target, parent, attr);
+        this._collect(target, parent, attr);
     }
 
     // public click() {
 
     // }
 
-    private _track<T extends Component | Node>(mvvmObject: IMVVMObject, bindObject: T, attr: VMBaseAttr<any>) {
+    private _collect<T extends Component | Node>(mvvmObject: IMVVMObject, bindObject: T, attr: VMBaseAttr<any>) {
         // if (!isArray(attr.watchPath)) {
         //     this.__track(mvvmObject, bindObject, attr, attr.watchPath);
         // } else {
@@ -375,9 +377,9 @@ class VM {
         //     }
         // }
 
-        this.__track(mvvmObject, bindObject, attr);
+        this.__collect(mvvmObject, bindObject, attr);
     }
-    private __track<T extends Component | Node>(mvvmObject: IMVVMObject, bindObject: T, attr: VMBaseAttr<any>) {
+    private __collect<T extends Component | Node>(mvvmObject: IMVVMObject, bindObject: T, attr: VMBaseAttr<any>) {
         let triggerArray = handlerMap.get(bindObject) || [];
         for (let i = 0; i < triggerArray.length; i++) {
             const _vmTrigger = triggerArray[i];
