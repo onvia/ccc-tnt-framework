@@ -1,7 +1,7 @@
 
 import { Component, isValid, Node } from "cc";
 import { DEV } from "cc/env";
-import { ForOpType, VMBaseAttr, VMForAttr, WatchPath } from "../_mv_declare";
+import { ForOpType,  VMForAttr, WatchPath } from "../_mv_declare";
 import { VMCustomHandler } from "./VMCustomHandler";
 declare global {
     interface IVMItem {

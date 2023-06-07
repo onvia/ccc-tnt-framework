@@ -1,4 +1,4 @@
-import { TriggerOpTypes } from "../VMOperations";
+import { TriggerOpTypes } from "../reactivity/_internals";
 import { WatchPath } from "../_mv_declare";
 import { VMBaseHandler } from "./VMBaseHandler";
 

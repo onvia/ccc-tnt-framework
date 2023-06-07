@@ -1,11 +1,12 @@
 import { Component, Label, Node, Sprite, EditBox, ProgressBar, RichText, Slider, Toggle, UIOpacity, UIRenderer, js, UITransform, isValid, SpriteFrame } from "cc";
 import { DEBUG } from "cc/env";
-import { VMHandlerName, TriggerOpTypes } from "./VMOperations";
-import { VMBaseHandler } from "./handlers/VMBaseHandler";
+import { VMHandlerName } from "./VMOperations";
 import { GVMTween } from "./VMTween";
-import { isObject, isArray, isIntegerKey, hasOwn, hasChanged } from "./VMGeneral";
+import { isArray } from "./VMGeneral";
 import { VMBaseAttr, BaseAttrBind, WatchPath, Formator, ReturnValueType, VMForAttr, SpriteAttrBind, VMSpriteAttr, LabelAttrBind, BaseValueType } from "./_mv_declare";
 import { VMFatory } from "./VMFactory";
+import { handlerMap, IVMObserveAutoUnbind, proxyMap, Raw, rawDepsMap, rawMap, rawNameMap, targetMap, unbindMap } from "./reactivity/_internals";
+import { _reactive } from "./reactivity/_reactive";
 
 
 
@@ -25,26 +26,6 @@ declare global {
 interface Target {
 
 }
-
-interface IVMObserveAutoUnbind {
-    removeComponent(comp: Component);
-    nodeDestroyed();
-    unbind();
-}
-
-const ArrayFns = ['push', 'pop', 'shift', 'unshift', 'sort', 'reverse', 'splice'];
-
-// 缓存代理
-const proxyMap = new WeakMap<Target, any>();
-// 防止重复注册
-const proxySet = new WeakSet();
-// 数据依赖
-const depsMap = new WeakMap<Target, Target>(); // key 为原始数据对象 value 为原始数据对象
-// 数据对象名称
-const objectNameMap = new WeakMap<Target, PropertyKey>();  // key 为原始数据对象 value 为数据名称
-const targetMap = new WeakMap<Target, Set<Component | Node>>(); // key 为原始数据对象
-const handlerMap = new WeakMap<Component | Node, Array<VMBaseHandler<any>>>();
-const unbindMap = new WeakMap<IMVVMObject, IVMObserveAutoUnbind>();
 
 
 const _defaultKey: WeakMap<Object, string> = new WeakMap();
@@ -74,7 +55,7 @@ _defaultFormator.set(Sprite, async (options) => {
 
 if (DEBUG) {
     window['tntWeakMap'] = {
-        proxyMap, proxySet, objectNameMap, targetMap, handlerMap, unbindMap, depsMap
+        proxyMap, rawMap, rawNameMap, targetMap, handlerMap, unbindMap, rawDepsMap
     };
 }
 
@@ -114,12 +95,12 @@ class VM {
             console.error(`VM-> tag is null`);
             return;
         }
-        if (proxySet.has(_data)) {
+        if (rawMap.has(_data)) {
             console.warn(`_mvvm-> 数据本身已经是代理`);
             return data;
         }
 
-        objectNameMap.set(_data, _tag);
+        rawNameMap.set(_data, _tag);
         let proxy = this._reactive(_data);
         if (_target) {
             _target.data = proxy;
@@ -186,82 +167,8 @@ class VM {
         }
     }
 
-    private _reactive<T extends object>(data: T): T {
-        if (proxySet.has(data)) {
-            console.warn(`_mvvm-> 本身已经是代理`);
-            return data;
-        }
-        if (!isObject(data)) {
-            console.warn(`_mvvm-> 非对象无法进行代理: ${String(data)}`)
-            return data;
-        }
-
-        const existingProxy = proxyMap.get(data);
-        if (existingProxy) {
-            return existingProxy;
-        }
-
-        let self = this;
-        const proxy = new Proxy(data, {
-            get(target, key: PropertyKey, receiver?: any) {
-                console.log(`_mvvm-> get `, key, target[key]);
-                
-                const res = Reflect.get(target, key, receiver);
-                if (isObject(res)) {
-                    depsMap.set(res as object, target);
-                    objectNameMap.set(res as object, key);
-                    // console.log(`_mvvm->【读取】${String(key)} 值为 ${res?.toString()} 注册代理`);
-                    return self._reactive(res as object);
-                }
-                // console.log(`_mvvm->【读取】 ${String(key)}  不用注册代理`);
-                return res;
-            },
-            set(target, key: PropertyKey, newValue, receiver?: any) {
-                let oldValue = target[key];
-                console.log(`_mvvm-> set `, key, " newValue: ", newValue, "oldValue: ", oldValue);
-                const _isObject = isObject(newValue);
-                const _isArray = isArray(target);
-                const hadKey = _isArray && isIntegerKey(key) ? Number(key) < target.length : hasOwn(target, key);
-                const res = Reflect.set(target, key, newValue, receiver);
-                if (!hadKey) {
-                    if (_isObject) {
-                        depsMap.set(newValue as object, target);
-                        objectNameMap.set(newValue as object, key);
-                    }
-                    self._trigger(target, TriggerOpTypes.ADD, key, newValue, oldValue);
-                } else if (hasChanged(newValue, oldValue)) {
-                    // TODO：对数组进行特殊处理 length
-                    if (_isArray && key === 'length') {
-
-                    }
-                    self._trigger(target, TriggerOpTypes.SET, key, newValue, oldValue);
-                }
-                
-                // console.log(`_mvvm-> 【设置】${String(key)} 值为： ${newValue}`);
-                return res;
-            },
-            has(target, p) {
-                let _has = Reflect.has(target, p);
-                return _has;
-            },
-            ownKeys(target) {
-                return Reflect.ownKeys(target);
-            },
-            deleteProperty(target, key: PropertyKey) {
-                // console.log(`_mvvm-> 【删除】${String(key)}`);
-                const hadKey = hasOwn(target, key)
-                const oldValue = (target as any)[key]
-                const result = Reflect.deleteProperty(target, key);
-                if (result && hadKey) {
-                    self._trigger(target, TriggerOpTypes.DELETE, key, undefined, oldValue);
-                }
-                return result;
-            }
-        });
-
-        proxyMap.set(data, proxy);
-        proxySet.add(proxy);
-        return proxy;
+    private _reactive<T extends Raw>(data: T): T {
+        return _reactive(data);
     }
 
 
@@ -368,18 +275,6 @@ class VM {
     // }
 
     private _collect<T extends Component | Node>(mvvmObject: IMVVMObject, bindObject: T, attr: VMBaseAttr<any>) {
-        // if (!isArray(attr.watchPath)) {
-        //     this.__track(mvvmObject, bindObject, attr, attr.watchPath);
-        // } else {
-        //     for (let i = 0; i < attr.watchPath.length; i++) {
-        //         const watchPath = attr.watchPath[i];
-        //         this.__track(mvvmObject, bindObject, attr, watchPath);
-        //     }
-        // }
-
-        this.__collect(mvvmObject, bindObject, attr);
-    }
-    private __collect<T extends Component | Node>(mvvmObject: IMVVMObject, bindObject: T, attr: VMBaseAttr<any>) {
         let triggerArray = handlerMap.get(bindObject) || [];
         for (let i = 0; i < triggerArray.length; i++) {
             const _vmTrigger = triggerArray[i];
@@ -433,42 +328,11 @@ class VM {
         targetMap.set(targetData, comps);
     }
 
-    private _trigger(target: object, type: TriggerOpTypes, key: PropertyKey, newValue: any, oldValue: any) {
-        let targets = targetMap.get(target); //
-        if (targets) {
-            let _deleteArr: any[] = null;
-            let fullPath = _getFullWatchPath(target, key);
-            // let proxy = this._reactive(target);
-            targets.forEach((_target) => {
-                if (!isValid(_target)) {
-                    _deleteArr = _deleteArr || [];
-                    _deleteArr.push(_target);
-                    return;
-                }
-                let vmTriggerArray = handlerMap.get(_target);
-                if (!vmTriggerArray) {
-                    console.error(`_mvvm-> [${_target.name}] trigger 错误`);
-                    return;
-                }
-                for (let i = 0; i < vmTriggerArray.length; i++) {
-                    const vmTrigger = vmTriggerArray[i];
-                    if (vmTrigger.isWatchPath(fullPath)) {
-                        vmTrigger.handle(newValue, oldValue, type, fullPath);
-                    }
-                }
-            });
-
-            if (_deleteArr) {
-                for (let i = 0; i < _deleteArr.length; i++) {
-                    const element = _deleteArr[i];
-                    targets.delete(element);
-                }
-                _deleteArr = null;
-            }
-        }
-    }
-
     public setValue(path: string, value: any) {
+        if (path.startsWith("*")) {
+            console.error(`_mvvm-> path 需要为完整路径`);
+            return;
+        }
         let targetData = this._getDataByPath(path);
         if (!targetData) {
             DEBUG && console.log(`_mvvm-> [${path}] 找不到数据`);
@@ -481,6 +345,10 @@ class VM {
     }
 
     public getValue(path: string, defaultValue: any) {
+        if (path.startsWith("*")) {
+            console.error(`_mvvm-> path 需要为完整路径`);
+            return;
+        }
         let targetData = this._getDataByPath(path);
         if (!targetData) {
             DEBUG && console.log(`_mvvm-> [${path}] 找不到数据`);
@@ -686,20 +554,6 @@ function _parseWatchPath(watchPath: string | string[], tag: string) {
     return watchPath;
 }
 
-
-function _getFullWatchPath(target: object, propertyKey: PropertyKey) {
-    let parent = target;
-    let objectName: PropertyKey = "";
-    let pathArr = [propertyKey];
-    while (parent) {
-        objectName = objectNameMap.get(parent); // 先获取对象名称（属性名）
-        parent = depsMap.get(parent); // 获取被依赖的数据
-        pathArr.unshift(objectName); // 最前面插入名称
-    }
-
-    let pathStr = pathArr.join(".");
-    return pathStr;
-}
 
 tnt.vm = VM.getInstance();
 

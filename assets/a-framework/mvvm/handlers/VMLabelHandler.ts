@@ -1,6 +1,6 @@
 import { Component, Node } from "cc";
 import { DEV } from "cc/env";
-import { TriggerOpTypes } from "../VMOperations";
+import { TriggerOpTypes } from "../reactivity/_internals";
 import { VMLabelAttr, WatchPath } from "../_mv_declare";
 import { VMCustomHandler } from "./VMCustomHandler";
 

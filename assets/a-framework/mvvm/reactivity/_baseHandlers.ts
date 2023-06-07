@@ -1,5 +1,6 @@
 import { hasChanged, hasOwn, hasOwnProperty, isArray, isIntegerKey, isObject, isSymbol } from "../VMGeneral";
-import { rawDepsMap, rawNameMap, rawMap } from "./_internals";
+import { rawDepsMap, rawNameMap, rawMap, TriggerOpTypes } from "./_internals";
+import { _trigger } from "./_reaction";
 import { _reactive } from "./_reactive";
 
 
@@ -35,11 +36,12 @@ function createArrayInstrumentations() {
 
             let oldValue = this.slice();
             const proto: any = Reflect.getPrototypeOf(this);
-            const result = proto.push.apply(this, args)
+            const result = proto[key].apply(this, args);
 
-            console.log(`collections->push `, result, "oldValue", oldValue, "newValue", this);
 
-            // _trigger(dep, TriggerOpTypes.SET, name, this, oldValue);
+            // console.log(`collections->${key} `, result, "oldValue", oldValue, "newValue", this);
+
+            _trigger(dep, TriggerOpTypes.SET, name, this, oldValue);
             return result
         }
     })
@@ -69,7 +71,7 @@ function get(target, key: PropertyKey, receiver?: any) {
 }
 function set(target, key: PropertyKey, newValue, receiver?: any) {
     let oldValue = target[key];
-    console.log(`_mvvm-> set `, key, " newValue: ", newValue, "oldValue: ", oldValue);
+    // console.log(`_mvvm-> set `, key, " newValue: ", newValue, "oldValue: ", oldValue);
     const _isObject = isObject(newValue);
     const _isArray = isArray(target);
     const hadKey = _isArray && isIntegerKey(key) ? Number(key) < target.length : hasOwn(target, key);
@@ -79,13 +81,13 @@ function set(target, key: PropertyKey, newValue, receiver?: any) {
             rawDepsMap.set(newValue as object, target);
             rawNameMap.set(newValue as object, key);
         }
-        // _trigger(target, TriggerOpTypes.ADD, key, newValue, oldValue);
+        _trigger(target, TriggerOpTypes.ADD, key, newValue, oldValue);
     } else if (hasChanged(newValue, oldValue)) {
         // TODO：对数组进行特殊处理 length
         if (_isArray && key === 'length') {
 
         }
-        // _trigger(target, TriggerOpTypes.SET, key, newValue, oldValue);
+        _trigger(target, TriggerOpTypes.SET, key, newValue, oldValue);
     }
 
     // console.log(`_mvvm-> 【设置】${String(key)} 值为： ${newValue}`);
@@ -100,7 +102,7 @@ function deleteProperty(target, key: PropertyKey) {
     const oldValue = (target as any)[key]
     const result = Reflect.deleteProperty(target, key);
     if (result && hadKey) {
-        //   self._trigger(target, TriggerOpTypes.DELETE, key, undefined, oldValue);
+        _trigger(target, TriggerOpTypes.DELETE, key, undefined, oldValue);
     }
     return result;
 }

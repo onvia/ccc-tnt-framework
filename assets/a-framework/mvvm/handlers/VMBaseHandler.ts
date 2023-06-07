@@ -1,7 +1,7 @@
-import { Component, isValid, Node } from "cc";
+import { Component, Node } from "cc";
 import { DEV } from "cc/env";
+import { TriggerOpTypes } from "../reactivity/_internals";
 import { isArray } from "../VMGeneral";
-import { TriggerOpTypes } from "../VMOperations";
 import { GVMTween } from "../VMTween";
 import { VMBaseAttr, WatchPath } from "../_mv_declare";
 

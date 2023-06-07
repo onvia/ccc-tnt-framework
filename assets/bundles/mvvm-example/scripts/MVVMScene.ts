@@ -1,6 +1,4 @@
 import { _decorator, Component, Node, Label, Rect, Color, Sprite, SpriteFrame, ProgressBar, tween, math, ScrollView } from 'cc';
-import { observe } from '../../../_dev/src/observe';
-import { reactive } from '../../../_dev/src/reactive';
 import { VMItem } from './VMItem';
 const { ccclass, property } = _decorator;
 
@@ -42,42 +40,25 @@ export class MVVMScene extends tnt.SceneBase implements IMVVMObject {
     }
 
     onEnterTransitionStart(sceneName?: string): void {
-        // tnt.vm.observe(this);
-        let arr = reactive([1,3,4,5]);
-        observe(() => {
-            console.log(`MVVMScene-> `,arr);
-            
-        })
+        tnt.vm.observe(this);
 
-        const data = reactive(new Map([['a', 1]]))
-        observe(() => {
-            for (let [key, val] of data) {
-                console.log(key, val)
-            }
-        })
-
-        data.set('b', 5)
-        window['data'] = data
-        window['arr'] = arr
+        this.testLabel();
+        this.testSprite();
+        this.testProgressBar();
+        this.testFor();
+        this.testNodeActive();
 
 
-        // this.testLabel();
-        // this.testSprite();
-        // this.testProgressBar();
-        // this.testFor();
-        // this.testNodeActive();
+        this.schedule(() => {
+            this.data.icon = this.data2.icon.random();
+            this.data.diamond = math.randomRangeInt(10, 9999);
+            this.data.color = new Color(math.randomRangeInt(0, 255), math.randomRangeInt(0, 255), math.randomRangeInt(0, 255), 255);
+        }, 1);
 
-
-        // this.schedule(() => {
-        //     this.data.icon = this.data2.icon.random();
-        //     this.data.diamond = math.randomRangeInt(10, 9999);
-        //     this.data.color = new Color(math.randomRangeInt(0, 255), math.randomRangeInt(0, 255), math.randomRangeInt(0, 255), 255);
-        // }, 1);
-
-        // this.schedule(() => {
-        //     this.data.gold = 199;
-        //     this.data.array[0].age = 99;
-        // }, 15, 999, 0.5);
+        this.schedule(() => {
+            this.data.gold = 199;
+            this.data.array[0].age = 99;
+        }, 15, 999, 0.5);
     }
 
     testLabel() {

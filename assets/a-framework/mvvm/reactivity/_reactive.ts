@@ -29,7 +29,7 @@ function _reactive<T extends Raw>(raw: T): T {
 
 function _createReactive<T extends Raw>(raw: T): T {
     if (rawMap.has(raw)) {
-        console.warn(`_mvvm-> 本身已经是代理`);
+        // console.warn(`_mvvm-> 本身已经是代理`);
         return raw;
     }
     if (!isObject(raw)) {
@@ -44,11 +44,14 @@ function _createReactive<T extends Raw>(raw: T): T {
     if (targetType === RawType.INVALID) {
         return raw;
     }
-
-    const proxy = new Proxy(raw, getHandlers(targetType));
+    let handler = getHandlers(targetType);
+    if(!handler){
+        return raw;
+    }
+    const proxy = new Proxy(raw, handler);
     proxyMap.set(raw, proxy);
     rawMap.set(proxy, raw);
-    return null;
+    return proxy;
 }
 export {
     _reactive
