@@ -1,4 +1,6 @@
 import { _decorator, Component, Node, Label, Rect, Color, Sprite, SpriteFrame, ProgressBar, tween, math, ScrollView } from 'cc';
+import { observe } from '../../../_dev/src/observe';
+import { reactive } from '../../../_dev/src/reactive';
 import { VMItem } from './VMItem';
 const { ccclass, property } = _decorator;
 
@@ -40,12 +42,29 @@ export class MVVMScene extends tnt.SceneBase implements IMVVMObject {
     }
 
     onEnterTransitionStart(sceneName?: string): void {
-        tnt.vm.observe(this);
+        // tnt.vm.observe(this);
+        let arr = reactive([1,3,4,5]);
+        observe(() => {
+            console.log(`MVVMScene-> `,arr);
+            
+        })
+
+        const data = reactive(new Map([['a', 1]]))
+        observe(() => {
+            for (let [key, val] of data) {
+                console.log(key, val)
+            }
+        })
+
+        data.set('b', 5)
+        window['data'] = data
+        window['arr'] = arr
+
 
         // this.testLabel();
         // this.testSprite();
         // this.testProgressBar();
-        this.testFor();
+        // this.testFor();
         // this.testNodeActive();
 
 
