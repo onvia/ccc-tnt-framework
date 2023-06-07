@@ -1,10 +1,10 @@
 import { Component, Label, Node, Sprite, EditBox, ProgressBar, RichText, Slider, Toggle, UIOpacity, UIRenderer, js, UITransform, isValid, SpriteFrame } from "cc";
 import { DEBUG } from "cc/env";
-import { VMHandlerName } from "./VMOperations";
 import { GVMTween } from "./VMTween";
 import { isArray } from "./VMGeneral";
 import { VMBaseAttr, BaseAttrBind, WatchPath, Formator, ReturnValueType, VMForAttr, SpriteAttrBind, VMSpriteAttr, LabelAttrBind, BaseValueType } from "./_mv_declare";
-import { VMFatory } from "./VMFactory";
+import * as VMFatory from "./VMFactory";
+import { VMHandlerName } from "./VMFactory";
 import { handlerMap, IVMObserveAutoUnbind, proxyMap, Raw, rawDepsMap, rawMap, rawNameMap, targetMap, unbindMap } from "./reactivity/_internals";
 import { _reactive } from "./reactivity/_reactive";
 
@@ -80,7 +80,7 @@ class VM {
     public registerDefaultFormator = registerDefaultFormator;
 
     public get fatory() {
-        return VMFatory.getInstance();
+        return VMFatory;
     }
 
     public observe(target: IMVVMObject)
