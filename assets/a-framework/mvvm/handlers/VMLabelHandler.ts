@@ -7,7 +7,7 @@ import { VMCustomHandler } from "./VMCustomHandler";
 export class VMLabelHandler extends VMCustomHandler {
 
     originText: string = "";
-    //保存着字符模板格式的数组 (只会影响显示参数)
+    // 模板参数数量
     templateParamCount: number = 0;
 
     initOriginText() {
