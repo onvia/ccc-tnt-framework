@@ -12,13 +12,13 @@ function _trigger(target: object, type: TriggerOpTypes, key: PropertyKey, newVal
                 _deleteArr.push(_target);
                 return;
             }
-            let vmTriggerArray = handlerMap.get(_target);
-            if (!vmTriggerArray) {
-                console.error(`_reaction-> [${_target.name}] trigger 错误`);
+            let vmHandlerArray = handlerMap.get(_target);
+            if (!vmHandlerArray) {
+                console.error(`_reaction-> [${_target.name}] handler 错误`);
                 return;
             }
-            for (let i = 0; i < vmTriggerArray.length; i++) {
-                const vmTrigger = vmTriggerArray[i];
+            for (let i = 0; i < vmHandlerArray.length; i++) {
+                const vmTrigger = vmHandlerArray[i];
                 if (vmTrigger.isWatchPath(fullPath)) {
                     vmTrigger.handle(newValue, oldValue, type, fullPath);
                 }

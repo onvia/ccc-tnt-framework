@@ -23,11 +23,6 @@ declare global {
     }
 }
 
-interface Target {
-
-}
-
-
 const _defaultKey: WeakMap<Object, string> = new WeakMap();
 _defaultKey.set(Label, "string");
 _defaultKey.set(RichText, "string");

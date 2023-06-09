@@ -8,8 +8,8 @@ export class VMCustomHandler extends VMBaseHandler {
         this.templateValuesCache = [];
         let _watchPath = this.attr.watchPath;
         if (Array.isArray(_watchPath)) {
-            let max = _watchPath.length;
-            for (let i = 0; i < max; i++) {
+            let length = _watchPath.length;
+            for (let i = 0; i < length; i++) {
                 let val = tnt.vm.getValue(_watchPath[i], null);
                 this.templateValuesCache[i] = val;
             }

@@ -92,7 +92,7 @@ export abstract class VMBaseHandler<T extends object = any>{
     protected async formatValue(newValue: any, oldValue: any, node: Node, nodeIdx: number, watchPath: WatchPath) {
         if (this.attr.formator) {
             return await this.attr.formator.call(this.userControllerComponent, {
-                trigger: this,
+                handler: this,
                 newValue,
                 oldValue,
                 node,
