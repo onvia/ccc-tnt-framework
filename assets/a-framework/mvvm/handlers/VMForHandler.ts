@@ -98,4 +98,8 @@ export class VMForHandler extends VMCustomHandler {
             this.attr.onChange(action);
         });
     }
+
+    onV2MBind(): void {
+        
+    }
 }

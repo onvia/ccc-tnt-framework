@@ -22,7 +22,7 @@ export class VMCustomHandler extends VMBaseHandler {
     }
 
     onBind(): void {
-
+        
     }
 
     onUnBind(): void {

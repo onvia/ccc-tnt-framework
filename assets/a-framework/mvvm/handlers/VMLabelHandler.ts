@@ -1,4 +1,4 @@
-import { Component, Node } from "cc";
+import { Component, js, Node } from "cc";
 import { DEV } from "cc/env";
 import { TriggerOpTypes } from "../reactivity/_internals";
 import { VMLabelAttr, WatchPath } from "../_mv_declare";
@@ -96,4 +96,43 @@ export class VMLabelHandler extends VMCustomHandler {
         return tnt.stringUtils.format_0(key, ...args);
     }
 
+    protected V2MBind(target: Node | Component): void {
+        let _property = this.attr._targetPropertyKey;
+        let descr = js.getPropertyDescriptor(target, _property);
+        target[this._vmProperty] = target[_property];
+
+        Object.defineProperty(target, this._vmProperty, {
+            get: descr.get,
+            set: descr.set
+        });
+        if (Array.isArray(this.attr.watchPath)) {
+            console.error(`VMLabelHandler-> 多路径不进行 视图到数据 的绑定`);
+            return;
+        }
+
+        if (!!descr.set) {
+            Object.defineProperty(target, _property, {
+                get: descr.get,
+                set: (value) => {
+                    value = `${value}`;
+                    descr.set.call(target, value);
+
+                    let newValue = null;
+                    // 处理接收到的数据
+                    if (typeof this.templateValuesCache[0] === "number") {
+                        if (value.includes(".")) {
+                            newValue = parseFloat(value);
+                        } else {
+                            newValue = parseInt(value);
+                        }
+                    } else {
+                        newValue = value;
+                    }
+
+                    tnt.vm.setValue(this.attr.watchPath as string, newValue);
+                }
+            });
+            return;
+        }
+    }
 }

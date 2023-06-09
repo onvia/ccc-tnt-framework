@@ -67,10 +67,16 @@ export class MVVMScene extends tnt.SceneBase implements IMVVMObject {
         let label3: Label = this.getLabelByName("vmLabel3");
 
 
-        tnt.vm.label(this, label3, "*.diamond");
+        tnt.vm.label(this, label3, {
+            string: {
+                isBidirection: true,
+                watchPath: "*.diamond"
+            }
+        });
 
         tnt.vm.label(this, label2, {
             "string": {
+                isBidirection: true,
                 watchPath: ["*.gold", "*.maxGold"],
                 tween: tnt.vm.VMTween(4),
             },
@@ -88,6 +94,7 @@ export class MVVMScene extends tnt.SceneBase implements IMVVMObject {
             }
         });
     }
+    
     testSprite() {
         let sprite: Sprite = this.getSpriteByName("vmSprite");
         tnt.vm.sprite(this, sprite, "*.icon");
