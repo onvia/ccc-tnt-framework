@@ -173,7 +173,7 @@ class VM {
 
 
     /**
-     * 根据
+     * 组件/节点 绑定数据
      *
      * @template T
      * @param {IMVVMObject} mvvmObject
@@ -199,6 +199,22 @@ class VM {
         }
     }
 
+    /**
+     * 单个组件/节点 解绑数据
+     *
+     * @template T
+     * @param {T} bindObject
+     * @memberof VM
+     */
+    public unbind<T extends Component | Node>(bindObject: T){
+        let handlerArray = handlerMap.get(bindObject);
+        if(handlerArray){
+            handlerArray.forEach((handler)=>{
+                handler.unbind();
+            })
+            handlerMap.delete(bindObject);
+        }
+    }
 
     public label(mvvmObject: IMVVMObject, bindObject: Label | Node, attr: LabelAttrBind<Label>)
     public label(mvvmObject: IMVVMObject, bindObject: Label | Node, attr: WatchPath, formator?: Formator<BaseValueType, unknown>)
@@ -275,9 +291,9 @@ class VM {
     // }
 
     private _collect<T extends Component | Node>(mvvmObject: IMVVMObject, bindObject: T, attr: VMBaseAttr<any>) {
-        let triggerArray = handlerMap.get(bindObject) || [];
-        for (let i = 0; i < triggerArray.length; i++) {
-            const _vmTrigger = triggerArray[i];
+        let handlerArray = handlerMap.get(bindObject) || [];
+        for (let i = 0; i < handlerArray.length; i++) {
+            const _vmTrigger = handlerArray[i];
             if (_vmTrigger.attr._targetPropertyKey === attr._targetPropertyKey) {
                 DEBUG && console.warn(`_mvvm-> [${bindObject.name}] 组件的属性 [${attr._targetPropertyKey}] 已经有相同的处理`);
                 return;
@@ -308,8 +324,8 @@ class VM {
         }
         let vmTrigger = new _VMHandler(bindObject, attr);
         vmTrigger.userControllerComponent = mvvmObject;
-        triggerArray.push(vmTrigger);
-        handlerMap.set(bindObject, triggerArray);
+        handlerArray.push(vmTrigger);
+        handlerMap.set(bindObject, handlerArray);
         vmTrigger.bind();
 
     }
