@@ -447,7 +447,11 @@ https://blog.csdn.net/xzben/article/details/120039818
 
 #### MVVM  
 https://forum.cocos.org/t/topic/78821  
-https://github.com/wsssheep/cocos_creator_mvvm_tools
+https://github.com/wsssheep/cocos_creator_mvvm_tools  
+https://github.com/vuejs/core.git  
+https://github.com/sl1673495/typescript-proxy-reactive.git
+
+
 
 #### 其他  
 https://github.com/1226085293/nodes/blob/master/assets/essential/engine/node/nodes.js 

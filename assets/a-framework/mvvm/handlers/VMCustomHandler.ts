@@ -1,65 +1,31 @@
+import { Component, js, Node } from "cc";
+import { DEV } from "cc/env";
 import { TriggerOpTypes } from "../reactivity/_internals";
-import { WatchPath } from "../_mv_declare";
-import { VMBaseHandler } from "./VMBaseHandler";
+import { VMCustomAttr, WatchPath } from "../_mv_declare";
+import { VMBaseImplHandler } from "./VMBaseImplHandler";
 
-export class VMCustomHandler extends VMBaseHandler {
+export class VMCustomHandler<T extends object = any> extends VMBaseImplHandler {
 
-    onInitValue() {
-        this.templateValuesCache = [];
-        let _watchPath = this.attr.watchPath;
-        if (Array.isArray(_watchPath)) {
-            let length = _watchPath.length;
-            for (let i = 0; i < length; i++) {
-                let val = tnt.vm.getValue(_watchPath[i], null);
-                this.templateValuesCache[i] = val;
-            }
-            this._updateValue(this.templateValuesCache, null, _watchPath); // 重新解析
-        } else {
-            let val = tnt.vm.getValue(_watchPath as string, null);
-            this.templateValuesCache[0] = val;
-            this._updateValue(val, null, _watchPath);
-        }
+    public declare attr: VMCustomAttr<T>;
+
+    protected onInitValue() {
+        super.onInitValue();
     }
 
-    onBind(): void {
-        
+    protected onBind(): void {
+        super.onBind();
     }
 
-    onUnBind(): void {
-
+    protected onUnBind(): void {
+        super.onUnBind();
     }
 
-    handle(newValue: any, oldValue: any, type: TriggerOpTypes, watchPath: WatchPath) {
-        let path = watchPath;
-        let _watchPath = this.attr.watchPath;
-        let vmTween = this.tween;
-        let _resolve = (_newValue: any, _oldValue: any, _path: any) => {
-            this._updateValue(_newValue, _oldValue, _path); // 重新解析
-        }
 
-        if (Array.isArray(_watchPath)) {
-            let _oldVal = [...this.templateValuesCache];
-            //寻找缓存位置
-            let index = _watchPath.findIndex(v => v === path);
-            if (index >= 0) {
-                //如果是所属的路径，就可以替换文本了
-                this.templateValuesCache[index] = newValue; //缓存值
-            }
-
-            if (vmTween) {
-                vmTween.onTransition(this.templateValuesCache, _oldVal, _watchPath, _resolve);
-            } else {
-                _resolve(this.templateValuesCache, _oldVal, _watchPath);
-            }
-
-        } else {
-            this.templateValuesCache[0] = newValue;
-            if (vmTween) {
-                vmTween.onTransition(newValue, oldValue, _watchPath, _resolve);
-            } else {
-                _resolve(newValue, oldValue, _watchPath);
-            }
-        }
+    protected onV2MBind() {
+        super.onV2MBind();
     }
 
+    protected handle(newValue: any, oldValue: any, type: TriggerOpTypes, watchPath: WatchPath) {
+        super.handle(newValue, oldValue, type, watchPath);
+    }
 }

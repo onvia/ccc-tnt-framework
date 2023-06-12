@@ -142,13 +142,13 @@ export abstract class VMBaseHandler<T extends object = any>{
         this._updateTargetValue(this.target, val);
     }
 
-    abstract onInitValue();
+    protected  abstract onInitValue();
 
-    abstract onBind();
+    protected abstract onBind();
 
-    abstract onUnBind();
+    protected abstract onUnBind();
 
-    abstract handle(newValue: any, oldValue: any, type: TriggerOpTypes, watchPath: string);
+    protected abstract handle(newValue: any, oldValue: any, type: TriggerOpTypes, watchPath: string);
 
 
     public isWatchPath(path: string | string[]) {
@@ -165,7 +165,7 @@ export abstract class VMBaseHandler<T extends object = any>{
         return this.attr.watchPath == path;
     }
 
-    get _vmProperty() {
+    protected get _vmProperty() {
         return `_vm$${this.attr._targetPropertyKey}`;
     }
 

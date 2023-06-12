@@ -37,8 +37,10 @@ _defaultKey.set(UIRenderer, "color");
 _defaultKey.set(UITransform, "contentSize");
 
 // 默认的格式化方法
-const _defaultFormator: WeakMap<Object, Formator<any, any>> = new WeakMap();
-_defaultFormator.set(Sprite, async (options) => {
+const _defaultFormator: WeakMap<Object, Record<string, Formator<any, any>>> = new WeakMap();
+
+// 注册 Sprite 默认格式化 spriteFrame 的方法
+registerDefaultFormator(Sprite, "spriteFrame", async (options) => {
     let spriteFrame = await new Promise<SpriteFrame>((rs) => {
         tnt.resourcesMgr.load(options.loaderKey, options.newValue, SpriteFrame, (err, spriteFrame) => {
             rs(err ? null : spriteFrame);
@@ -46,7 +48,6 @@ _defaultFormator.set(Sprite, async (options) => {
     });
     return spriteFrame;
 });
-
 
 if (DEBUG) {
     window['tntWeakMap'] = {
@@ -201,10 +202,10 @@ class VM {
      * @param {T} bindObject
      * @memberof VM
      */
-    public unbind<T extends Component | Node>(bindObject: T){
+    public unbind<T extends Component | Node>(bindObject: T) {
         let handlerArray = handlerMap.get(bindObject);
-        if(handlerArray){
-            handlerArray.forEach((handler)=>{
+        if (handlerArray) {
+            handlerArray.forEach((handler) => {
                 handler.unbind();
             })
             handlerMap.delete(bindObject);
@@ -215,6 +216,7 @@ class VM {
     public label(mvvmObject: IMVVMObject, bindObject: Label | Node, attr: WatchPath, formator?: Formator<BaseValueType, unknown>)
     public label(mvvmObject: IMVVMObject, bindObject: Label | Node, attr: LabelAttrBind<Label> | WatchPath, formator?: Formator<BaseValueType, unknown>) {
         // 有 formator 的时候，一般使用默认属性， label.string 类型为 string
+
         let _label: Label = _typeTransition(bindObject, Label);
         this.bind(mvvmObject, _label, attr, formator);
     }
@@ -233,6 +235,10 @@ class VM {
     public node(mvvmObject: IMVVMObject, node: Node, attr: BaseAttrBind<Node> | WatchPath, formator?: Formator<boolean, unknown>) {
         // 有 formator 的时候，一般使用默认属性， Node 为 node.active 类型为 boolean
         this.bind(mvvmObject, node, attr, formator);
+    }
+
+    public chilidren<T extends Component | Node>(mvvmObject: IMVVMObject, parent: Node, component: Component | Node, attr: BaseAttrBind<T> | WatchPath, formator?: Formator<boolean, unknown>) {
+
     }
 
     public sprite(mvvmObject: IMVVMObject, bindObject: Sprite | Node, attr: SpriteAttrBind<Sprite>)
@@ -443,17 +449,23 @@ function _getDefaultKey(component: Object) {
  * @param {Formator<any, any>} formator
  * @return {*} 
  */
-function registerDefaultFormator<T>(clazz: GConstructor<T>, formator: Formator<any, any>) {
+function registerDefaultFormator<T>(clazz: GConstructor<T>, property: string, formator: Formator<any, any>) {
     if (!clazz || !formator) {
         return;
     }
-    _defaultFormator.set(clazz, formator)
+    let obj = _defaultFormator.get(clazz);
+    if (!obj) {
+        obj = {};
+    }
+    obj[property] = formator;
+    _defaultFormator.set(clazz, obj);
 }
-function _getDefaultFormator(component: Object) {
+function _getDefaultFormator(component: Object, property: string) {
     let defFormator = null;
     let clazz = js.getClassByName(js.getClassName(component));
     if (_defaultFormator.has(clazz)) {
-        defFormator = _defaultFormator.get(clazz);
+        let defFormatorMap = _defaultFormator.get(clazz);
+        defFormator = defFormatorMap?.[property];
     }
     return defFormator;
 }
@@ -506,7 +518,7 @@ function _formatAttr<T>(mvvmObject: IMVVMObject, component: T, attr: BaseAttrBin
             [defKey]: {
                 _targetPropertyKey: defKey,
                 watchPath: _parseWatchPath(attr, mvvmObject._vmTag),
-                formator: formator || _getDefaultFormator(component)
+                formator: formator || _getDefaultFormator(component, defKey)
             }
         }
     } else {
@@ -515,7 +527,7 @@ function _formatAttr<T>(mvvmObject: IMVVMObject, component: T, attr: BaseAttrBin
             if (typeof element === 'string' || isArray(element)) {
                 let observeAttr: VMBaseAttr<any> = {
                     watchPath: _parseWatchPath(element as string, mvvmObject._vmTag),
-                    formator: _getDefaultFormator(component),
+                    formator: _getDefaultFormator(component, key),
                     _targetPropertyKey: key,
                 }
                 attr[key] = observeAttr;
@@ -523,7 +535,7 @@ function _formatAttr<T>(mvvmObject: IMVVMObject, component: T, attr: BaseAttrBin
                 element.watchPath = _parseWatchPath(element.watchPath, mvvmObject._vmTag);
                 element._targetPropertyKey = key;
                 if (!element.formator) {
-                    element.formator = _getDefaultFormator(component)
+                    element.formator = _getDefaultFormator(component, key)
                 }
             }
         }

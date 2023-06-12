@@ -94,7 +94,7 @@ export class MVVMScene extends tnt.SceneBase implements IMVVMObject {
             }
         });
     }
-    
+
     testSprite() {
         let sprite: Sprite = this.getSpriteByName("vmSprite");
         tnt.vm.sprite(this, sprite, "*.icon");
@@ -150,4 +150,3 @@ export class MVVMScene extends tnt.SceneBase implements IMVVMObject {
         tnt.vm.violate("data2");
     }
 }
-

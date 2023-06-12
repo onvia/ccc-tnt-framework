@@ -1,7 +1,8 @@
 
 import { Component, isValid, Node } from "cc";
 import { DEV } from "cc/env";
-import { ForOpType,  VMForAttr, WatchPath } from "../_mv_declare";
+import { ForOpType, VMForAttr, WatchPath } from "../_mv_declare";
+import { VMBaseImplHandler } from "./VMBaseImplHandler";
 import { VMCustomHandler } from "./VMCustomHandler";
 declare global {
     interface IVMItem {
@@ -9,7 +10,7 @@ declare global {
     }
 }
 
-export class VMForHandler extends VMCustomHandler {
+export class VMForHandler extends VMBaseImplHandler {
 
     public declare attr: VMForAttr;
 
@@ -100,6 +101,6 @@ export class VMForHandler extends VMCustomHandler {
     }
 
     onV2MBind(): void {
-        
+
     }
 }

@@ -1,4 +1,4 @@
-import { CCObject, ValueType, Node, SpriteFrame, Sprite, Label, RichText } from "cc";
+import { CCObject, ValueType, Node, SpriteFrame, Sprite, Label, RichText, Component } from "cc";
 import { VMBaseHandler } from "./handlers/VMBaseHandler";
 
 export type ForOpType = "init" | "add" | "delete" | "refresh";
@@ -39,11 +39,15 @@ export interface VMBaseAttr<R = any> {
     formator?: Formator<R, unknown>;
 }
 
+export interface VMCustomAttr<R> extends VMBaseAttr<R> {
+
+}
+
 // 观察属性选项
 export interface VMForAttr extends VMBaseAttr {
     component: GConstructor<tnt.UIBase & IVMItem>;
 
-    /** @deprecated 在 VMForAttr 中不要使用这个属性*/
+    /** @deprecated 在 VMForAttr 中不要使用这个属性 */
     tween?: null;
 
     /** @deprecated 在 VMForAttr 中不要使用这个属性 */
@@ -53,7 +57,7 @@ export interface VMForAttr extends VMBaseAttr {
     onChange: (operate: ForOpType) => void;
 }
 
-export interface VMSpriteAttr<R> extends VMBaseAttr<R> {
+export interface VMSpriteAttr<R> extends VMCustomAttr<R> {
 
     bundle?: string;
 
@@ -65,12 +69,13 @@ export interface VMSpriteAttr<R> extends VMBaseAttr<R> {
     formator?: Formator<R, { bundle?: string, loaderKey?: string }>;
 }
 
-export interface VMLabelAttr<R> extends VMBaseAttr<R> {
+export interface VMLabelAttr<R> extends VMCustomAttr<R> {
     /**
      * 最大字符串长度
      * */
     maxLength?: number;
 }
+
 
 // 约束返回值类型，如果返回值类型是 字符串，则可以返回 数值、字符串以及 数值数组、字符串数组
 type BaseValueTypeOrOriginal<T> = T extends string ? number | number[] | string | string[] : T;
@@ -81,15 +86,16 @@ export type BaseAttrBind<T> = {
 }
 
 // 属性绑定
+export type CustomAttrBind<T> = {
+    [P in keyof T]?: WatchPath | VMCustomAttr<BaseValueTypeOrOriginal<T[P]>>;
+}
+
+// 属性绑定
 export type SpriteAttrBind<T = Sprite> = {
     [P in keyof T]?: WatchPath | VMSpriteAttr<BaseValueTypeOrOriginal<T[P]>>;
-};
+}
 
 // 属性绑定
 export type LabelAttrBind<T = Label | RichText> = {
     [P in keyof T]?: WatchPath | VMLabelAttr<BaseValueTypeOrOriginal<T[P]>>;
-};
-
-
-
-// T[P] extends string ? number | number[] | string | string[] : T[P]
+}
