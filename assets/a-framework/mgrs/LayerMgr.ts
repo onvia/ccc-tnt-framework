@@ -23,7 +23,7 @@ class LayerMgr {
                 }
             }
         }
-        return layer;
+        return (1 << layer);
     }
 
     private static _instance: LayerMgr = null
