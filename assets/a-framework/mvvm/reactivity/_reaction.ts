@@ -14,7 +14,7 @@ function _trigger(target: object, type: TriggerOpTypes, key: PropertyKey, newVal
             }
             let vmHandlerArray = handlerMap.get(_target);
             if (!vmHandlerArray) {
-                console.error(`_reaction-> [${_target.name}] handler 错误`);
+                console.error(`_reaction-> [${_target.name}] handler 错误，如果此错误在你的预期内，请忽略`);
                 return;
             }
             for (let i = 0; i < vmHandlerArray.length; i++) {

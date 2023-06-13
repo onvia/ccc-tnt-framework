@@ -65,7 +65,7 @@ assetManager.loadBundle("framework", () => {
 继承自 `Component`  
 
 属性
-- `prefabUrl`，`bundle`：需要子类搭配【类装饰器】 `@prefabUrl("xxx/xxx","bundle")` 使用。  
+- `prefabUrl`，`bundle`：需要子类搭配【类装饰器】 `@prefabUrl("xxx/xxx","bundle")` 或者 `@prefabUrl("bundle#xxx/xxx")` 使用。  
 - `loaderKey`： 属性为 资源管理器的键值，用以保证资源能够正确的加载和释放，尽量不要手动去设置这个值  
 为保持接口风格统一，使用 onStart 代理 start ， 也可以直接使用 start ，不影响。
 
@@ -113,7 +113,7 @@ assetManager.loadBundle("framework", () => {
 const { prefabUrl } = tnt._decorator;
 
 // 外部需要传入的参数
-// 参数接口命名规则：弹窗名+Options，如 弹窗名为 `PauseWindow` 则接口命名为 `PauseWindowOptions`
+// 参数接口命名规则：弹窗名+Options，如弹窗名为 `PauseWindow` 则接口命名为 `PauseWindowOptions`
 // 注意需要使用 declare global {} ，否则智能提示不生效
 
 declare global { 

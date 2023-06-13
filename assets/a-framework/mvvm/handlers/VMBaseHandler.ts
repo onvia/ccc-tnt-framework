@@ -98,8 +98,9 @@ export abstract class VMBaseHandler<T extends object = any>{
                 newValue,
                 oldValue,
                 node,
-                nodeIdx,
-                watchPath
+                // nodeIdx,
+                watchPath,
+                attr: this.attr
             };
             return await this.attr.formator.call(this.userControllerComponent, options);
         }
@@ -148,7 +149,7 @@ export abstract class VMBaseHandler<T extends object = any>{
 
     protected abstract onUnBind();
 
-    protected abstract handle(newValue: any, oldValue: any, type: TriggerOpTypes, watchPath: string);
+    abstract handle(newValue: any, oldValue: any, type: TriggerOpTypes, watchPath: string);
 
 
     public isWatchPath(path: string | string[]) {

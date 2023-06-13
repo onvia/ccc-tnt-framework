@@ -1,4 +1,4 @@
-import { Component, js, Label, Button, Layout, ProgressBar, EditBox, Sprite, Graphics, RichText, Toggle, _decorator, Widget } from "cc";
+import { Component, js, Label, Button, Layout, ProgressBar, EditBox, Sprite, Graphics, RichText, Toggle, _decorator, Widget, Slider } from "cc";
 import { DEV, EDITOR } from "cc/env";
 
 
@@ -135,6 +135,9 @@ let __decorator = {
         }
     },
 
+    slider(name?: string, parent?: string) {
+        return __decorator.component(name, Slider, parent)
+    },
     progressBar(name?: string, parent?: string) {
         return __decorator.component(name, ProgressBar, parent)
     },

@@ -7,6 +7,7 @@ import * as VMFatory from "./VMFactory";
 import { VMHandlerName } from "./VMFactory";
 import { handlerMap, IVMObserveAutoUnbind, proxyMap, Raw, rawDepsMap, rawMap, rawNameMap, targetMap, unbindMap } from "./reactivity/_internals";
 import { _reactive } from "./reactivity/_reactive";
+import { VMBaseHandler } from "./handlers/VMBaseHandler";
 
 
 
@@ -42,9 +43,9 @@ const _defaultFormator: WeakMap<Object, Record<string, Formator<any, any>>> = ne
 // 注册 Sprite 默认格式化 spriteFrame 的方法
 registerDefaultFormator(Sprite, "spriteFrame", async (options) => {
     let spriteFrame = await new Promise<SpriteFrame>((rs) => {
-        tnt.resourcesMgr.load(options.loaderKey, options.newValue, SpriteFrame, (err, spriteFrame) => {
+        tnt.resourcesMgr.load(options.attr.loaderKey, options.newValue, SpriteFrame, (err, spriteFrame) => {
             rs(err ? null : spriteFrame);
-        }, options.bundle);
+        }, options.attr.bundle);
     });
     return spriteFrame;
 });
@@ -196,22 +197,33 @@ class VM {
     }
 
     /**
-     * 单个组件/节点 解绑数据
+     * 对单个组件/节点 解绑数据
      *
      * @template T
      * @param {T} bindObject
+     * @param {(handler: VMBaseHandler<any>) => boolean} [filter]
      * @memberof VM
      */
-    public unbind<T extends Component | Node>(bindObject: T) {
+    public unbind<T extends Component | Node>(bindObject: T, filter?: (handler: VMBaseHandler<any>) => boolean) {
         let handlerArray = handlerMap.get(bindObject);
+        let isUnbind = false;
         if (handlerArray) {
-            handlerArray.forEach((handler) => {
-                handler.unbind();
-            })
-            handlerMap.delete(bindObject);
-        }
-    }
+            for (let i = handlerArray.length; i--;) {
+                const handler = handlerArray[i];
+                let reslut = filter ? filter(handler) : true;
+                if (reslut) {
+                    isUnbind = true;
+                    handler.unbind();
+                    handlerArray.splice(i, 1);
+                }
+            }
 
+            if (!handlerArray.length) {
+                handlerMap.delete(bindObject);
+            }
+        }
+        return isUnbind;
+    }
     public label(mvvmObject: IMVVMObject, bindObject: Label | Node, attr: LabelAttrBind<Label>)
     public label(mvvmObject: IMVVMObject, bindObject: Label | Node, attr: WatchPath, formator?: Formator<BaseValueType, unknown>)
     public label(mvvmObject: IMVVMObject, bindObject: Label | Node, attr: LabelAttrBind<Label> | WatchPath, formator?: Formator<BaseValueType, unknown>) {
@@ -379,8 +391,8 @@ class VM {
 
     private _getDataByPath(path: string) {
         let rs = path.split(".").map(val => val.trim());
-        let data = this._mvMap.get(rs[0]);
-        let targetData = data.data;
+        let viewModel = this._mvMap.get(rs[0]);
+        let targetData = viewModel.data;
         // 掐头去尾
         for (let i = 1; i < rs.length - 1; i++) {
             targetData = targetData[rs[i]];
