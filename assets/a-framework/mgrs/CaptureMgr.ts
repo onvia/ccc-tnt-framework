@@ -69,7 +69,7 @@ class CaptureMgr {
     }
 
     getCaptureCamera(name = null) {
-        name = name ?? "DEFAULT_CAPTURE_CAMERA";
+        name = name || "DEFAULT_CAPTURE_CAMERA";
         let cameraNode: Node = find("Canvas/" + name);
         let camera: Camera = null;
         if (cameraNode) {

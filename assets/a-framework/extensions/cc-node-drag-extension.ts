@@ -62,7 +62,7 @@ js.mixin(Node.prototype, {
             let delta = event.getUIDelta();
             // /** 这里除以 世界缩放，在有缩放的时候拖拽不至于很怪 */
             // this.position = this.position.add(v3(delta.x / this.worldScale.x, delta.y / this.worldScale.y, 0));
-            this.position = this.position.add(v3(delta.x , delta.y , 0));
+            this.position = this.position.add(v3(delta.x, delta.y, 0));
             this.emit(Node.DragEvent.DRAG_MOVE, event);
         }
     },
@@ -109,10 +109,15 @@ js.mixin(Node.prototype, {
     //停止拖拽
     stopDrag: function () {
         this.dragEnd();
+    },
+
+    //移除 touch 事件
+    removeDragEvent: function () {       
+        this.off(Node.EventType.TOUCH_START, this.onTouchBegin_0, this);
         this.off(Node.EventType.TOUCH_MOVE, this.onTouchMove_0, this);
         this.off(Node.EventType.TOUCH_END, this.onTouchEnd_0, this);
         this.off(Node.EventType.TOUCH_CANCEL, this.onTouchCancel_0, this);
-    },
+    }
 });
 
 //如果 node 设置 node.draggable = true, 则启用 拖拽
@@ -150,9 +155,9 @@ declare module "cc" {
     // 这里使用 interface 进行扩展，如果使用 class 则会与现有的 d.ts 有冲突
     export interface Node {
         draggable: boolean;
-        dragTesting: boolean;
-        startDrag(data?: any);
+        startDrag();
         stopDrag();
+        removeDragEvent();
     }
 
     export namespace Node {

@@ -31,13 +31,13 @@ declare global {
          *
          * @memberof IDragAgentData
          */
-        onShow: (node: Node) => void;
+        onShow?: (node: Node) => void;
     }
 
     interface IDragDropListener<SourceData = any> {
 
         /**
-         * 点击到监听面板，可以在这里做一些游戏逻辑的处理
+         * 触摸到监听面板，可以在这里做一些游戏逻辑的处理
          *
          * @param {EventTouch} event
          * @memberof IDragDropListener
@@ -53,14 +53,14 @@ declare global {
         onTouchTestPanelMove?(event: EventTouch);
 
         /**
-         * 点击监听面板结束，可以在这里做一些游戏逻辑的处理
+         * 触摸监听面板结束，可以在这里做一些游戏逻辑的处理
          *
          * @param {EventTouch} event
          * @memberof IDragDropListener
          */
         onTouchTestPanelEnd?(event: EventTouch);
         /**
-         * 取消点击监听面板，可以在这里做一些游戏逻辑的处理
+         * 取消触摸监听面板，可以在这里做一些游戏逻辑的处理
          *
          * @param {EventTouch} event
          * @memberof IDragDropListener
@@ -69,7 +69,7 @@ declare global {
 
 
         /**
-         * 如果不实现此方法则使用默认的方法查找
+         * 如果不实现此方法则使用默认的方法查找被按压的节点
          *
          * @param {EventTouch} event
          * @param {Array<Node>} dragNodes
@@ -107,7 +107,7 @@ declare global {
          * @param {SourceData} sourceData
          * @memberof IDragDropListener
          */
-        onDropDragAgent(container: Node, dragAgent: Node, sourceData: SourceData);
+        onDropAgent(container: Node, dragAgent: Node, sourceData: SourceData);
     }
 }
 const NAME_AGENTICON = "AgentIcon";
@@ -328,7 +328,7 @@ export class DragDropMgr<SourceData = any> {
         this.dragAgent.startDrag();
 
         this.sourceData = sourceData;
-        onShow(this.dragAgent);
+        onShow?.(this.dragAgent);
         return this.dragAgent;
     }
 
@@ -359,10 +359,11 @@ export class DragDropMgr<SourceData = any> {
         }
 
         //
-        this.dragDropListener?.onDropDragAgent(container, dragAgent, sourceData);
+        this.dragDropListener?.onDropAgent(container, dragAgent, sourceData);
         //自动移除节点
         if (dragAgent.parent != null) {
             dragAgent.stopDrag();
+            dragAgent.removeDragEvent();
             if (this.autoRemove) {
                 this.removeDragAgent();
             }
@@ -415,7 +416,7 @@ export class DragDropMgr<SourceData = any> {
 
         return rect;
     }
-    
+
     public removeDragAgent() {
         let icon = this.dragAgent.getChildByName(NAME_AGENTICON);
         if (icon) {

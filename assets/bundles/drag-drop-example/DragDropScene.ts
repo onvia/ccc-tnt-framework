@@ -1,10 +1,29 @@
-import { color, EventTouch, Node, randomRangeInt, Sprite, Vec2, Vec3, _decorator } from "cc";
+import { color, Event, EventTouch, instantiate, Node, randomRangeInt, Sprite, Vec2, Vec3, _decorator } from "cc";
 const { ccclass, property } = _decorator;
 
 
 @ccclass('DragDropScene')
 export class DragDropScene extends tnt.SceneBase implements IDragDropListener {
-    
+
+    //#region ----------- 转换拖动------------
+
+    onEnter(): void {
+        // 转换拖动
+        let _dragArea = this.find("dragArea");
+        _dragArea.draggable = true;
+        _dragArea.on(Node.DragEvent.DRAG_START, this.onDragAreaDragStart, this);
+    }
+
+    onDragAreaDragStart(event: Event) {
+        let curTarget = event.currentTarget as Node
+        curTarget.stopDrag();
+        curTarget.parent.startDrag();
+    }
+
+    //#endregion ----------- 转换拖动------------
+
+
+    //#region -------------- 替身拖动 ------------
     onEnterTransitionWillFinished(sceneName?: string): void {
         let dragNode = this.find('dragNode');
         let container = this.find('container');
@@ -53,52 +72,20 @@ export class DragDropScene extends tnt.SceneBase implements IDragDropListener {
     onCreateDragAgentData(touchTarget: Node, uiLocation: Vec2): IDragAgentData {
         let dragSprite = touchTarget.getComponent(Sprite);
         return {
-            icon: dragSprite.spriteFrame,
+            icon: instantiate(touchTarget), // SpriteFrame | Node
             sourceData: dragSprite.color.clone(), // 【传递】的数据是颜色
-            onShow: (node)=>{
-                node.scale = new Vec3(2,2,2);
-            }
         }
     }
 
     //必选 拖放到容器
-    onDropDragAgent(container: Node, dragAgent: Node, sourceData: any) {
+    onDropAgent(container: Node, dragAgent: Node, sourceData: any) {
         if (!container) {
             return;
         }
         let sprite = container.getComponent(Sprite);
         sprite.color = sourceData; // 【接收】【传递】的数据
     }
-
-    // // 可选，可以用此方法代替 DragDropMgr 内置的查找方法
-    // onFindTarget(event: EventTouch, dragNodes: Array<Node>): Node{
-    //     return null;
-    // }
-
-    // // 可选，可以用此方法代替 DragDropMgr 内置的查找方法
-    // onFindContainer(dragAgent: Node, containers: Array<Node>, intersects: (node1: Node, node2: Node) => boolean): Node{
-    //     return null;
-    // }
-
-
-    // 可选
-    onTouchTestPanelStart(event: EventTouch) {
-        console.log(`DragDropScene-> onTouchTestPanelStart`);
-
-    }
-    // 可选
-    onTouchTestPanelMove(event: EventTouch) {
-        console.log(`DragDropScene-> onTouchTestPanelMove`);
-
-    }
-    // 可选
-    onTouchTestPanelEnd(event: EventTouch) {
-        console.log(`DragDropScene-> onTouchTestPanelEnd`);
-
-    }
-    // 可选
-    onTouchTestPanelCancel(event: EventTouch) {
-        console.log(`DragDropScene-> onTouchTestPanelCancel`);
-
-    }
+    
+    //#endregion -------------- 替身拖动 --------------
 }
+
