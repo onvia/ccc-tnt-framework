@@ -122,6 +122,14 @@ class GComponent<Options = any> extends Component {
         }
     }
 
+    /**
+     * 获取节点
+     *
+     * @param {string} name 节点名而非节点路径
+     * @param {Node} [parent] 父节点
+     * @return {*} 
+     * @memberof GComponent
+     */
     public getNodeByName(name: string, parent?: Node) {
         return this.find(name, parent);
     }

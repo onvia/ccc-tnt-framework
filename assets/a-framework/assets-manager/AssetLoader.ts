@@ -223,6 +223,10 @@ class AssetLoader {
         }
     }
 
+    public static getBundle(name: string) {
+        let bundleWrap = this.loadedBundles.get(name);
+        return bundleWrap?.bundle;
+    }
     public removeBundle(nameOrUrl: string) {
         return AssetLoader.removeBundle(nameOrUrl);
     }
@@ -235,6 +239,9 @@ class AssetLoader {
         return AssetLoader.loadBundleWrap(bundleName, onComplete);
     }
 
+    public getBundle(name: string) {
+        return AssetLoader.getBundle(name);
+    }
 
     protected _cache: Cache = new Cache();
     public get cache() {

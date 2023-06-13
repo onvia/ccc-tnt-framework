@@ -31,14 +31,7 @@
     - [活动管理](#活动管理)
     - [工具类](./docs/%E5%B7%A5%E5%85%B7%E7%B1%BB.md)
     - [引擎扩展](./docs/%E5%BC%95%E6%93%8E%E6%89%A9%E5%B1%95.md)
-    - [周边工具](#周边工具)
-      - [excel导表](#excel导表)
-      - [帧动画打包](#帧动画打包)
-      - [热更新](#热更新)
-      - [protobuf](#protobuf)
-      - [psd转预制体](#psd转预制体)
-      - [中文文件名转拼音](#中文文件名转拼音)
-      - [图片压缩](#图片压缩)
+    - [工具插件](./docs/%E5%B7%A5%E5%85%B7%E6%8F%92%E4%BB%B6.md)
     - [框架插件](#框架插件)
     - [参考](#参考)
       - [AssetLoader](#assetloader)
@@ -72,9 +65,19 @@ assetManager.loadBundle("framework", () => {
 继承自 `Component`  
 
 属性
-prefabUrl，bundle：需要子类搭配 【类装饰器】 @prefabUrl("xxx/xxx","bundle") 使用。  
-loaderKey： 属性为 资源管理器的键值，用以保证资源能够正确的加载和释放，尽量不要手动去设置这个值  
+- `prefabUrl`，`bundle`：需要子类搭配【类装饰器】 `@prefabUrl("xxx/xxx","bundle")` 使用。  
+- `loaderKey`： 属性为 资源管理器的键值，用以保证资源能够正确的加载和释放，尽量不要手动去设置这个值  
 为保持接口风格统一，使用 onStart 代理 start ， 也可以直接使用 start ，不影响。
+
+方法  
+
+- `getNodeByName`： 获取节点，等同于 `find`， 这里传入的是节点名而非节点路径
+- `loadPrefabNode`： 使用当前脚本的加载器加载预制体
+- `addPrefabNode`： 使用当前脚本的加载器加载预制体并添加到指定节点
+
+
+> 在首次调用 `getNodeByName` 或 `find` 时，框架会自动创建节点树缓存，减小后续使用此接口的开销。  
+注意：如果想查找动态添加的节点，需要先调用 `resetNodeCache` 清理缓存，否则无法查找到。
 
 
 
@@ -102,9 +105,9 @@ loaderKey： 属性为 资源管理器的键值，用以保证资源能够正确
 
 
 2. 弹窗  
-   在弹出关闭时，默认会自动释放弹窗的预制体资源，如果需要关闭可以调用 `setReleaseWindowPrefab` 进行设置  
+在弹窗关闭时，默认会自动释放弹窗的预制体资源，如果需要关闭可以调用 `setReleaseWindowPrefab` 进行设置  
 
-   使用示例 PauseWindow.ts
+使用示例 PauseWindow.ts
 ```
 
 const { prefabUrl } = tnt._decorator;
@@ -205,31 +208,6 @@ export class PauseWindow extends tnt.UIPopup<PauseWindowOptions> {
 
 
 ### 活动管理
-
-### 周边工具
-#### excel导表
-生成 json 文件及  dts
-#### 帧动画打包
-将帧动画打包成合图并生成对应 json 数据
-
-#### 热更新
-
-#### protobuf
-生成 MsgID、ErrorCode
-
-#### psd转预制体
-将 psd 转为可以直接在 cocos 中使用的预制体，前提是需要在 Photoshop 中根据文档做好图层的处理
-
-#### 中文文件名转拼音
-批量修改文件名为拼音，同音字会在文件名后加 自增id
-
-#### 图片压缩
-用 tiny 压缩图片资源
-
-
-### 框架插件
-- 生成 UI 声明文件
-- 生成 Scene 声明文件
 
 ### 参考  
 #### AssetLoader  
