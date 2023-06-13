@@ -19,7 +19,7 @@
     - [红点管理](#红点管理)
     - [网络管理](./docs/%E7%BD%91%E7%BB%9C%E7%AE%A1%E7%90%86.md)
     - [多语言](./docs/%E5%A4%9A%E8%AF%AD%E8%A8%80.md)
-    - [TiledMap](#tiledmap)
+    - [TiledMap](./docs/TiledMap.md)
     - [MVVM](./docs/MVVM.md)
     - [装饰器](#装饰器)
     - [寻路](#寻路)
@@ -50,14 +50,18 @@
 框架所有管理者单例和大部分类都挂载到了全局变量 `tnt` 上，文档中为了书写方便，省略了 `tnt.`
 游戏启动需要有一个启动类和启动场景，将启动类挂载到启动场景中，在后续使用过程中，基本不再需要手动在节点挂载组件了。
 
->为保证在编辑器内优先加载框架代码，这里使用了 `a-framework` 作为文件夹名，`a-framework` 作为Bundle 名为 `framework`，在开发过程中其他 Bundle 尽量保证要在框架 Bundle 后加载
+>为保证在编辑器内优先加载框架代码，这里使用了 `a-framework` 作为文件夹名，`a-framework` 作为Bundle， Bundle 名为 `framework`，开发过程中其他 Bundle 尽量保证在框架 Bundle 后加载
 
 框架启动需要实现 `IStartupOptions`  
 详细的使用可以启动实例 Launcher.scene 查看，脚本同名。
 
 ```
-// 启动框架 
-tnt.startup(startupOptions);
+// 首先加载框架 Bundle
+assetManager.loadBundle("framework", () => {
+
+    // 启动框架 
+    tnt.startup(startupOptions);
+});
 
 ```
 
@@ -69,7 +73,7 @@ tnt.startup(startupOptions);
 
 属性
 prefabUrl，bundle：需要子类搭配 【类装饰器】 @prefabUrl("xxx/xxx","bundle") 使用。  
-loaderKey： 属性为 资源管理器的键值，用以保证在资源能够正确的加载和释放，尽量不要手动去设置这个值  
+loaderKey： 属性为 资源管理器的键值，用以保证资源能够正确的加载和释放，尽量不要手动去设置这个值  
 为保持接口风格统一，使用 onStart 代理 start ， 也可以直接使用 start ，不影响。
 
 
@@ -80,11 +84,11 @@ loaderKey： 属性为 资源管理器的键值，用以保证在资源能够正
 实现了大部分 `ComponentUtils` 中的功能
 
 `UIBase` 的子类  
-- `UIItem` 小部件项
-- `UIPanel` 面板项
+- `UIItem` 小部件
+- `UIPanel` 面板
 - `UIWindowBase` 弹窗基类
   - `UIPopup` 模态窗口 会自动生成半透明蒙版
-  - `UIWindow` 全屏窗口 需要手动设置背景图，
+  - `UIWindow` 全屏窗口 需要手动设置背景图
 
 1. UI 基类
 每一个作为预制体的小部件、面板、弹窗都需要对应一个脚本  

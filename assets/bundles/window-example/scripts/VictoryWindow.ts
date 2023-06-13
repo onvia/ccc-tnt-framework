@@ -18,11 +18,11 @@ export class VictoryWindow extends tnt.UIWindow {
     public onCreate(): void {
         
         this.setTopMenuBar({color: cc.Color.RED});
+        this.setHideOtherWindows(true);
     }
     
     onStart(): void {
         console.log(`VictoryWindow-> onInit`);
-        this.setHideOtherWindows(true);
         this.registeButtonClick("btnClose",()=>{
             this.close();
         });

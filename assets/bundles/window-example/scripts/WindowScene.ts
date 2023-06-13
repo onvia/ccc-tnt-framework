@@ -29,6 +29,9 @@ export class WindowScene extends tnt.SceneBase {
             tnt.uiMgr.showWindowByClass(VictoryWindow);
         });
 
+        this.registeButtonClick("btnMsg",()=>{
+            tnt.uiMgr.showWindow('DialogWindow',{'text': "通过按钮打开的信息弹窗"})
+        });
 
 
         // ------------  使用弹窗队列  -------------
@@ -36,7 +39,7 @@ export class WindowScene extends tnt.SceneBase {
         //在队列后追加弹窗
         tnt.uiMgr.addToQueue('PauseWindow', { 'pauseBgm': true }, () => {
             // 插入到队列最前面，这里会在  PauseWindow  关闭之后显示 "DialogWindow"
-            tnt.uiMgr.insertToQueue('DialogWindow', {'text': "自定义参数"},(_window)=>{
+            tnt.uiMgr.insertToQueue('DialogWindow', {'text': "自动打开的信息弹窗"},(_window)=>{
                 console.log(`WindowScene->显示 `,_window.name);
             });
         });

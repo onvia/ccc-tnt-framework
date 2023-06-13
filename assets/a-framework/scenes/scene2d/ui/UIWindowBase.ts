@@ -246,7 +246,7 @@ class UIWindowBase<Options = any> extends tnt.UIBase<Options> implements ILoader
     }
 
     /**
-     * 设置隐藏其他界面
+     * 设置隐藏其他界面，在 onCreate 方法中调用
      *
      * @param {boolean} [enable=true]
      * @memberof UIWindowBase
