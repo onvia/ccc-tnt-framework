@@ -25,7 +25,7 @@ export class VMCustomHandler<T extends object = any> extends VMBaseImplHandler {
         super.onV2MBind();
     }
 
-    protected handle(newValue: any, oldValue: any, type: TriggerOpTypes, watchPath: WatchPath) {
+    public handle(newValue: any, oldValue: any, type: TriggerOpTypes, watchPath: WatchPath) {
         super.handle(newValue, oldValue, type, watchPath);
     }
 }

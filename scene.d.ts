@@ -2,7 +2,7 @@ import { CaptureScene } from "./assets/bundles/capture-example/scripts/CaptureSc
 import { DragDropScene } from "./assets/bundles/drag-drop-example/DragDropScene"
 import { MainScene } from "./assets/bundles/main-scene/scripts/scene/MainScene"
 import { DemoVMLabelFormat } from "./assets/bundles/mvvm-example/scripts/DemoVMLabelFormat"
-import { MVVMScene } from "./assets/bundles/mvvm-example/scripts/MVVMScene"
+import { DemoVMNormal } from "./assets/bundles/mvvm-example/scripts/DemoVMNormal"
 import { WindowScene } from "./assets/bundles/window-example/scripts/WindowScene"
 
 declare global {
@@ -31,7 +31,7 @@ declare global {
 			options: DemoVMLabelFormatOptions,
 		}
 		"MVVMScene": {
-			ctor: MVVMScene,
+			ctor: DemoVMNormal,
 			options: MVVMSceneOptions,
 		}
 		"WindowScene": {

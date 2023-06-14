@@ -36,10 +36,10 @@ export class DemoVMBindUnBind extends tnt.SceneBase implements IMVVMObject {
         });
 
         // 对数据进行劫持
-        this.userData = tnt.vm.observe(userData, "userdata");
+        this.userData = tnt.vm.observe(userData, "userData");
 
         // 等级标签
-        tnt.vm.label(this, this.levelLabel, "userdata.level");
+        tnt.vm.label(this, this.levelLabel, "userData.level");
 
         // 增加角度监听
         this.onClickAddStartAngle()
@@ -47,14 +47,14 @@ export class DemoVMBindUnBind extends tnt.SceneBase implements IMVVMObject {
         this.onClickAddStartScale()
 
         // logo 透明度
-        tnt.vm.bind(this, this.logo.uiOpacity, "userdata.level", (opts) => {
+        tnt.vm.bind(this, this.logo.uiOpacity, "userData.level", (opts) => {
             return opts.newValue > 3 ? 255 : 126;
         });
 
         // logo 颜色
         tnt.vm.bind(this, this.logo.sprite, {
             color: {
-                watchPath: "userdata.level",
+                watchPath: "userData.level",
                 formator: (opts) => {
                     return opts.newValue > 3 ? Color.RED : Color.BLUE;
                 }
@@ -65,7 +65,7 @@ export class DemoVMBindUnBind extends tnt.SceneBase implements IMVVMObject {
     }
 
     onDisable() {
-        tnt.vm.violate("userdata")
+        tnt.vm.violate("userData")
     }
 
 
@@ -91,7 +91,7 @@ export class DemoVMBindUnBind extends tnt.SceneBase implements IMVVMObject {
             const child = this.starGroup.children[i];
             tnt.vm.node(this, child, {
                 angle: {
-                    watchPath: "userdata.level",
+                    watchPath: "userData.level",
                     formator: (opts) => {
                         return opts.newValue > i ? 30 : 0;
                     }
@@ -124,7 +124,7 @@ export class DemoVMBindUnBind extends tnt.SceneBase implements IMVVMObject {
             const child = this.starGroup.children[i];
             tnt.vm.node(this, child, {
                 scale: {
-                    watchPath: "userdata.level",
+                    watchPath: "userData.level",
                     formator: (opts) => {
                         return opts.newValue > i ? v3(1, 1, 1) : v3(0.5, 0.5, 0.5);
                     }

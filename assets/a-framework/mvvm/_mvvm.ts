@@ -92,20 +92,20 @@ class VM {
             console.error(`VM-> tag is null`);
             return;
         }
+
+        // 即使已经是代理，也要进行一次处理
+        this._add(_data, _tag);
+
         if (rawMap.has(_data)) {
             console.warn(`_mvvm-> 数据本身已经是代理`);
             return data;
         }
-
         rawNameMap.set(_data, _tag);
         let proxy = this._reactive(_data);
         if (_target) {
             _target.data = proxy;
         }
-
-        this._add(_data, _tag);
-
-
+        
         let node: Node = null;
         if (_target) {
             if (_target instanceof Component) {
@@ -392,6 +392,9 @@ class VM {
     private _getDataByPath(path: string) {
         let rs = path.split(".").map(val => val.trim());
         let viewModel = this._mvMap.get(rs[0]);
+        if(!viewModel){
+            return null;
+        }
         let targetData = viewModel.data;
         // 掐头去尾
         for (let i = 1; i < rs.length - 1; i++) {
@@ -409,6 +412,12 @@ class VM {
         if (has) {
             console.warn('已存在 tag: ' + tag);
             return;
+        }
+
+        // 防止无法注册
+        let isProxy = rawMap.has(data);
+        if(isProxy){
+            data = rawMap.get(data);
         }
 
         this._mvMap.set(tag, {

@@ -29,7 +29,7 @@ export class VMBaseImplHandler<T extends object = any> extends VMBaseHandler<T> 
 
     }
 
-    protected handle(newValue: any, oldValue: any, type: TriggerOpTypes, watchPath: WatchPath) {
+    public handle(newValue: any, oldValue: any, type: TriggerOpTypes, watchPath: WatchPath) {
         let path = watchPath;
         let _watchPath = this.attr.watchPath;
         let vmTween = this.tween;

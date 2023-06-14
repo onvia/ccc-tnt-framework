@@ -1,6 +1,6 @@
 import { VMCustomHandler } from "./handlers/VMCustomHandler";
 import { VMBaseHandler } from "./handlers/VMBaseHandler";
-import { VMLabelHandler } from "./handlers/VMLabelHandler";
+import { VMStringHandler } from "./handlers/VMStringHandler";
 import { VMProgressHandler } from "./handlers/VMProgressHandler";
 import { VMForHandler } from "./handlers/VMForHandler";
 
@@ -10,17 +10,17 @@ export const enum VMHandlerName {
     String = 'string',
     For = 'for',
     Progress = 'progress',
-    Event = 'event',
-    Click = 'click',
-    Active = 'active',
-    SpriteFrame = 'spriteFrame'
+    // Event = 'event',
+    // Click = 'click',
+    // Active = 'active',
+    // SpriteFrame = 'spriteFrame'
 }
 
 
 
 let producers = {
     [VMHandlerName.Common]: VMCustomHandler,
-    [VMHandlerName.String]: VMLabelHandler,
+    [VMHandlerName.String]: VMStringHandler,
     [VMHandlerName.Progress]: VMProgressHandler,
     [VMHandlerName.For]: VMForHandler,
 

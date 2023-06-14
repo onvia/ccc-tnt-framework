@@ -4,7 +4,7 @@ import { TriggerOpTypes } from "../reactivity/_internals";
 import { VMLabelAttr, WatchPath } from "../_mv_declare";
 import { VMCustomHandler } from "./VMCustomHandler";
 
-export class VMLabelHandler extends VMCustomHandler {
+export class VMStringHandler extends VMCustomHandler {
 
     originText: string = "";
     // 模板参数数量
@@ -26,7 +26,7 @@ export class VMLabelHandler extends VMCustomHandler {
 
         if (!this.attr.formator && this.templateParamCount >= 1) {
             if (this.templateParamCount !== watchPathCount) {
-                let msg = `VMLabelHandler-> [${this.node.name}] 模板参数与输入参数[${JSON.stringify(this.attr.watchPath)}]数量不一致，请实现 formator 方法`;
+                let msg = `VMStringHandler-> [${this.node.name}] 模板参数与输入参数[${JSON.stringify(this.attr.watchPath)}]数量不一致，请实现 formator 方法`;
                 if (DEV) {
                     throw new Error(msg);
                 } else {
@@ -106,7 +106,7 @@ export class VMLabelHandler extends VMCustomHandler {
             set: descr.set
         });
         if (Array.isArray(this.attr.watchPath)) {
-            console.error(`VMLabelHandler-> 多路径不进行 视图到数据 的绑定`);
+            console.error(`VMStringHandler-> 多路径不进行 视图到数据 的绑定`);
             return;
         }
 

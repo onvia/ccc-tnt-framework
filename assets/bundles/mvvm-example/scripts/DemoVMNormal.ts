@@ -2,8 +2,8 @@ import { _decorator, Component, Node, Label, Rect, Color, Sprite, SpriteFrame, P
 import { VMItem } from './VMItem';
 const { ccclass, property } = _decorator;
 
-@ccclass('MVVMScene')
-export class MVVMScene extends tnt.SceneBase implements IMVVMObject {
+@ccclass('DemoVMNormal')
+export class DemoVMNormal extends tnt.SceneBase implements IMVVMObject {
     static map = new WeakMap();
     data = {
         name: '小明',

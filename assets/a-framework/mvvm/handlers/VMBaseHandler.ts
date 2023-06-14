@@ -149,7 +149,7 @@ export abstract class VMBaseHandler<T extends object = any>{
 
     protected abstract onUnBind();
 
-    abstract handle(newValue: any, oldValue: any, type: TriggerOpTypes, watchPath: string);
+    public abstract handle(newValue: any, oldValue: any, type: TriggerOpTypes, watchPath: string);
 
 
     public isWatchPath(path: string | string[]) {

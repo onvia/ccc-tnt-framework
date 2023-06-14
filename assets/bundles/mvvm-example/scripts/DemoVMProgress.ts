@@ -70,13 +70,15 @@ export default class DemoVMProgress extends tnt.SceneBase implements IMVVMObject
 
 
         tnt.vm.observe(this);
-        tnt.vm.observe(userData, "userdata");
-        tnt.vm.label(this, this.HPLabel, ['*.hp', 'userdata.maxHP']);
-        tnt.vm.progressBar(this, this.HPProgress, ['*.hp', 'userdata.maxHP']);
-        tnt.vm.silder(this, this.HPController, ['*.hp', 'userdata.maxHP']);
+        tnt.vm.observe(userData, "userData");
+        tnt.vm.label(this, this.HPLabel, ['*.hp', 'userData.maxHP']);
+        tnt.vm.progressBar(this, this.HPProgress, ['*.hp', 'userData.maxHP']);
+        tnt.vm.silder(this, this.HPController, ['*.hp', 'userData.maxHP']);
 
 
         tnt.vm.label(this, this.MPLabel, '*.mp');
+        
+     
         tnt.vm.progressBar(this, this.MPProgress, {
             progress: {
                 watchPath: '*.mp',
@@ -88,7 +90,7 @@ export default class DemoVMProgress extends tnt.SceneBase implements IMVVMObject
 
     onDisable() {
         tnt.vm.violate(this);
-        tnt.vm.violate("userdata");
+        tnt.vm.violate("userData");
         window["demovmprogress"] = undefined;
     }
 
