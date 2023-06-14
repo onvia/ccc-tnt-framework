@@ -48,6 +48,11 @@ import "./task/TaskMgr";
 import "./task/LoadingTaskQueue";
 import "./mvvm/_mvvm";
 
+import "./hot-update/_hot-update"
+import "./red-point/_red-point"
+
+
+
 if (!EDITOR) {
     tnt.eventMgr.emit(tnt.EVENT_FRAMEWORK_INITED);
 }

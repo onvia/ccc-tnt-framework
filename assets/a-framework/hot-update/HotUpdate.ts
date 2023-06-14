@@ -1,18 +1,28 @@
 
 import { _decorator, Component, Node, Asset, path, sys, native } from 'cc';
-import { IHotUpdateListener } from './_IHotUpdateDeclare';
 const { ccclass, property } = _decorator;
 
-export enum HotUpdateState {
+enum HotUpdateState {
     None = 0,
     Check = 1,
     Updating = 2,
 }
 
+declare global {
+
+    interface ITNT {
+        HotUpdate: typeof HotUpdate;
+    }
+
+    namespace tnt {
+        type HotUpdate = InstanceType<typeof HotUpdate>;
+    }
+}
+
 
 @ccclass('HotUpdate')
-export class HotUpdate {
-
+class HotUpdate {
+    public static readonly State = HotUpdateState;
     private manifestUrl: string = null;
     private listener: IHotUpdateListener = null;
 
@@ -24,7 +34,7 @@ export class HotUpdate {
     constructor(manifestUrl: string, listener: IHotUpdateListener) {
         this.manifestUrl = manifestUrl;
         this.listener = listener;
-        this.storagePath = path.join(native.fileUtils ? native.fileUtils.getWritablePath() : '/', "HotUpdateRemote");
+        this.storagePath = path.join(native.fileUtils ? native.fileUtils.getWritablePath() : '/', "remote-asset");
         this.assetsMgr = new native.AssetsManager(manifestUrl, this.storagePath, this.versionCompareHandle.bind(this));
 
 
@@ -217,3 +227,7 @@ export class HotUpdate {
         console.log("======================================================");
     }
 }
+
+tnt.HotUpdate = HotUpdate;
+
+export { };
