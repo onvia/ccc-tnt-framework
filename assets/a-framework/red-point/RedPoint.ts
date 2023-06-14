@@ -60,6 +60,20 @@ class RedPoint<Options = any> extends tnt.EventMgr {
         this._redPointInfo = value;
         this.showType = value.showType;
     }
+
+    // 是否启用
+    private _enabled = true;
+    public get enabled() {
+        return this._enabled;
+    }
+    public set enabled(value) {
+        if (this._enabled === value) {
+            return;
+        }
+        this._enabled = value;
+        this._updateDisplayNodeStatus();
+    }
+
     public options: Options = null;
 
     private _parent: RedPoint = null;

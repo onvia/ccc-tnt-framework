@@ -325,7 +325,8 @@ class RedPointMgr extends tnt.EventMgr {
     private _updateDisplay(id: number, redPoint: tnt.RedPoint, display: tnt.RedPointComp) {
         if (display.isValid && display.node.isValid) {
             display.updateCount(redPoint.count);
-            display.node.active = redPoint.count > 0;
+            display.updateDisplay(redPoint.enabled && redPoint.count > 0); // 红点启用并且数量大于0
+
         } else {
             this._removeDisplay(id, display);
         }
