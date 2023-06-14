@@ -21,20 +21,12 @@
     - [多语言](./docs/%E5%A4%9A%E8%AF%AD%E8%A8%80.md)
     - [TiledMap](./docs/TiledMap.md)
     - [MVVM](./docs/MVVM.md)
-    - [装饰器](#装饰器)
-    - [寻路](#寻路)
-    - [相机控制](#相机控制)
-      - [相机跟随](#相机跟随)
-      - [相机缩放/双指缩放](#相机缩放双指缩放)
-      - [屏幕震动](#屏幕震动)
+    - [装饰器](./docs/%E8%A3%85%E9%A5%B0%E5%99%A8.md)
     - [热更新](./docs/%E7%83%AD%E6%9B%B4%E6%96%B0.md)
-    - [活动管理](#活动管理)
     - [工具类](./docs/%E5%B7%A5%E5%85%B7%E7%B1%BB.md)
     - [引擎扩展](./docs/%E5%BC%95%E6%93%8E%E6%89%A9%E5%B1%95.md)
     - [工具插件](./docs/%E5%B7%A5%E5%85%B7%E6%8F%92%E4%BB%B6.md)
-    - [框架插件](#框架插件)
     - [参考](#参考)
-      - [AssetLoader](#assetloader)
       - [MVVM](#mvvm)
       - [其他](#其他)
 ### 介绍
@@ -46,7 +38,7 @@
 >为保证在编辑器内优先加载框架代码，这里使用了 `a-framework` 作为文件夹名，`a-framework` 作为Bundle， Bundle 名为 `framework`，开发过程中其他 Bundle 尽量保证在框架 Bundle 后加载
 
 框架启动需要实现 `IStartupOptions`  
-详细的使用可以启动实例 Launcher.scene 查看，脚本同名。
+详细的使用可以启动实例 `Launcher.scene` 查看，脚本同名。
 
 ```
 // 首先加载框架 Bundle
@@ -192,11 +184,6 @@ export class PauseWindow extends tnt.UIPopup<PauseWindowOptions> {
 
 ### 红点管理
 
-
-
-### 装饰器
-`./assets/framework/decorators/_decorator.ts`
-
 ### 寻路
 
 
@@ -210,9 +197,6 @@ export class PauseWindow extends tnt.UIPopup<PauseWindowOptions> {
 ### 活动管理
 
 ### 参考  
-#### AssetLoader  
-https://blog.csdn.net/xzben/article/details/120039818
-
 #### MVVM  
 https://forum.cocos.org/t/topic/78821  
 https://github.com/wsssheep/cocos_creator_mvvm_tools  
@@ -220,8 +204,9 @@ https://github.com/vuejs/core.git
 https://github.com/sl1673495/typescript-proxy-reactive.git
 
 
-
 #### 其他  
+https://github.com/AILHC/EasyGameFrameworkOpen
+https://blog.csdn.net/xzben/article/details/120039818
 https://github.com/1226085293/nodes/blob/master/assets/essential/engine/node/nodes.js 
 https://github.com/fairygui/FairyGUI-cocoscreator/blob/master/source/src/fairygui/GObject.ts
 https://github.com/fairygui/FairyGUI-cocoscreator/blob/master/source/src/fairygui/DragDropManager.ts

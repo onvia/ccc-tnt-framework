@@ -245,26 +245,6 @@ let __decorator = {
         }
     },
 
-    /** 禁用运行时执行方法 */
-    disableRuntime(target: any, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) {
-        const oldValue = descriptor.value
-        if (!EDITOR) {
-            descriptor.value = function (...rest: any[]) {
-            }
-        }
-        return descriptor
-    },
-
-    /** 禁用编辑器执行方法 */
-    disableEditor(target: any, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) {
-        const oldValue = descriptor.value
-        if (EDITOR) {
-            descriptor.value = function (...rest: any[]) {
-            }
-        }
-        return descriptor
-    },
-
     // // 多态
     // polymorphism({ types, displayName }: PolymorphismOptions): PropertyDecorator {
     //     return (target, propertyKey: PropertyKey) => {
