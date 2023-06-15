@@ -40,13 +40,13 @@ declare global {
     }
 }
 
+let patchWeakSet: WeakSet<Node> = new WeakSet();
+
 class ComponentUtils {
+
 
     public findNode(name: string, _root: Node | Scene, parent?: Node | Scene): Node {
         let root = _root as Node;
-        if(!isValid(root) || (parent && !isValid(parent))){
-            return null;
-        }
         let isInited = false;
         if (!root.__$nodes) {
             root.__$nodes = {};
@@ -81,6 +81,10 @@ class ComponentUtils {
                         return element;
                     }
                 }
+                // 判断 parent ，做补丁
+                if (parentNode && !patchWeakSet.has(parentNode)) {
+                    return this._patchCheckout(name, rootNode, parentNode);
+                }
             }
             // 如果没找到，则取第一个
             return cacheArr[0];
@@ -97,6 +101,14 @@ class ComponentUtils {
 
             this._walk(root, child);
         }
+    }
+
+
+    /** 做补丁 */
+    private _patchCheckout(name: string, rootNode: Node, parentNode: Node) {
+        this._walk(rootNode, parentNode);
+        patchWeakSet.add(parentNode);
+        return this._checkout(name, rootNode, parentNode);
     }
 
     public findNodes(locators: string[], root: Node | Scene, parent?: Node) {
