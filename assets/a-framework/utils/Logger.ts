@@ -11,7 +11,7 @@ enum LoggerLevel {
 
 /** 日志系统 */
 class Logger {
-    static Level = LoggerLevel;
+    public static readonly Level = LoggerLevel;
     private _level: LoggerLevel = LoggerLevel.ALL;
     public get level(): LoggerLevel {
         return this._level;
