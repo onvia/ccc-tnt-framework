@@ -358,8 +358,6 @@ class AssetLoader {
                 assetWrap && this.onRelease(assetWrap.path, assetWrap.asset);
             }
         }
-
-        return AssetLoader.removeBundle(bundleName);
     }
 
     // 先对包装层资源进行计数 --
@@ -452,12 +450,12 @@ class AssetLoader {
     }
 
     // 是否已经加载
-    public hasRes(path: string, type: CCAssetType, bundle?: Bundle | string) {
-        return !!this.getRes(path, type, bundle);
+    public hasAsset(path: string, type: CCAssetType, bundle?: Bundle | string) {
+        return !!this.getAsset(path, type, bundle);
     }
 
     // 获取已加载的资源
-    public getRes(path: string, type: CCAssetType, bundle?: Bundle | string) {
+    public getAsset(path: string, type: CCAssetType, bundle?: Bundle | string) {
         let bundleWrap = this.getBundleAsset(bundle);
         let u_path = this.jointKey(bundleWrap.name, path);
         let asset = this._cache.get(u_path, type);

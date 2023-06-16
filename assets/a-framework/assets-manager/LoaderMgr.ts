@@ -1,8 +1,8 @@
 import { js, log, sys } from "cc";
 import { EDITOR } from "cc/env";
 
-declare global{
-    interface ITNT{
+declare global {
+    interface ITNT {
         loaderMgr: LoaderMgr;
     }
 }
@@ -29,10 +29,10 @@ export class LoaderMgr {
         if (this.pool.length) {
             for (let i = 0; i < this.pool.length; i++) {
                 const loader = this.pool[i];
-                if(loader.loadCount > 0){
+                if (loader.loadCount > 0) {
                     continue;
                 }
-                js.array.fastRemoveAt(this.pool,i);
+                js.array.fastRemoveAt(this.pool, i);
                 return loader;
             }
         }
@@ -73,12 +73,9 @@ export class LoaderMgr {
         if (EDITOR) {
             return;
         }
-        if(!key){
+        if (!key) {
             key = this.KEY_SHARE;
         }
-        // if (typeof key !== 'string') {
-        //     key = js.getClassName(key);
-        // }
 
         if (key === this.KEY_SHARE) {
             return this.share;
@@ -99,25 +96,22 @@ export class LoaderMgr {
      * @param key 
      */
     public releaseLoader(key: any) {
-        // if (typeof key !== 'string') {
-        //     key = js.getClassName(key);
-        // }
-        if(!key){
+        if (!key) {
             key = this.KEY_SHARE;
         }
         // share 只进行资源释放
-        if(key === this.KEY_SHARE){
+        if (key === this.KEY_SHARE) {
             this.share.releaseAll();
             return;
         }
 
         let loader: AssetLoader = null;
-        if(key instanceof tnt.AssetLoader){
+        if (key instanceof tnt.AssetLoader) {
             loader = key;
             key = key.key;
         }
 
-        if(this.loaders.has(key)){
+        if (this.loaders.has(key)) {
             loader = this.loaders.get(key);
             loader.releaseAll();
             this.loaders.delete(key);
@@ -134,7 +128,7 @@ export class LoaderMgr {
     /**
      * 释放所有loader 中的资源。
      */
-     public releaseAll() {
+    public releaseAll() {
         this.loaders.forEach(loader => {
             loader.releaseAll();
             this._putLoader(loader);
@@ -144,11 +138,19 @@ export class LoaderMgr {
         // 进行垃圾回收
         sys.garbageCollect();
     }
-    
-    public releaseBundle(bundleName: string){
+
+    /**
+     * 释放整个 Bundle
+     *
+     * @param {string} bundleName
+     * @memberof LoaderMgr
+     */
+    public releaseBundle(bundleName: string) {
+        // 将每个加载器内的 指定 bundle 资源释放
         this.loaders.forEach(loader => {
             loader.releaseBundle(bundleName);
         })
+        tnt.AssetLoader.removeBundle(bundleName);
     }
     private static _instance: LoaderMgr = null
     public static getInstance(): LoaderMgr {
