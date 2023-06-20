@@ -2,7 +2,7 @@
 
 
 import minimist from 'minimist';
-import { Main } from './Main';
+import { Main } from './Main1';
 // ##################
 // 输入
 const oargs = process.argv.slice(2);
