@@ -68,9 +68,16 @@ assetManager.loadBundle("framework", () => {
 - `addPrefabNode`： 使用当前脚本的加载器加载预制体并添加到指定节点
 
 
-> 在首次调用 `getNodeByName` 或 `find` 时，框架会自动创建节点树缓存，减小后续使用此接口的开销。  
-注意：如果想查找动态添加的节点，需要先调用 `resetNodeCache` 清理缓存，否则无法查找到。
-
+>在首次调用 `getNodeByName` 或 `find` 时，框架会自动创建节点树缓存，减小后续使用此接口的开销。  
+>
+>注意：  
+如果想查找动态添加的节点，需要先调用 `resetNodeCache` 清理缓存，否则无法查找到。  
+如果提供了动态添加节点的父节点，则可以不用调用 `resetNodeCache`，方法会自动对缓存打补丁。     
+>  
+>例如：  
+在节点 `NodeA` 上动态添加了节点 `NodeB`  
+调用 `this.getNodeByName("NodeB",NodeA)` 能够正常查找到节点 `NodeB`  
+调用 `this.getNodeByName("NodeB")` 则无法查找到，这时候需要调用 `this.resetNodeCache()`。
 
 
 ####  `UIBase` 
