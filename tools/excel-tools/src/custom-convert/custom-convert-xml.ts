@@ -1,6 +1,8 @@
 import { ICustomConvertSheet, parse, Settings, SheetData } from "../parse";
 import { XMLParser, XMLBuilder, XMLValidator } from "fast-xml-parser";
 import { CustomConvert2Json } from "./custom-convert-json";
+import path from "path";
+import { fileUtils } from "../utils/file-utils";
 
 
 export class CustomConvert2Xml implements ICustomConvertSheet {
@@ -46,5 +48,12 @@ export class CustomConvert2Xml implements ICustomConvertSheet {
         }
 
         return { primaryKey, data: rowResult };
+    }
+    saveFile(data: Record<string, SheetData>, outDir: string) {
+        Object.keys(data).forEach((name) => {
+            const sheet = data[name];
+            let fullpath = path.join(outDir, `${name}${sheet.extname}`);
+            fileUtils.writeFile(fullpath, sheet.text);
+        });
     }
 }

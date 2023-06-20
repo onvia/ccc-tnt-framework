@@ -28,6 +28,8 @@ export interface WorkBookData {
 
 export interface ICustomConvertSheet {
     customConvertSheet(sheet: SheetData): string | Record<string, any>;
+    saveFile(data: Record<string, SheetData>, outDir: string);
+    saveDeclarationDoc?(data: Record<string, SheetData>, outDir: string);
 }
 export interface ParseWorkBookOptions {
     exportPlatform: "client" | "server";

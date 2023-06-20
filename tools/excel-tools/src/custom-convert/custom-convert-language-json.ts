@@ -1,4 +1,6 @@
+import path from "path";
 import { ICustomConvertSheet, parse, Settings, SheetData } from "../parse";
+import { fileUtils } from "../utils/file-utils";
 
 export class CustomConvertLanguage2Json implements ICustomConvertSheet {
 
@@ -39,5 +41,17 @@ export class CustomConvertLanguage2Json implements ICustomConvertSheet {
             rowResult[j] = cell;
         }
         return rowResult;
+    }
+    
+    saveFile(data: Record<string, SheetData>, outDir: string) {
+        Object.keys(data).forEach((name) => {
+            const sheet = data[name];
+            let fullpath = path.join(outDir, `${name}${sheet.extname}`);
+            fileUtils.writeFile(fullpath, sheet.text);
+        });
+    }
+
+    saveDeclarationDoc(data: Record<string, SheetData>, outDir: string) {
+        
     }
 }

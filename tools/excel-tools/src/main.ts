@@ -53,15 +53,17 @@ export class Main {
             data = await this.parseFile(args.input);
         }
 
-        // 输出 json 文件
-        this.outputFile(data, args.output);
+        // 保存文件
+        this.customConvert.saveFile(data,args.output);
 
+        
         if (args["dts-output"]) {
             if (typeof args["dts-output"] === "boolean") {
                 args["dts-output"] = args.output;
             }
+            this.customConvert.saveDeclarationDoc?.(data,args["dts-output"]);
             // 输出 dts 文件
-            this.outputDts(data, args["dts-output"]);
+            // this.outputDts(data, args["dts-output"]);
         }
     }
 
@@ -110,53 +112,6 @@ export class Main {
         return customData;
     }
 
-    outputFile(data: Record<string, SheetData>, outDir: string) {
-        Object.keys(data).forEach((name) => {
-            const sheet = data[name];
-            let fullpath = path.join(outDir, `${name}${sheet.extname}`);
-            fileUtils.writeFile(fullpath, sheet.text);
-        });
-    }
-
-    outputDts(data: Record<string, SheetData>, outDir: string) {
-        let filename = `tbl.d.ts`;
-        outDir = path.resolve(outDir);
-        if (outDir.includes(".")) {
-            filename = path.basename(outDir);
-            outDir = path.dirname(outDir);
-        }
-        // 生成 dts
-        let dts = `declare global {\n`;
-        dts += `\tnamespace tbl{\n`;
-        Object.keys(data).forEach((name) => {
-            const sheet = data[name];
-            if (sheet.customConfig === 'i18n') {
-                return;
-            }
-            dts += parse.toDTS(sheet);
-        });
-        dts += '\t}\n';
-        dts += '}\n';
-        dts += `export { };\n\n`;
-
-
-        dts += `declare global {\n`;
-        dts += `\tinterface ITbl {\n`;
-
-        Object.keys(data).forEach((name) => {
-            const sheet = data[name];
-            if (sheet.customConfig === 'i18n') {
-                return;
-            }
-            dts += `\t\t${sheet.name}: GTbl<tbl.${sheet.name}>;\n`
-        });
-
-        dts += `\t}\n`;
-        dts += `}`;
-
-
-        fileUtils.writeFile(path.join(outDir, filename), dts);
-    }
 }
 
 /** 合并别名 */

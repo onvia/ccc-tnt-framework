@@ -1,4 +1,6 @@
+import path from "path";
 import { ICustomConvertSheet, parse, Settings, SheetData } from "../parse";
+import { fileUtils } from "../utils/file-utils";
 
 interface FormatData {
 
@@ -10,7 +12,7 @@ interface FormatData {
 
 export class CustomConvert2Json implements ICustomConvertSheet {
 
-    customConvertSheet(sheet: SheetData): string | Record<string,any>{
+    customConvertSheet(sheet: SheetData): string | Record<string, any> {
         let settings = sheet.settings;
         sheet.extname = ".json";
 
@@ -64,5 +66,52 @@ export class CustomConvert2Json implements ICustomConvertSheet {
             rowResult[j] = cell;
         }
         return rowResult;
+    }
+
+    saveFile(data: Record<string, SheetData>, outDir: string) {
+        Object.keys(data).forEach((name) => {
+            const sheet = data[name];
+            let fullpath = path.join(outDir, `${name}${sheet.extname}`);
+            fileUtils.writeFile(fullpath, sheet.text);
+        });
+    }
+    saveDeclarationDoc(data: Record<string, SheetData>, outDir: string) {
+        let filename = `tbl.d.ts`;
+        outDir = path.resolve(outDir);
+        if (outDir.includes(".")) {
+            filename = path.basename(outDir);
+            outDir = path.dirname(outDir);
+        }
+        // 生成 dts
+        let dts = `declare global {\n`;
+        dts += `\tnamespace tbl{\n`;
+        Object.keys(data).forEach((name) => {
+            const sheet = data[name];
+            if (sheet.customConfig === 'i18n') {
+                return;
+            }
+            dts += parse.toDTS(sheet);
+        });
+        dts += '\t}\n';
+        dts += '}\n';
+        dts += `export { };\n\n`;
+
+
+        dts += `declare global {\n`;
+        dts += `\tinterface ITbl {\n`;
+
+        Object.keys(data).forEach((name) => {
+            const sheet = data[name];
+            if (sheet.customConfig === 'i18n') {
+                return;
+            }
+            dts += `\t\t${sheet.name}: GTbl<tbl.${sheet.name}>;\n`
+        });
+
+        dts += `\t}\n`;
+        dts += `}`;
+
+
+        fileUtils.writeFile(path.join(outDir, filename), dts);
     }
 }
