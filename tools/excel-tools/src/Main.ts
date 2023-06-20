@@ -1,19 +1,18 @@
 import * as xlsx from 'xlsx';
-import { CustomConvert2Json } from './custom-convert/custom-convert-json';
 import { ICustomConvertSheet, parse, SheetData } from './parse';
-import { fileUtils } from './utils/FileUtils';
+import { fileUtils } from './utils/file-utils';
 import fs from 'fs-extra';
 import path from 'path';
-import config from "./config";
+import { config, dtsConfig } from "./config";
 
 export class Main {
     readonly help = `
 --help           | -h    帮助信息
---input          | -i   输入目录或者 xlsx 文件  必选 [dir or xlsx] 
---output         | -o  输出目录               可选 缺省时为 --input [dir] 
+--input          | -i    输入目录或者 xlsx 文件  必选 [dir or xlsx] 
+--output         | -o    输出目录               可选 缺省时为 --input [dir] 
 --dts-output     | -dts  输出的 dts 文件目录     可选 缺省时为 --output [dir]
---format         | -f     导出的文件格式          json | xml | 后续扩展放入 config.ts
---json           |        json 对象参数          插件工具使用 将所有参数用对象的形式编码成 base64 字符串
+--format         | -f    导出的文件格式          json | xml | 后续扩展放入 config.ts
+--json           |       json 对象参数          插件工具使用 将所有参数用对象的形式编码成 base64 字符串
 `
 
     customConvert: ICustomConvertSheet = null;
@@ -44,14 +43,13 @@ export class Main {
             if (!args.output) {
                 args.output = path.join(args.input, "data")
             }
-            data = await this.parseDir(args.input, args.output);
+            data = await this.parseDir(args.input);
 
         } else {
             if (!args.output) {
                 let input_dir = path.dirname(args.input);
                 args.output = path.join(input_dir, "data")
             }
-
             data = await this.parseFile(args.input);
         }
 
@@ -68,7 +66,7 @@ export class Main {
     }
 
 
-    async parseDir(dir: string, outDir: string) {
+    async parseDir(dir: string) {
         // // 清空目录
         // fs.emptyDirSync(outDir);
 
@@ -93,7 +91,8 @@ export class Main {
             Object.keys(customData).forEach((name) => {
                 const sheet = customData[name];
                 if (customDatas[name]) {
-                    console.error(`Main-> `);
+                    console.log(`已有同名文件 ${name}`);
+                    
                     return;
                 }
                 customDatas[name] = sheet;
@@ -105,10 +104,8 @@ export class Main {
 
     parseFile(filePath: string): Record<string, SheetData> {
         let file = xlsx.readFile(filePath);
-        let workBook = parse.parseWorkBook(file,path.basename(filePath,path.extname(filePath)));
-        // 做测试，使用拷贝数据
+        let workBook = parse.parseWorkBook(file, path.basename(filePath, path.extname(filePath)));
         let customForWorkBook = JSON.parse(JSON.stringify(workBook));
-        // 自定义转换
         let customData = parse.convertWorkBook(customForWorkBook, this.customConvert);
         return customData;
     }
@@ -133,7 +130,7 @@ export class Main {
         dts += `\tnamespace tbl{\n`;
         Object.keys(data).forEach((name) => {
             const sheet = data[name];
-            if(sheet.customConfig === 'i18n'){
+            if (sheet.customConfig === 'i18n') {
                 return;
             }
             dts += parse.toDTS(sheet);
@@ -148,7 +145,7 @@ export class Main {
 
         Object.keys(data).forEach((name) => {
             const sheet = data[name];
-            if(sheet.customConfig === 'i18n'){
+            if (sheet.customConfig === 'i18n') {
                 return;
             }
             dts += `\t\t${sheet.name}: GTbl<tbl.${sheet.name}>;\n`
@@ -160,61 +157,6 @@ export class Main {
 
         fileUtils.writeFile(path.join(outDir, filename), dts);
     }
-
-
-    test() {
-        let filePath = "./test-data/test.xlsx";
-        let file = xlsx.readFile(filePath);
-        let workBook = parse.parseWorkBook(file,path.basename(filePath,path.extname(filePath)));
-
-        // // 做测试，使用拷贝数据
-        // let normalForWorkBook = JSON.parse(JSON.stringify(workBook));
-
-        // // 正常转换
-        // let normalData = parse.convertWorkBook(normalForWorkBook);
-        // Object.keys(normalData).forEach((name) => {
-        //     const sheet = normalData[name];
-        //     fileUtils.writeJsonFile(`./test/normal_${name}.json`, sheet.text);
-        // });
-
-
-        let customConvert = new CustomConvert2Json();
-        // 做测试，使用拷贝数据
-        let customForWorkBook = JSON.parse(JSON.stringify(workBook));
-        // 自定义转换
-        let customData = parse.convertWorkBook(customForWorkBook, customConvert);
-
-
-        // 保存 json 文件
-        Object.keys(customData).forEach((name) => {
-            const sheet = customData[name];
-            fileUtils.writeJsonFile(`./test-out/custom_${name}.json`, sheet.text);
-        });
-
-
-
-        // 生成 dts
-        let dts = `declare global {\n`;
-        dts += `\tnamespace tbl{\n`;
-        Object.keys(customData).forEach((name) => {
-            const sheet = customData[name];
-            dts += parse.toDTS(sheet);
-        });
-        dts += '\t}\n';
-        dts += '}\n';
-        dts += `export { };`;
-        fileUtils.writeFile(`./test-out/custom_tbl.d.ts`, dts);
-
-        // let outDir = path.join("d:/test/test.d.ts");
-        // if (outDir.includes(".")) {
-        //     let cacheDir = outDir;
-        //     outDir = path.basename(outDir);
-        //     let filename = cacheDir.replace(outDir, "");
-        // }
-        console.log(`Main-> `);
-
-    }
-
 }
 
 /** 合并别名 */

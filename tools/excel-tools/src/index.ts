@@ -12,8 +12,8 @@ let main = new Main();
 if (oargs.length) {
     main.exec(args);
 } else {
-    // 测试
-    main.test();
+    // // 测试
+    // main.test();
 }
 
 // ##################
