@@ -7,6 +7,7 @@ declare global {
     interface ITbl { }
     interface IGame { }
     interface IUtils { }
+    interface ITiled { }
 
     interface ITNT {
         options: IStartupOptions;
@@ -19,6 +20,9 @@ declare global {
 
         /** 工具全局 */
         utils: IUtils;
+
+        /** TiledMap */
+        tiled: ITiled;
 
         startup(options?: IStartupOptions);
         enableTimer();

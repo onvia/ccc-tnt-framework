@@ -1,0 +1,86 @@
+{
+    "keys": [
+        "id",
+        "idx",
+        "str",
+        "str_array",
+        "flag",
+        "bool_array",
+        "norm_array",
+        "none1",
+        "obj",
+        "boss",
+        "key_auto",
+        "none3",
+        "none4"
+    ],
+    "data": [
+        [
+            1,
+            0,
+            "999",
+            [
+                "哈哈",
+                "\"呵呵\""
+            ],
+            true,
+            [
+                true,
+                true
+            ],
+            [
+                1,
+                "str",
+                2
+            ],
+            0,
+            {
+                "mode": "normal",
+                "value": 9
+            },
+            "10000",
+            4,
+            666,
+            0
+        ],
+        [
+            2,
+            1,
+            "描述",
+            [
+                "hello",
+                "\"world\""
+            ],
+            false,
+            [
+                false,
+                false
+            ],
+            [
+                1,
+                "str",
+                2
+            ],
+            0,
+            {
+                "flag": false,
+                "arr": [
+                    2,
+                    1,
+                    4
+                ]
+            },
+            "10001",
+            "sdr",
+            0,
+            0
+        ]
+    ],
+    "index": {
+        "1_0": 0,
+        "2_1": 1
+    },
+    "redirect": {
+        "boss": "data2"
+    }
+}

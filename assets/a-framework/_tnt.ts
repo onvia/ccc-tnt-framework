@@ -10,14 +10,12 @@ import './components/animation/_animation';
 import './components/effect/_effect';
 import './pool/_pool';
 
-
-
 import "./scenes/scene2d/ui/_ui";
 import "./scenes/scene2d/stage/_stage";
 import "./scenes/scene2d/i18n/_i18n";
 import "./scenes/scene2d/gui/_gui";
+import "./scenes/scene2d/tiled/_tiled";
 import "./scenes/SceneBase";
-
 
 import "./assets-manager/AssetLoader";
 import "./assets-manager/LoaderMgr";
@@ -47,6 +45,7 @@ import "./utils/DebugUtils";
 import "./task/TaskMgr";
 import "./task/LoadingTaskQueue";
 import "./mvvm/_mvvm";
+
 
 import "./hot-update/_hot-update"
 import "./red-point/_red-point"

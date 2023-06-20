@@ -1,0 +1,32 @@
+{
+  "name": "excel-tools",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc -b",
+    "watch": "tsc -w",
+    "test": "node dist/index.js --input ./test-data/test.xlsx --output ./out/",
+    "test-dts": "node dist/index.js --input ./test-data/test.xlsx --output ./out/ --dts",
+    "test-dir": "node dist/index.js --input ./test-data --output ./out/",
+    "test-dir-dts": "node dist/index.js --input ./test-data --output ./out/ --dts",
+    "test-dts-custom-name": "node dist/index.js --input ./test-data --output ./out/ --dts ./out/tbl1.d.ts",
+    "test-dir-xml": "node dist/index.js --input ./test-data --output ./out/ --format xml",
+    "test-cc": "node dist/index.js --input ./test-data --output ../../assets/resources/data --dts ../../tbl.d.ts",
+    "cc-data": "ts-node src/index.ts --input ../../excels --output ../../assets/resources/data --dts ../../tbl.d.ts"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "fast-xml-parser": "^4.1.2",
+    "fs-extra": "^10.1.0",
+    "json2ts": "^0.0.7",
+    "minimist": "^1.2.7",
+    "ts-node": "^10.9.1",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^9.0.13",
+    "@types/node": "^18.11.9"
+  }
+}

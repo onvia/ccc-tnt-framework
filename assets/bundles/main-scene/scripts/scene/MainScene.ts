@@ -1,5 +1,5 @@
 import { _decorator, Component, Node, instantiate } from 'cc';
-import { SceneConfig } from '../SceneConfig';
+import { SceneConfig } from '../../../../launcher/SceneConfig';
 const { ccclass, property } = _decorator;
 
 @ccclass('MainScene')

@@ -11,6 +11,9 @@ export class MVVMDemoList extends tnt.SceneBase {
         item.removeFromParent();
 
         let bundle = this.loader.getBundle(this.bundle as string);
+        if(!bundle){
+            return;
+        }
 
         let sceneArr = []
         // @ts-ignore

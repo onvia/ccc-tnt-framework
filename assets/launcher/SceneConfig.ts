@@ -1,5 +1,11 @@
 
-export const SceneConfig = [
+interface ISceneConfig {
+    scene: string;
+    button: string;
+    bundle: string;
+}
+
+export const SceneConfig: ISceneConfig[] = [
     {
         scene: "DragDropScene",
         button: "拖放",
@@ -20,4 +26,9 @@ export const SceneConfig = [
         button: "MVVM",
         bundle: "mvvm-example"
     },
+    {
+        scene: "TiledMapOrientationDemo",
+        button: "TiledMap",
+        bundle: "tiled-map-example"
+    }
 ]
