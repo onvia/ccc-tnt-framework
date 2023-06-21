@@ -1,24 +1,18 @@
-import path from "path";
-import { ICustomConvertSheet, parse, Settings, SheetData } from "../parse";
-import { fileUtils } from "../utils/file-utils";
-
-interface FormatData {
-
-    keys: string[];
-    data: any[];
-    index: Record<string, number>;
-    redirect: Record<string, string>;
-}
-
-export class CustomConvert2Json implements ICustomConvertSheet {
-
-    customConvertSheet(sheet: SheetData): string | Record<string, any> {
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.CustomConvert2Json = void 0;
+const path_1 = __importDefault(require("path"));
+const parse_1 = require("../parse");
+const file_utils_1 = require("../utils/file-utils");
+class CustomConvert2Json {
+    customConvertSheet(sheet) {
         let settings = sheet.settings;
         sheet.extname = ".json";
-
-        parse.deleteExcludeData(sheet);
-
-        let result: FormatData = {
+        parse_1.parse.deleteExcludeData(sheet);
+        let result = {
             keys: settings.key,
             data: [],
             index: {},
@@ -26,20 +20,17 @@ export class CustomConvert2Json implements ICustomConvertSheet {
         };
         for (let i = settings.head, length = sheet.data.length; i < length; i++) {
             let row = sheet.data[i];
-            let primaryKey = parse.formatPrimaryKey(row, settings);
+            let primaryKey = parse_1.parse.formatPrimaryKey(row, settings);
             let rowData = this.customConvertRow(row, i, settings);
-
             if (rowData) {
                 result.data.push(rowData);
                 result.index[primaryKey] = i - settings.head;
             }
         }
-
         // 检查重定向
         for (let j = 0; j < settings.type.length; j++) {
             const type = settings.type[j];
             const key = settings.key[j];
-
             if (type.includes("#")) {
                 let arr = type.split("#");
                 if (arr[1]) {
@@ -47,18 +38,16 @@ export class CustomConvert2Json implements ICustomConvertSheet {
                 }
             }
         }
-
         return JSON.stringify(result);
     }
-    customConvertRow(row: string[], rowIndex: number, settings: Settings) {
+    customConvertRow(row, rowIndex, settings) {
         let flags = {};
         let rowResult = [];
-
-        let length = Math.max(settings.key.length, settings.type.length, settings.platform.length, row.length)
+        let length = Math.max(settings.key.length, settings.type.length, settings.platform.length, row.length);
         for (let j = 0; j < length; j++) {
             const key = settings.key[j];
             const type = settings.type[j];
-            const cell = parse.convertCell(row[j], rowIndex, j, key, type);
+            const cell = parse_1.parse.convertCell(row[j], rowIndex, j, key, type);
             if (flags[key]) {
                 console.error(`已有相同键:[${rowIndex + 1},${j}], key: [${key}], data: [${flags[key]}]`);
             }
@@ -67,45 +56,39 @@ export class CustomConvert2Json implements ICustomConvertSheet {
         }
         return rowResult;
     }
-
-    saveFile(data: Record<string, SheetData>, outDir: string) {
+    saveFile(data, outDir) {
         Object.keys(data).forEach((name) => {
             const sheet = data[name];
-            let fullpath = path.join(outDir, `${name}${sheet.extname}`);
-            fileUtils.writeFile(fullpath, sheet.text);
+            let fullpath = path_1.default.join(outDir, `${name}${sheet.extname}`);
+            file_utils_1.fileUtils.writeFile(fullpath, sheet.text);
         });
     }
-    saveDeclarationDoc(data: Record<string, SheetData>, outDir: string) {
+    saveDeclarationDoc(data, outDir) {
         let filename = `tbl.d.ts`;
-        outDir = path.resolve(outDir);
+        outDir = path_1.default.resolve(outDir);
         if (outDir.includes(".")) {
-            filename = path.basename(outDir);
-            outDir = path.dirname(outDir);
+            filename = path_1.default.basename(outDir);
+            outDir = path_1.default.dirname(outDir);
         }
         // 生成 dts
         let dts = `declare global {\n`;
         dts += `\tnamespace tbl{\n`;
         Object.keys(data).forEach((name) => {
             const sheet = data[name];
-            dts += parse.toDTS(sheet);
+            dts += parse_1.parse.toDTS(sheet);
         });
         dts += '\t}\n';
         dts += '}\n';
         dts += `export { };\n\n`;
-
-
         dts += `declare global {\n`;
         dts += `\tinterface ITbl {\n`;
-
         Object.keys(data).forEach((name) => {
             const sheet = data[name];
-            dts += `\t\t${sheet.name}: GTbl<tbl.${sheet.name}>;\n`
+            dts += `\t\t${sheet.name}: GTbl<tbl.${sheet.name}>;\n`;
         });
-
         dts += `\t}\n`;
         dts += `}`;
-
-
-        fileUtils.writeFile(path.join(outDir, filename), dts);
+        file_utils_1.fileUtils.writeFile(path_1.default.join(outDir, filename), dts);
     }
 }
+exports.CustomConvert2Json = CustomConvert2Json;

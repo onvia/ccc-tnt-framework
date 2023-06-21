@@ -7,9 +7,3 @@ export const config = {
     "xml": CustomConvert2Xml,
     "language-json": CustomConvertLanguage2Json,
 }
-
-export const dtsConfig = {
-    "json": null,
-    "xml": null,
-    "language-json": null,
-}

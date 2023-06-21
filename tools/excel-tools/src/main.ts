@@ -3,7 +3,7 @@ import { ICustomConvertSheet, parse, SheetData } from './parse';
 import { fileUtils } from './utils/file-utils';
 import fs from 'fs-extra';
 import path from 'path';
-import { config, dtsConfig } from "./config";
+import { config } from "./config";
 
 export class Main {
     readonly help = `
@@ -54,14 +54,14 @@ export class Main {
         }
 
         // 保存文件
-        this.customConvert.saveFile(data,args.output);
+        this.customConvert.saveFile(data, args.output);
 
-        
+
         if (args["dts-output"]) {
             if (typeof args["dts-output"] === "boolean") {
                 args["dts-output"] = args.output;
             }
-            this.customConvert.saveDeclarationDoc?.(data,args["dts-output"]);
+            this.customConvert.saveDeclarationDoc?.(data, args["dts-output"]);
             // 输出 dts 文件
             // this.outputDts(data, args["dts-output"]);
         }
@@ -94,7 +94,7 @@ export class Main {
                 const sheet = customData[name];
                 if (customDatas[name]) {
                     console.log(`已有同名文件 ${name}`);
-                    
+
                     return;
                 }
                 customDatas[name] = sheet;
