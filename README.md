@@ -212,8 +212,8 @@ https://github.com/sl1673495/typescript-proxy-reactive.git
 
 
 #### 其他  
-https://github.com/AILHC/EasyGameFrameworkOpen
-https://blog.csdn.net/xzben/article/details/120039818
-https://github.com/1226085293/nodes/blob/master/assets/essential/engine/node/nodes.js 
-https://github.com/fairygui/FairyGUI-cocoscreator/blob/master/source/src/fairygui/GObject.ts
-https://github.com/fairygui/FairyGUI-cocoscreator/blob/master/source/src/fairygui/DragDropManager.ts
+https://github.com/AILHC/EasyGameFrameworkOpen   
+https://blog.csdn.net/xzben/article/details/120039818   
+https://github.com/1226085293/nodes/blob/master/assets/essential/engine/node/nodes.js   
+https://github.com/fairygui/FairyGUI-cocoscreator/blob/master/source/src/fairygui/GObject.ts   
+https://github.com/fairygui/FairyGUI-cocoscreator/blob/master/source/src/fairygui/DragDropManager.ts   
