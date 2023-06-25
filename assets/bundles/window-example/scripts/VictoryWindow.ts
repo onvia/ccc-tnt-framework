@@ -1,5 +1,6 @@
-import * as cc from "cc";
-const { ccclass, property } = cc._decorator;
+import { _decorator, Color } from "cc";
+
+const { ccclass, property } = _decorator;
 let { prefabUrl } = tnt._decorator;
 
 
@@ -17,7 +18,7 @@ export class VictoryWindow extends tnt.UIWindow {
  
     public onCreate(): void {
         
-        this.setTopMenuBar({color: cc.Color.RED});
+        this.setTopMenuBar({color: Color.RED});
         this.setHideOtherWindows(true);
     }
     

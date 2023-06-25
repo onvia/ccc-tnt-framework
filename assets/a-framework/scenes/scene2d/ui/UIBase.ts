@@ -46,7 +46,7 @@ class UIBase<Options = any> extends tnt.GComponent<Options> implements IUIAble {
      * @param {ITouch} touch
      * @param {*} [target]
      * @param {Node} [parent]
-     * @memberof GComponent
+     * @memberof UIBase
      */
     public registerNodeTouchEvent(node: NodeNoun<Node>, touch: ITouch, target?: any, parent?: Node) {
         tnt.componentUtils.registerNodeTouchEvent(node, touch, target || this, this.node, parent);
@@ -59,7 +59,7 @@ class UIBase<Options = any> extends tnt.GComponent<Options> implements IUIAble {
      * @param {Runnable1<Button>} callback
      * @param {*} [target]
      * @param {Node} [parent]
-     * @memberof GComponent
+     * @memberof UIBase
      */
     public registeButtonClick(node: NodeNoun<Button>, callback: Runnable1<Button>, target?: any, parent?: Node) {
         tnt.componentUtils.registerButtonClick(node, callback, target || this, this.node, parent);
@@ -86,7 +86,7 @@ class UIBase<Options = any> extends tnt.GComponent<Options> implements IUIAble {
      * @param {Runnable1<EditBox>} callback
      * @param {*} [target]
      * @param {Node} [parent]
-     * @memberof GComponent
+     * @memberof UIBase
      */
     public registeEditBoxDidEnd(node: NodeNoun<EditBox>, callback: Runnable1<EditBox>, target?: any, parent?: Node) {
         tnt.componentUtils.registeEditBoxDidEnd(node, callback, target || this, this.node, parent);
@@ -99,7 +99,7 @@ class UIBase<Options = any> extends tnt.GComponent<Options> implements IUIAble {
      * @param {Runnable1<Toggle>} callback
      * @param {*} [target]
      * @param {Node} [parent]
-     * @memberof GComponent
+     * @memberof UIBase
      */
     public registeToggleClick(node: NodeNoun<Toggle>, callback: Runnable1<Toggle>, target?: any, parent?: Node) {
         tnt.componentUtils.registerToggleClick(node, callback, target || this, this.node, parent);
@@ -112,7 +112,7 @@ class UIBase<Options = any> extends tnt.GComponent<Options> implements IUIAble {
      * @param {Runnable1<string>} callback
      * @param {*} [target]
      * @param {Node} [parent]
-     * @memberof GComponent
+     * @memberof UIBase
      */
     public registerToggleGroupEvent(name: NodeNoun<ToggleContainer>, callback: Runnable2<Toggle, string>, target?: any, parent?: Node)
     public registerToggleGroupEvent(name: NodeNoun<ToggleContainer>, options: ToggleGroupEventOptions, target?: any, parent?: Node)
@@ -126,7 +126,7 @@ class UIBase<Options = any> extends tnt.GComponent<Options> implements IUIAble {
      * @param {NodeNoun<ToggleContainer>} toggleContainerOrName
      * @param {string} toggleName
      * @param {Node} [parent]
-     * @memberof GComponent
+     * @memberof UIBase
      */
     public toggleCheck(toggleContainerOrName: NodeNoun<ToggleContainer>, toggleName: string, parent?: Node) {
         tnt.componentUtils.toggleCheck(toggleContainerOrName, toggleName, this.node, parent);
@@ -139,7 +139,7 @@ class UIBase<Options = any> extends tnt.GComponent<Options> implements IUIAble {
      * @param { Runnable1<Slider>} callback
      * @param {*} [target]
      * @param {Node} [parent]
-     * @memberof GComponent
+     * @memberof UIBase
      */
     public registerSliderEvent(node: NodeNoun<Slider>, callback: Runnable1<Slider>, target?: any, parent?: Node) {
         tnt.componentUtils.registerSliderEvent(node, callback, target || this, this.node, parent);
@@ -174,7 +174,7 @@ class UIBase<Options = any> extends tnt.GComponent<Options> implements IUIAble {
         if (label) {
             label.string = text.toString();
         } else {
-            console.error(`GComponent-> 无法找到 label ${name}`);
+            console.error(`UIBase-> 无法找到 label ${name}`);
         }
     }
 

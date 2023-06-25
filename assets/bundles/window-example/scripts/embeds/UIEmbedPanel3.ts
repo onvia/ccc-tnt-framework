@@ -1,5 +1,6 @@
-import * as cc from "cc";
-const { ccclass } = cc._decorator;
+import { _decorator } from "cc";
+
+const { ccclass } = _decorator;
 let { prefabUrl } = tnt._decorator;
 
 

@@ -30,5 +30,5 @@ export const SceneConfig: ISceneConfig[] = [
         scene: "TiledMapOrientationDemo",
         button: "TiledMap",
         bundle: "tiled-map-example"
-    }
+    },
 ]

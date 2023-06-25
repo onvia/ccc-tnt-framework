@@ -1,19 +1,20 @@
-import * as cc from "cc";
-const { ccclass, property } = cc._decorator;
+import { _decorator } from "cc";
+
+const { ccclass } = _decorator;
 
 
- 
+
 @ccclass('SceneListener')
 export class SceneListener implements ISceneListener {
 
     private constructor() {
-        
+
     }
 
     /** 进入场景，过渡动画开始 */
     onEnterTransitionStart?(sceneName: string) {
         console.log(`LoadingScene-> 进入场景，过渡动画开始  ${sceneName || "LoadingScene"}`);
-        
+
     }
     /** 进入场景，过渡动画将要结束 */
     onEnterTransitionWillFinished?(sceneName: string) {
@@ -43,9 +44,9 @@ export class SceneListener implements ISceneListener {
 
     }
 
-    private static _instance:SceneListener = null
-    public static getInstance(): SceneListener{
-        if(!this._instance){
+    private static _instance: SceneListener = null
+    public static getInstance(): SceneListener {
+        if (!this._instance) {
             this._instance = new SceneListener();
         }
         return this._instance;
