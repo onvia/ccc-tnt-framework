@@ -14,10 +14,10 @@ const download_1 = __importDefault(require("download"));
 const githubProxy = 'https://ghproxy.com/';
 class GenTemplate {
     async createTemplete() {
-        if (Editor.Project.name == 'ccc-tnt-framework') {
-            console.log(`GenTemplate-> 框架项目无法下载自身仓库的资源`);
-            return;
-        }
+        // if (Editor.Project.name == 'ccc-tnt-framework') {
+        //     console.log(`[TNT] 框架项目无法下载自身仓库的资源`);
+        //     return;
+        // }
         // // 拷贝目录结构
         // await this.copyTo(join(Editor.Project.path,"extensions/ccc-tnt-extensions/assets","directory-templete"),config.path);
         // 
@@ -27,7 +27,7 @@ class GenTemplate {
     async downloadRelease() {
         let octokit = new octokit_1.Octokit();
         try {
-            console.log(`GenTemplate-> 获取最新版框架`);
+            console.log(`[TNT] 获取最新版框架`);
             let lastRelease = await octokit.rest.repos.getLatestRelease({
                 'owner': config_1.default.owner,
                 'repo': config_1.default.repo,
@@ -37,18 +37,22 @@ class GenTemplate {
             if (!fs_extra_1.default.existsSync(config_1.default.path)) {
                 fs_extra_1.default.mkdirSync(config_1.default.path);
             }
-            fs_extra_1.default.emptyDirSync(config_1.default.path);
-            console.log(`GenTemplate-> 下载`);
+            // fs.emptyDirSync(config.path);
+            console.log(`[TNT] 下载`);
             let buffer = await (0, download_1.default)(githubProxy + asset.browser_download_url);
-            console.log(`GenTemplate-> 解压`);
+            console.log(`[TNT] 解压`);
             //   整包解压
             jszip_1.default.loadAsync(buffer).then((zip) => {
-                console.log(`GenTemplate-> 解压文件`, zip.files);
+                console.log(`[TNT] 解压文件`, zip.files);
                 this.saveZipFiles(path_1.default.join(config_1.default.path), zip.files);
+            }).then(async () => {
+                console.log(`[TNT] 刷新框架`);
+                await Editor.Message.request("asset-db", "refresh-asset", "db://assets/a-framework");
+                console.log(`[TNT] 请重启编辑器`);
             });
         }
         catch (error) {
-            console.log(`GenTemplate-> 获取资源失败`, error);
+            console.log(`[TNT] 获取资源失败`, error);
         }
     }
     // 整包解压
@@ -67,7 +71,8 @@ class GenTemplate {
         // 获取解压后的文件
         try {
             for (const filename of Object.keys(files)) {
-                const dest = path_1.default.join(savePath, filename);
+                // 将最上层 assets 文件夹去除掉
+                const dest = path_1.default.join(savePath, filename.replace("assets/", ""));
                 // 如果该文件为目录需先创建文件夹
                 if (files[filename].dir) {
                     if ((!fs_extra_1.default.existsSync(dest) || fs_extra_1.default.statSync(dest).isFile())) {
@@ -77,7 +82,6 @@ class GenTemplate {
                     }
                     continue;
                 }
-                console.log(`GenTemplate-> 写文件 ${filename}`, files[filename]);
                 // 把每个文件buffer写到硬盘中 
                 files[filename].async('nodebuffer')
                     .then(content => {
@@ -97,7 +101,7 @@ class GenTemplate {
     //  * @memberof GenTemplate
     //  */
     // async downloadFromGithub(flag: boolean = true) {
-    //     console.log(`GenTemplate-> 开始下载`);
+    //     console.log(`[TNT] 开始下载`);
     //     let octokit = new Octokit();
     //     let buffer = null;
     //     try {
@@ -108,11 +112,11 @@ class GenTemplate {
     //             ref: config.ref
     //         })
     //         buffer = res.data;
-    //         console.log(`GenTemplate-> 下载完成`);
+    //         console.log(`[TNT] 下载完成`);
     //     } catch (error) {
-    //         console.log(`GenTemplate-> 下载失败`, error);
+    //         console.log(`[TNT] 下载失败`, error);
     //         if (flag) {
-    //             console.log(`GenTemplate-> 使用本地静态模板`);
+    //             console.log(`[TNT] 使用本地静态模板`);
     //             // 下载失败使用本地静态资源
     //             buffer = await fs.readFile(staticSourceDir, { encoding: "binary" });
     //         }
@@ -126,7 +130,7 @@ class GenTemplate {
     //         return;
     //     }
     //     fs.emptyDirSync(path.join(config.path, "framework"));
-    //     console.log(`GenTemplate-> 开始解压`);
+    //     console.log(`[TNT] 开始解压`);
     //     jszip.loadAsync(buffer).then(zip => {
     //         let datas = [];
     //         zip.forEach(function (relativePath, file) {
@@ -137,7 +141,7 @@ class GenTemplate {
     //         let call = () => {
     //             let data = datas.shift();
     //             if (data == null) {
-    //                 console.log(`GenTemplate-> 解压完成`);
+    //                 console.log(`[TNT] 解压完成`);
     //                 return;
     //             }
     //             let newUrl = data.url.split(relativeFrameworkDir)[1];
@@ -165,21 +169,21 @@ class GenTemplate {
     //     return new Promise<void>((resolve,reject)=>{
     //       //解压 .zip
     //       compressing.zip.uncompress(source, dest).then((res) => {
-    //         console.log(`GenTemplate-> 解压成功`);
+    //         console.log(`[TNT] 解压成功`);
     //         resolve();
     //       }).catch(() => {
-    //         console.log(`GenTemplate-> 解压失败`);
+    //         console.log(`[TNT] 解压失败`);
     //         reject();
     //       });
     //     })
     // }
     // 复制
     async copyTo(src, dest) {
-        console.log(`GenTemplate-> 开始拷贝  从 ${src} 到 ${dest}`);
+        console.log(`[TNT] 开始拷贝  从 ${src} 到 ${dest}`);
         await fs_extra_1.default.copy(src, dest).then(() => {
-            console.log(`GenTemplate-> 拷贝成功`);
+            console.log(`[TNT] 拷贝成功`);
         }).catch(() => {
-            console.log(`GenTemplate-> 拷贝失败`);
+            console.log(`[TNT] 拷贝失败`);
         });
     }
 }
