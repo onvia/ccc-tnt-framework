@@ -106,13 +106,13 @@ export default class Demo extends Component implements IMVVMObject {
 
 ### 组件绑定数据 
 
-`tnt.vm.bind` 通用方法，当框架提供的接口不满足需求时，可以调用此接口，或自行扩展
-`tnt.vm.node` 绑定 `Node` 
-`tnt.vm.sprite` 绑定 `Sprite` 
-`tnt.vm.label` 绑定 `Label` 
-`tnt.vm.progressBar` 绑定 `ProgressBar` 
-`tnt.vm.silder` 绑定 `Silder` 
-`tnt.vm.for` 一般用做绑定数组，动态增加，删除，修改节点
+`tnt.vm.bind` 通用方法，当框架提供的接口不满足需求时，可以调用此接口，或自行扩展  
+`tnt.vm.node` 绑定 `Node`   
+`tnt.vm.sprite` 绑定 `Sprite`   
+`tnt.vm.label` 绑定 `Label`   
+`tnt.vm.progressBar` 绑定 `ProgressBar`   
+`tnt.vm.silder` 绑定 `Silder`   
+`tnt.vm.for` 一般用做绑定数组，动态增加，删除，修改节点   
 
 具体使用方式如下：
 ```
