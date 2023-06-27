@@ -1,0 +1,22 @@
+name: GitHub Release
+on:
+  push:
+    tags: 
+      - 'v*.*.*'
+jobs:
+  package-and-publish:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3 # If you're using actions/checkout@v2 you must set persist-credentials to false in most cases for the deployment to work correctly.
+    - name: Archive Release
+      uses: thedoctor0/zip-release@0.7.1
+      with:
+        type: 'zip'
+        filename: 'tnt.zip'
+        path: './assets/a-framework'
+    - name: Release  
+      uses: softprops/action-gh-release@v1
+      with:
+        files: tnt.zip
+        token: ${{ secrets.TNT_TOKEN }}
