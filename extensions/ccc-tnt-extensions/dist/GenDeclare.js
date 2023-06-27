@@ -13,6 +13,7 @@ class GenDeclare {
         let uiWindowScripts = await FileUtils_1.fileUtils.queryClass("UIWindowBase");
         let uiBaseScripts = await FileUtils_1.fileUtils.queryClass("UIBase");
         let sceneScripts = await FileUtils_1.fileUtils.queryClass("SceneBase");
+        // 
         this.arrayRemove(uiBaseScripts, (value) => {
             return value.className === "UIBase"
                 || value.className === "UIItem"
@@ -26,6 +27,7 @@ class GenDeclare {
         uiWindowScripts.forEach((_script) => {
             windowMappingTable[_script.className] = true;
         });
+        // 
         let sceneMappingTable = {};
         sceneScripts.forEach((_script) => {
             sceneMappingTable[_script.className] = true;

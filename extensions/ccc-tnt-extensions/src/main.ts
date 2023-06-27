@@ -29,7 +29,7 @@ export const methods: { [key: string]: (...any: any) => any } = {
     },
     /** 创建模板 */
     async createTemplete() {
-        // genTemplate.createTemplete();
+        genTemplate.createTemplete();
     },
 };
 

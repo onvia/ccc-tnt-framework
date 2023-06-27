@@ -17,10 +17,9 @@ exports.methods = {
         Editor.Panel.open(package_json_1.default.name);
     },
     panelOpen() {
-        console.log(`main-> panelOpen`);
     },
     sceneOpen(uuid) {
-        console.log(`main-> sceneOpen  ${uuid}`);
+        console.log(`tnt: SceneOpen [${uuid}]`);
     },
     /** 生成 UI 声明文件 */
     async genUIDeclare() {
