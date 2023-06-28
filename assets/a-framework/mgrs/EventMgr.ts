@@ -1,7 +1,7 @@
 
 
-import { _decorator, Component, Node } from 'cc';
-const { ccclass, property } = _decorator;
+import { _decorator, Node } from 'cc';
+const { ccclass } = _decorator;
 
 type _Callback = (...args) => void;
 
@@ -28,7 +28,7 @@ interface IHandler<T> {
     priority?: number,
 }
 
-interface IStickyHandler {
+interface IStickyEvent {
     key: string,
     value?: any,
 }
@@ -38,8 +38,8 @@ class EventMgr<T = any> implements IEventified {
 
     private _unuseHandlers: IHandler<T>[] = [];
     private _handlerMap: Record<string, IHandler<T>[]> = {};
-    private _stickyHandlerMap: Record<string, IStickyHandler[]> = {};
-    
+    private _stickyEventMap: Record<string, IStickyEvent[]> = {};
+
     public on(key: K2V<T> | IHandler<T> | IHandler<T>[], listener?: _Callback, target?: any, priority?: number, ...args: any) {
         this._on(key, listener, target, false, priority, ...args);
     }
@@ -90,7 +90,7 @@ class EventMgr<T = any> implements IEventified {
             return;
         }
 
-        this._stickyHandlerMap[key] = undefined;
+        this._stickyEventMap[key] = undefined;
         let handlers: IHandler<T>[] = this._handlerMap[key];
         if (handlers) {
             for (let i = handlers.length; i--;) {
@@ -126,14 +126,15 @@ class EventMgr<T = any> implements IEventified {
             return false;
         }
 
-        for (let i = 0; i < handlers.length; i++) {
+        // 防止在执行事件的时候删除当前回调，这里用倒叙的方式进行遍历
+
+        for (let i = handlers.length; i--;) {
             const handler = handlers[i];
             this._runHandlerWithData(handler, ...args);
 
             if (handler.once) {
                 handlers.splice(i, 1);
                 this._recoverHandler(handler);
-                i--;
             }
         }
 
@@ -150,24 +151,23 @@ class EventMgr<T = any> implements IEventified {
         if (handlerMap[key]) {
             this.emit(key as keyof T, ...args);
         } else {
-
-            let stickyMap = this._stickyHandlerMap;
+            let stickyMap = this._stickyEventMap;
             let stickyHandlers = stickyMap[key];
-            const handler: IStickyHandler = {
+            const handler: IStickyEvent = {
                 key: key as any,
-                value: [...args],
+                value: [...args]
             };
             if (!stickyHandlers) {
-                stickyMap[key] = stickyHandlers = [handler]
+                stickyMap[key] = stickyHandlers = [handler];
             } else {
-                stickyHandlers.push(handler)
+                stickyHandlers.push(handler);
             }
         }
     }
 
     public clear() {
         this._handlerMap = {};
-        this._stickyHandlerMap = {};
+        this._stickyEventMap = {};
     }
 
     public hasEventListener(key: K2V<T>, listener: _Callback, target: any) {
@@ -202,15 +202,15 @@ class EventMgr<T = any> implements IEventified {
             handlers.push(handler);
         }
 
-        // 排序
+        // 排序，派发事件时是倒叙执行所以这里优先级越大越靠后
         handlers.sort((a, b) => {
-            return b.priority - a.priority;
+            return a.priority - b.priority;
         });
 
-        const stickyMap = this._stickyHandlerMap;
+        const stickyMap = this._stickyEventMap;
         const stickyHandlers = stickyMap[handler.key as string];
         if (stickyHandlers) {
-            for (let i = 0; i < stickyHandlers.length; i++) {
+            for (let i = stickyHandlers.length; i--;) {
                 const stickyHandler = stickyHandlers[i];
                 this.emit(stickyHandler.key as keyof T, ...stickyHandler.value);
             }
@@ -274,4 +274,4 @@ class EventMgr<T = any> implements IEventified {
 
 tnt.eventMgr = EventMgr.getInstance();
 tnt.EventMgr = EventMgr;
-export {};
+export { };
