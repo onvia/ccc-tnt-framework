@@ -223,6 +223,10 @@ class AssetLoader {
         }
     }
 
+    public static getBundleWrap(name: string) {
+        let bundleWrap = this.loadedBundles.get(name);
+        return bundleWrap;
+    }
     public static getBundle(name: string) {
         let bundleWrap = this.loadedBundles.get(name);
         return bundleWrap?.bundle;
@@ -332,6 +336,13 @@ class AssetLoader {
     }
 
 
+    /**
+     * 只会释放当前 AssetLoader 持有的指定 Bundle 资源
+     *
+     * @param {string} bundleName
+     * @return {*} 
+     * @memberof AssetLoader
+     */
     public releaseBundle(bundleName: string) {
 
         let bundleWrap = this.getBundleAsset(bundleName);
@@ -490,8 +501,6 @@ class AssetLoader {
             pathBundle = pathObj.bundle;
         }
 
-
-
         let obj = this.parsingLoadArgs(_onProgress, _onComplete, _bundle);
 
         let { onProgress, onComplete, bundle } = obj;
@@ -535,12 +544,9 @@ class AssetLoader {
     public loadArray<T extends Asset>(paths: string[], type: CCAssetType<T>, _onProgress?: CCProgressCallback, _onComplete?: CCCompleteCallbackWithData<T[]>, _bundle?: Bundle | string)
     public loadArray<T extends Asset>(paths: string[], type: CCAssetType<T>, _onProgress?: CCProgressCallback | CCCompleteCallbackWithData<T[]> | Bundle | string, _onComplete?: CCCompleteCallbackWithData<T[]> | Bundle | string, _bundle?: Bundle | string) {
 
-
-        // const id = this.computeLoadCount();
         this._addCount();
 
         let { onProgress, onComplete, bundle } = this.parsingLoadArgs(_onProgress, _onComplete, _bundle);
-
 
         let _level = this._level;
         this.loadBundleWrap(bundle, (err, bundleWrap) => {
@@ -565,6 +571,9 @@ class AssetLoader {
                 onProgress?.(finish, total, item);
             }, (error: Error, assets: T[]) => {
                 this._decCount();
+                if (_level != this._level) {
+                    return;
+                }
                 if (error) {
                     onComplete?.(error, assets);
                     return;
@@ -597,9 +606,6 @@ class AssetLoader {
                     return;
                 }
 
-                if (_level != this._level) {
-                    return;
-                }
                 this.onLoadArrayComplete(paths, assets, bundleWrap.bundle);
                 onComplete?.(error, assets);
             });
@@ -612,7 +618,7 @@ class AssetLoader {
     public load<T extends Asset>(path: string, type: CCAssetType<T>, _onProgress?: CCProgressCallback, _onComplete?: CCCompleteCallbackWithData<T>, _bundle?: Bundle | string)
     public load<T extends Asset>(path: string, type: CCAssetType<T>, _onProgress?: CCProgressCallback | CCCompleteCallbackWithData<T> | Bundle | string, _onComplete?: CCCompleteCallbackWithData<T> | Bundle | string, _bundle?: Bundle | string) {
 
-        // const id = this.computeLoadCount();
+
         this._addCount();
         let _level = this._level;
         let pathObj = this.parsePath(path);
@@ -637,17 +643,6 @@ class AssetLoader {
             }
 
             let u_path = this.jointKey(bundleWrap.name, path);
-            // // 判断是否有缓存
-            // let asset = this._cache.get(u_path, type);
-            // if (asset) {
-            //     // 需要一个异步的过程
-            //     setTimeout(() => {
-            //         asset.addRef();
-            //         let _asset: Asset = asset.asset;
-            //         onComplete?.(null, _asset);
-            //     }, 0);
-            //     return;
-            // }
 
             bundleWrap.bundle.load(path, type as any, (finish: number, total: number, item) => {
                 if (_level != this._level || !this.isValid) {
@@ -656,10 +651,12 @@ class AssetLoader {
                 onProgress?.(finish, total, item);
             }, (error: Error, asset: T) => {
                 this._decCount();
+                if (_level != this._level) {
+                    return;
+                }
                 if (error) {
                     onComplete?.(error, asset);
                 } else {
-
                     if (!this.isValid) {
                         asset.addRef();
                         asset.decRef();
@@ -682,9 +679,7 @@ class AssetLoader {
                     assetWrap.addRef();
                     this._cache.set(u_path, assetWrap);
 
-                    if (_level != this._level) {
-                        return;
-                    }
+
                     this.onLoadComplete(path, asset, bundleWrap.bundle);
                     onComplete?.(error, asset);
                 }
@@ -726,7 +721,7 @@ class AssetLoader {
     public loadDir<T extends Asset>(dir: string, type: CCAssetType<T>, _onProgress?: CCProgressCallback, _onComplete?: CCCompleteCallbackWithData<T[]>, _bundle?: Bundle | string)
     public loadDir<T extends Asset>(dir: string, type: CCAssetType<T>, _onProgress?: CCProgressCallback | CCCompleteCallbackWithData<T[]> | Bundle | string, _onComplete?: CCCompleteCallbackWithData<T[]> | Bundle | string, _bundle?: Bundle | string) {
 
-        // const id = this.computeLoadCount();
+
         this._addCount();
         let _level = this._level;
         let pathObj = this.parsePath(dir);
@@ -750,6 +745,10 @@ class AssetLoader {
                 onProgress?.(finish, total, item);
             }, (error: Error, assets: Array<T>) => {
                 this._decCount();
+                if (_level != this._level) {
+                    return;
+                }
+
                 if (error) {
                     onComplete?.(error, assets);
                     return;
@@ -784,9 +783,6 @@ class AssetLoader {
                     return;
                 }
 
-                if (_level != this._level) {
-                    return;
-                }
                 this.onLoadDirComplete(path, assets, bundleWrap.bundle);
                 onComplete?.(error, assets);
             });

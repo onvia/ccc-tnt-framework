@@ -42,9 +42,9 @@ export class DemoVMBindUnBind extends tnt.SceneBase implements IMVVMObject {
         tnt.vm.label(this, this.levelLabel, "userData.level");
 
         // 增加角度监听
-        this.onClickAddStartAngle()
+        this.onClickAddStartAngle();
         // 增加缩放监听
-        this.onClickAddStartScale()
+        this.onClickAddStartScale();
 
         // logo 透明度
         tnt.vm.bind(this, this.logo.uiOpacity, "userData.level", (opts) => {

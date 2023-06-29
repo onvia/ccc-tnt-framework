@@ -1,8 +1,8 @@
-import { Component, Label, Node, Sprite, EditBox, ProgressBar, RichText, Slider, Toggle, UIOpacity, UIRenderer, js, UITransform, isValid, SpriteFrame } from "cc";
+import { Component, Label, Node, Sprite, EditBox, ProgressBar, RichText, Slider, Toggle, UIOpacity, UIRenderer, js, UITransform, isValid, SpriteFrame, Button } from "cc";
 import { DEBUG } from "cc/env";
 import { GVMTween } from "./VMTween";
 import { isArray } from "./VMGeneral";
-import { VMBaseAttr, BaseAttrBind, WatchPath, Formator, ReturnValueType, VMForAttr, SpriteAttrBind, VMSpriteAttr, LabelAttrBind, BaseValueType } from "./_mv_declare";
+import { VMBaseAttr, BaseAttrBind, WatchPath, Formator, ReturnValueType, VMForAttr, SpriteAttrBind, VMSpriteAttr, LabelAttrBind, BaseValueType, VMEventAttr, DataChanged } from "./_mv_declare";
 import * as VMFatory from "./VMFactory";
 import { VMHandlerName } from "./VMFactory";
 import { handlerMap, IVMObserveAutoUnbind, proxyMap, Raw, rawDepsMap, rawMap, rawNameMap, targetMap, unbindMap } from "./reactivity/_internals";
@@ -36,6 +36,7 @@ _defaultKey.set(Node, "active");
 _defaultKey.set(UIOpacity, "opacity");
 _defaultKey.set(UIRenderer, "color");
 _defaultKey.set(UITransform, "contentSize");
+_defaultKey.set(Button, "interactable");
 
 // 默认的格式化方法
 const _defaultFormator: WeakMap<Object, Record<string, Formator<any, any>>> = new WeakMap();
@@ -299,15 +300,30 @@ class VM {
         this._collect(target, parent, attr);
     }
 
-    // public click() {
-
-    // }
+    /**
+     * 监听
+     * 
+     * @param {IMVVMObject} mvvmObject
+     * @param {WatchPath} watchPath
+     * @param {*} formator
+     * @memberof VM
+     */
+    public event(mvvmObject: IMVVMObject,watchPath: WatchPath,formator: DataChanged) {
+        let attr: VMEventAttr = {
+            _handler: VMHandlerName.Event,
+            onChange: formator,
+            watchPath
+        }
+        
+        attr.watchPath = _parseWatchPath(attr.watchPath, mvvmObject._vmTag);
+        this._collect(mvvmObject, mvvmObject as any, attr);
+    }
 
     private _collect<T extends Component | Node>(mvvmObject: IMVVMObject, bindObject: T, attr: VMBaseAttr<any>) {
         let handlerArray = handlerMap.get(bindObject) || [];
         for (let i = 0; i < handlerArray.length; i++) {
             const _vmTrigger = handlerArray[i];
-            if (_vmTrigger.attr._targetPropertyKey === attr._targetPropertyKey) {
+            if (attr._targetPropertyKey && _vmTrigger.attr._targetPropertyKey === attr._targetPropertyKey) {
                 DEBUG && console.warn(`_mvvm-> [${bindObject.name}] 组件的属性 [${attr._targetPropertyKey}] 已经有相同的处理`);
                 return;
             }

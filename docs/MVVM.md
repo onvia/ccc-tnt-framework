@@ -1,6 +1,10 @@
 
 # MVVM
 
+## 简介
+
+纯代码方式的 mvvm 工具，对组件属性绑定数据，通过修改数据来控制 UI 表现。  
+原理是使用 Proxy 对数据进行代理，当修改数据时调用相应的处理方法对绑定的属性进行设置。
 
 ## 项目结构
 项目所有脚本文件都在 `assets\a-framework\mvvm` 中
@@ -14,9 +18,10 @@
 
 
 ## 用法
+
 ### 监听数据、取消监听  tnt.vm.observe/tnt.vm.violate
 
-被监听的数据必须是一个对象，而不能是基础类型。原理是使用 `Proxy` 对数据进行代理。
+被监听的数据必须是一个对象，而不能是基础类型。
 
 1. 如果是全局数据，调用方式为：
 ```
@@ -47,6 +52,8 @@ userData.level ++; // 数据修改后，会通知监听者
 ```
 // 全局自由使用路径
 tnt.vm.setValue("userData.level",2);
+// 获取数据
+tnt.vm.getValue("userData.level",0);
 ```
 
 如果全局用户数据存在于整个游戏生命周期内，则不需要取消监听。
@@ -107,12 +114,13 @@ export default class Demo extends Component implements IMVVMObject {
 ### 组件绑定数据 
 
 `tnt.vm.bind` 通用方法，当框架提供的接口不满足需求时，可以调用此接口，或自行扩展  
-`tnt.vm.node` 绑定 `Node`   
-`tnt.vm.sprite` 绑定 `Sprite`   
-`tnt.vm.label` 绑定 `Label`   
-`tnt.vm.progressBar` 绑定 `ProgressBar`   
-`tnt.vm.silder` 绑定 `Silder`   
-`tnt.vm.for` 一般用做绑定数组，动态增加，删除，修改节点   
+`tnt.vm.node` 绑定 `Node`，默认属性 `active`    
+`tnt.vm.sprite` 绑定 `Sprite`，默认属性 `spriteFrame`   
+`tnt.vm.label` 绑定 `Label`，默认属性 `string`    
+`tnt.vm.progressBar` 绑定 `ProgressBar`，默认属性 `progress`   
+`tnt.vm.silder` 绑定 `Silder`，默认属性 `progress`   
+`tnt.vm.for` 一般用做绑定数组，动态增加，删除，修改节点，数据量过多的时候尽量不要使用这种方式，渲染节点太多会出现效率问题   
+`tnt.vm.unbind`  解除绑定，对单个组件/节点 解绑数据
 
 具体使用方式如下：
 ```
@@ -146,21 +154,22 @@ export default class Demo extends Component implements IMVVMObject {
     tempData: typeof _tempData = null;
 
 
-    onEnable(){       
+    onEnable(){
+        //
         //...
         //...
 
         // 这里有多种调用方式
         //1. 使用 *.count 的方式监听数据，则监听的当前组件内的 data 数据，程序会自动将 * 替换成 当前 IMVVMObject 的标签
-        tnt.vm.label(this, this.label, '*.count'); // 只对 string 进行数据监听
+        tnt.vm.label(this, this.label, '*.count'); // 只对默认属性 string 进行绑定
         
-        //2. 只对 string 进行数据监听
+        //2. 只对 string 进行绑定
         tnt.vm.label(this, this.label, '*.count',(opts)=>{
             // 这里可以对数据进行二次处理
             return Math.max(0,opts.newValue);
         }); 
         
-        //3. 多个属性的数据监听
+        //3. 多个属性的绑定
         tnt.vm.label(this, this.label, {
             string: {
                 watchPath: '*.count',
@@ -171,7 +180,7 @@ export default class Demo extends Component implements IMVVMObject {
                     return opts.newValue;
                 }
             },
-            color: "*.color", // 对颜色进行监听
+            color: "*.color", // 对颜色进行绑定
         });
 
         // 监听野生数据， 野生参数需要传入完整监听路径

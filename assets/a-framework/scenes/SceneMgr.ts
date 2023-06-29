@@ -176,7 +176,7 @@ class SceneMgr extends tnt.EventMgr implements ISceneListener {
             let nextScene = root.addComponent(clazz as GConstructor<T>);
             (clazz as GConstructor<T>).prototype.prefabUrl = enterSceneName;
             (clazz as GConstructor<T>).prototype.bundle = options?.bundle || "main";
-            
+
 
             nextScene.updateOptions(options?.sceneOptions);
             nextScene.onCreate();
@@ -209,14 +209,34 @@ class SceneMgr extends tnt.EventMgr implements ISceneListener {
                     },
                     (err, sceneAsset: SceneAsset) => {
                         resolve(sceneAsset);
+
+                        let bundleName = options?.bundle;
+                        if (!bundleName) {
+                            let bundle = assetManager.bundles.find((bundle) => {
+                                return !!bundle.getSceneInfo(nextSceneName);
+                            });
+                            bundleName = bundle.name;
+                            // 设置 bundle
+                            options = Object.assign(options || {}, { bundle: bundleName });
+                        }
+
+                        // bundle 增加引用
+                        let bundleWrap = tnt.AssetLoader.getBundleWrap(bundleName);
+                        bundleWrap?.addRef();
                     }, options?.bundle);
             })
         }
 
 
         if (sceneAsset) {
-            let currentScene = this.currentScene;
-            let exitSceneName = currentScene?.scene?.name;
+            let exitScene = this.currentScene;
+            let exitSceneName = exitScene?.scene?.name;
+
+            let exitBundleName = exitScene?.bundle as any;
+            if (typeof exitBundleName == 'function') {
+                exitBundleName = exitBundleName(exitScene.options);
+            }
+            let exitBundleWrap = tnt.AssetLoader.getBundleWrap(exitBundleName);
             this.onExitTransitionStart(exitSceneName);
             tween(uiOpacity)
                 .to(pure ? 0 : 0.5 * duration, { opacity: pure ? 0 : 255 })
@@ -233,9 +253,12 @@ class SceneMgr extends tnt.EventMgr implements ISceneListener {
                     tnt.uiMgr.closeAllWindow();
                     director.runSceneImmediate(sceneAsset, () => {
                         this.onExitTransitionFinished(exitSceneName);
-                        currentScene?.onExit();
+                        exitScene?.onExit();
                         // 释放当前场景所加载的资源
-                        currentScene && tnt.loaderMgr.releaseLoader(currentScene?.loaderKey);
+                        exitScene && tnt.loaderMgr.releaseLoader(exitScene?.loaderKey);
+
+                        // Bundle 减小引用
+                        exitBundleWrap?.decRef();
                         tnt.loaderMgr.scene = null;
                     }, onLaunched);
                 })

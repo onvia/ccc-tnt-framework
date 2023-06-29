@@ -140,7 +140,7 @@ export class LoaderMgr {
     }
 
     /**
-     * 释放整个 Bundle
+     * 释放指定 Bundle 中所有的资源
      *
      * @param {string} bundleName
      * @memberof LoaderMgr

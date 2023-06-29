@@ -1,6 +1,7 @@
 
-import { _decorator, Component, Node, sys } from 'cc';
-const { ccclass, property } = _decorator;
+import { _decorator, Node, sys } from 'cc';
+import { DEBUG } from 'cc/env';
+const { ccclass } = _decorator;
 
 
 
@@ -10,8 +11,8 @@ declare global {
     }
 
     interface IStorageEncode {
-        encode(value: string);
-        decode(value: string)
+        encode(value: string): string;
+        decode(value: string): string;
     }
 }
 
@@ -24,9 +25,15 @@ class StorageMgr {
         this.prefix = val;
     }
     saveWithPrefix(key: string, value: any) {
+        if (!this.prefix) {
+            DEBUG && console.warn(`StorageMgr-> 本地存储前缀不存在`);
+        }
         this.save(this.prefix + ":" + key, value);
     }
     loadWithPrefix(key: string, _defalut?: any) {
+        if (!this.prefix) {
+            DEBUG && console.warn(`StorageMgr-> 本地存储前缀不存在`);
+        }
         return this.load(this.prefix + ":" + key, _defalut);
     }
     save(key: string, value: any) {

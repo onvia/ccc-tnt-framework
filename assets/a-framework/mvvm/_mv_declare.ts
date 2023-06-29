@@ -8,6 +8,7 @@ export type ReturnValueType = BaseValueType | boolean | CCObject | ValueType | o
 
 export type FormatorOpts = { handler: VMBaseHandler, newValue: any, oldValue?: any, node?: Node, /*nodeIdx?: number,*/ watchPath?: WatchPath, readonly attr?: VMBaseAttr };
 export type Formator<T, E> = (options: FormatorOpts & E) => T | Promise<T> | T[] | Promise<T[]>;
+export type DataChanged = (options: { handler: VMBaseHandler, newValue: any, oldValue?: any, watchPath?: WatchPath, readonly attr?: VMBaseAttr }) => void;
 export interface IVMItem {
     updateItem(data, index, ...args);
 }
@@ -73,6 +74,18 @@ export interface VMLabelAttr<R> extends VMCustomAttr<R> {
      * 最大字符串长度
      * */
     maxLength?: number;
+}
+
+export interface VMEventAttr extends VMBaseAttr {
+
+    /** @deprecated 在 VMEventAttr 中不要使用这个属性 */
+    tween?: null;
+
+    /** @deprecated 在 VMEventAttr 中不要使用这个属性 */
+    formator?: null;
+
+    /** 数据发生改变 */
+    onChange: DataChanged;
 }
 
 

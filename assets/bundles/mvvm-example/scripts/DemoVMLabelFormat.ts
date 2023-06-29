@@ -1,6 +1,11 @@
 import { _decorator, Component, Node, Vec3, Label } from 'cc';
 const { ccclass, property } = _decorator;
 
+
+/**
+ * 当前例子是对数据进行各种格式化
+ *
+ */
 @ccclass('DemoVMLabelFormat')
 export class DemoVMLabelFormat extends tnt.SceneBase {
 

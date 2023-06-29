@@ -5,6 +5,8 @@ const { ccclass, property } = _decorator;
 @ccclass('DemoVMNormal')
 export class DemoVMNormal extends tnt.SceneBase implements IMVVMObject {
     static map = new WeakMap();
+
+    // 数据
     data = {
         name: '小明',
         info: 'xin',
@@ -30,6 +32,7 @@ export class DemoVMNormal extends tnt.SceneBase implements IMVVMObject {
         color: new Color(255, 1, 234, 255),
     }
 
+    // 当前例子中没有组件与 data2 数据进行绑定
     data2 = {
         array: [
             { name: 'sn1', age: 18, sex: 0 },
@@ -40,8 +43,10 @@ export class DemoVMNormal extends tnt.SceneBase implements IMVVMObject {
     }
 
     onEnterTransitionStart(sceneName?: string): void {
+        // 监听数据 data
         tnt.vm.observe(this);
 
+        this.testEvent();
         this.testLabel();
         this.testSprite();
         this.testProgressBar();
@@ -49,6 +54,7 @@ export class DemoVMNormal extends tnt.SceneBase implements IMVVMObject {
         this.testNodeActive();
 
 
+        // 修改数据
         this.schedule(() => {
             this.data.icon = this.data2.icon.random();
             this.data.diamond = math.randomRangeInt(10, 9999);
@@ -61,12 +67,27 @@ export class DemoVMNormal extends tnt.SceneBase implements IMVVMObject {
         }, 15, 999, 0.5);
     }
 
+    testEvent() {
+
+        tnt.vm.event(this, "*.diamond", (otps) => {
+            console.log(`DemoVMNormal-> `, otps.newValue);
+
+        });
+        tnt.vm.event(this, ["*.diamond", "*.maxGold"], (otps) => {
+            console.log(`DemoVMNormal-> `, otps.newValue);
+
+        });
+    }
     testLabel() {
         let label1: Label = this.getLabelByName("vmLabel1");
         let label2: Label = this.getLabelByName("vmLabel2");
         let label3: Label = this.getLabelByName("vmLabel3");
 
 
+        // 简单的绑定数据
+        // tnt.vm.label(this, label3, "*.diamond"); // 绑定数据 Label 默认为 string ，这里绑定的是 data.diamond
+
+        // 双向绑定
         tnt.vm.label(this, label3, {
             string: {
                 isBidirection: true,
@@ -74,6 +95,7 @@ export class DemoVMNormal extends tnt.SceneBase implements IMVVMObject {
             }
         });
 
+        // 同时绑定多个属性
         tnt.vm.label(this, label2, {
             "string": {
                 isBidirection: true,
@@ -83,6 +105,7 @@ export class DemoVMNormal extends tnt.SceneBase implements IMVVMObject {
             'color': "*.color",
         });
 
+        // 定制数据，并通过缓动显示
         tnt.vm.label(this, label1, {
             "string": {
                 watchPath: ["*.array.0.age", "*.gold", "*.maxGold"],
@@ -103,7 +126,13 @@ export class DemoVMNormal extends tnt.SceneBase implements IMVVMObject {
 
     testProgressBar() {
         let progressBar: ProgressBar = this.getProgressBarByName("vmProgressBar");
-        // 会自动对两个参数进行除法处理  这里是  gold/maxGold = 0-1
+
+        // 会自动对两个参数进行除法处理  这里是  gold/maxGold = 值范围 0~1
+
+        // 简单用法
+        // tnt.vm.progressBar(this, progressBar.node,["*.gold", "*.maxGold"]);
+
+        // 使用缓动
         tnt.vm.progressBar(this, progressBar.node, {
             'progress': {
                 watchPath: ["*.gold", "*.maxGold"],
@@ -147,6 +176,5 @@ export class DemoVMNormal extends tnt.SceneBase implements IMVVMObject {
 
     protected onDestroy(): void {
         tnt.vm.violate(this);
-        tnt.vm.violate("data2");
     }
 }
