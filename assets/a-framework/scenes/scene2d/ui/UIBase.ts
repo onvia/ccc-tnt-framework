@@ -46,10 +46,11 @@ class UIBase<Options = any> extends tnt.GComponent<Options> implements IUIAble {
      * @param {ITouch} touch
      * @param {*} [target]
      * @param {Node} [parent]
+     * @param {boolean} [useCapture]
      * @memberof UIBase
      */
-    public registerNodeTouchEvent(node: NodeNoun<Node>, touch: ITouch, target?: any, parent?: Node) {
-        tnt.componentUtils.registerNodeTouchEvent(node, touch, target || this, this.node, parent);
+    public registerNodeTouchEvent(node: NodeNoun<Node>, touch: ITouch, target?: any, parent?: Node, useCapture?: boolean) {
+        tnt.componentUtils.registerNodeTouchEvent(node, touch, target || this, this.node, parent, useCapture);
     }
 
     /**
@@ -75,7 +76,7 @@ class UIBase<Options = any> extends tnt.GComponent<Options> implements IUIAble {
      * @param {Node} [parent]
      * @memberof UIBase
      */
-    public registerNodeLongTouchEvent(node: NodeNoun<Node>, touchInterval: number, callback: Runnable1<number>, target: any, parent?: Node) {
+    public registerNodeLongTouchEvent(node: NodeNoun<Node>, touchInterval: number, callback: Runnable1<number>, target?: any, parent?: Node) {
         tnt.componentUtils.registerNodeLongTouchEvent(node, touchInterval, callback, target || this, this.node, parent);
     }
 
@@ -93,7 +94,7 @@ class UIBase<Options = any> extends tnt.GComponent<Options> implements IUIAble {
     }
 
     /**
-     * 注册复选框点击事件
+     * 注册选框点击事件
      *
      * @param {NodeNoun<Toggle>} node
      * @param {Runnable1<Toggle>} callback
@@ -106,7 +107,7 @@ class UIBase<Options = any> extends tnt.GComponent<Options> implements IUIAble {
     }
 
     /**
-     * 注册复选框组事件
+     * 注册选框组事件
      *
      * @param {NodeNoun<ToggleContainer>} node
      * @param {Runnable1<string>} callback
@@ -121,7 +122,7 @@ class UIBase<Options = any> extends tnt.GComponent<Options> implements IUIAble {
     }
 
     /**
-     * 手动设置选中复选框，搭配 `registerToggleGroupEvent` 使用，只有在需要代码设置选中的时候才需要调用
+     * 手动设置选中选框，搭配 `registerToggleGroupEvent` 使用，只有在需要代码设置选中的时候才需要调用
      *
      * @param {NodeNoun<ToggleContainer>} toggleContainerOrName
      * @param {string} toggleName
@@ -163,7 +164,7 @@ class UIBase<Options = any> extends tnt.GComponent<Options> implements IUIAble {
     public getSilderByName(name: string, parent?: Node): Slider {
         return this.findComponent(name, Slider, parent);
     }
-    
+
     public setLabelText(name: NodeNoun<Node>, text: string | number, parent?: Node) {
         let label: Label = null;
         if (name instanceof Node) {

@@ -7,6 +7,11 @@ interface ISceneConfig {
 
 export const SceneConfig: ISceneConfig[] = [
     {
+        scene: "BaseDemo",
+        button: "基础接口",
+        bundle: "test-example"
+    },
+    {
         scene: "DragDropScene",
         button: "拖放",
         bundle: "drag-drop-example",
@@ -30,5 +35,10 @@ export const SceneConfig: ISceneConfig[] = [
         scene: "TiledMapOrientationDemo",
         button: "TiledMap",
         bundle: "tiled-map-example"
+    },
+    {
+        scene: "LongPressDemo",
+        button: "长按按钮",
+        bundle: "test-example"
     },
 ]
