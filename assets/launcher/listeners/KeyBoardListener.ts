@@ -1,5 +1,5 @@
 
-import { director, EventKeyboard, js, KeyCode, _decorator } from "cc";
+import { director, EventKeyboard, Node, find, js, KeyCode, v3, _decorator, Canvas } from "cc";
 import { SceneConfig } from "../SceneConfig";
 const { ccclass, property } = _decorator;
 
@@ -9,7 +9,27 @@ const { ccclass, property } = _decorator;
 export class KeyBoardListener implements IKeyboard {
     count = 0;
     private constructor() {
+        let btnBack = find("Canvas/btnBack");
+        // let worldPos = btnBack.uiTransform.convertToWorldSpaceAR(v3());
+        btnBack.removeFromParent();
+        btnBack.sprite.spriteFrame.addRef();
+        tnt.componentUtils.registerButtonClick(btnBack, () => {
+            this.onKeyBack(null)
+        }, this, null);
 
+
+
+        let canvasNode = new Node();
+        canvasNode.addComponent(Canvas);
+
+        let canvas = find("Canvas");
+        canvasNode.position = canvas.position.clone();
+        canvasNode.name = "BackBtnCanvas";
+        director.addPersistRootNode(canvasNode);
+        btnBack.parent = canvasNode;
+        
+        // let localPos = btnBack.uiTransform.convertToNodeSpaceAR(worldPos);
+        // btnBack.setPosition(localPos);
     }
     onKeyBack(event: EventKeyboard) {
 
@@ -32,11 +52,11 @@ export class KeyBoardListener implements IKeyboard {
 
         this.toScene(preScene, () => {
             let config = this.getSceneConfig(preScene);
-            if(config){               
+            if (config) {
                 tnt.sceneMgr.to(config.scene as any, { bundle: config.bundle });
                 return;
             }
-            
+
             tnt.sceneMgr.to("MainScene", { bundle: "main-scene" });
         });
     }

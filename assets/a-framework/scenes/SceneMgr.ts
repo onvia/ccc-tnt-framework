@@ -185,6 +185,7 @@ class SceneMgr extends tnt.EventMgr implements ISceneListener {
             this.currentScene = nextScene;
             tnt.uiMgr._recoverStaged(enterSceneName, this.previousSceneName);
             this.onEnterTransitionStart(enterSceneName);
+            // 蒙版渐隐
             tween(uiOpacity)
                 .to(pure ? 0 : 0.627 * duration, { opacity: pure ? 0 : 160 })
                 .call(() => {
@@ -238,6 +239,7 @@ class SceneMgr extends tnt.EventMgr implements ISceneListener {
             }
             let exitBundleWrap = tnt.AssetLoader.getBundleWrap(exitBundleName);
             this.onExitTransitionStart(exitSceneName);
+             // 蒙版渐显
             tween(uiOpacity)
                 .to(pure ? 0 : 0.5 * duration, { opacity: pure ? 0 : 255 })
                 .call(() => {
