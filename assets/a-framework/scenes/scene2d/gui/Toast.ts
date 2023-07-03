@@ -1,4 +1,4 @@
-import { Node, Canvas, director, instantiate, Layers, Prefab, resources, UITransform, v3, Label, UIOpacity, tween, Tween, easing } from "cc";
+import { Node, Canvas, director, instantiate, Layers, Prefab, resources, UITransform, v3, Label, UIOpacity, tween, Tween, easing, Director } from "cc";
 
 
 
@@ -184,7 +184,7 @@ class Toast {
     }
 
 
-    clear() {
+    clear() {        
         this.toastArray.forEach((toast) => {
             let opacityCom = toast.getComponent(UIOpacity)
             Tween.stopAllByTarget(toast);
@@ -192,6 +192,7 @@ class Toast {
             toast.destroy();
         });
         this.toastArray.length = 0;
+        this.singleMap = {};
     }
 
 
@@ -199,6 +200,10 @@ class Toast {
     public static getInstance(): Toast {
         if (!this.instance) {
             this.instance = new Toast();
+            // 加载新场景前清空当前显示的 Toast
+            director.on(Director.EVENT_BEFORE_SCENE_LOADING,()=>{
+                this.instance.clear();
+            })
         }
         return this.instance;
     }

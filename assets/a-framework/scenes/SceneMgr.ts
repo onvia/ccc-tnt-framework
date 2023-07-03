@@ -1,4 +1,4 @@
-import { Node, AssetManager, assetManager, BlockInputEvents, Canvas, Color, director, find, game, js, Layers, log, Scene, SceneAsset, Sprite, SpriteFrame, tween, UIOpacity, UITransform, view, _decorator } from "cc";
+import { Node, AssetManager, assetManager, BlockInputEvents, Canvas, Color, director, find, game, js, Layers, log, Scene, SceneAsset, Sprite, SpriteFrame, tween, UIOpacity, UITransform, view, _decorator, Director } from "cc";
 const { ccclass } = _decorator;
 
 
@@ -202,6 +202,8 @@ class SceneMgr extends tnt.EventMgr implements ISceneListener {
         }
 
         if (!sceneAsset) {
+            
+            director.emit(Director.EVENT_BEFORE_SCENE_LOADING, nextSceneName);
             sceneAsset = await new Promise<SceneAsset>((resolve, reject) => {
                 let loader = tnt.loaderMgr.share;
                 loader.loadScene(nextSceneName,
