@@ -5,7 +5,7 @@ const { ccclass, property } = _decorator;
 
 @ccclass('TiledMapOrientationDemo')
 export class TiledMapOrientationDemo extends tnt.SceneBase implements ITouch, IMouse, IMVVMObject {
-    
+
     tiledMap: TiledMap = null;
     gameCamera: Camera = null;
     layer: TiledLayer = null;
@@ -24,14 +24,14 @@ export class TiledMapOrientationDemo extends tnt.SceneBase implements ITouch, IM
         this.bindView();
 
 
-        this.registerToggleGroupEvent("ToggleGroup", {onChecked: this.onChecked,onUnChecked: this.onUnChecked});
+        this.registerToggleGroupEvent("ToggleGroup", { onChecked: this.onChecked, onUnChecked: this.onUnChecked });
         this.toggleCheck("ToggleGroup", "ToggleHexagonalX");
     }
 
     bindView() {
         tnt.vm.label(this, this.getNodeByName("tiledCoord"), "*.tiledCoord");
-        tnt.vm.label(this, this.getNodeByName("worldCoord"), "*.worldCoord" );
-        tnt.vm.label(this, this.getNodeByName("screenCoord"),  "*.screenCoord" );
+        tnt.vm.label(this, this.getNodeByName("worldCoord"), "*.worldCoord");
+        tnt.vm.label(this, this.getNodeByName("screenCoord"), "*.screenCoord");
 
     }
 
@@ -51,6 +51,9 @@ export class TiledMapOrientationDemo extends tnt.SceneBase implements ITouch, IM
             case "ToggleOrthogonal":
                 tileMapName = "map_orthogonal";
                 break;
+            case "ToggleStaggered":
+                tileMapName = "map_hexagonal_simulation_staggered";
+                break;
             default:
                 break;
         }
@@ -60,7 +63,7 @@ export class TiledMapOrientationDemo extends tnt.SceneBase implements ITouch, IM
         this.gameCamera = this.findComponent("Camera", Camera, GameCanvas, this.scene);
 
         // 隐藏之前的
-        if(this.tiledMap){
+        if (this.tiledMap) {
             this.tiledMap.node.active = false;
         }
 
@@ -75,8 +78,8 @@ export class TiledMapOrientationDemo extends tnt.SceneBase implements ITouch, IM
         mapBg.position = this.tiledMap.node.position;
     }
 
-    onUnChecked(toggle: Toggle, name: string){
-        
+    onUnChecked(toggle: Toggle, name: string) {
+
     }
 
     onExit(): void {

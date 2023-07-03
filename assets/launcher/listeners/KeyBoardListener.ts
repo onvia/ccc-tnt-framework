@@ -27,7 +27,7 @@ export class KeyBoardListener implements IKeyboard {
         canvasNode.name = "BackBtnCanvas";
         director.addPersistRootNode(canvasNode);
         btnBack.parent = canvasNode;
-        
+
         // let localPos = btnBack.uiTransform.convertToNodeSpaceAR(worldPos);
         // btnBack.setPosition(localPos);
     }
@@ -47,10 +47,12 @@ export class KeyBoardListener implements IKeyboard {
 
         let preScene = tnt.sceneMgr.getPreviousScene();
         if (!preScene) {
+            
+            tnt.toast.show(`无法返回上一场景`, 1.5, 0, true);
             return;
         }
 
-        this.toScene(preScene, () => {
+        let changeScene = () => {
             let config = this.getSceneConfig(preScene);
             if (config) {
                 tnt.sceneMgr.to(config.scene as any, { bundle: config.bundle });
@@ -58,7 +60,15 @@ export class KeyBoardListener implements IKeyboard {
             }
 
             tnt.sceneMgr.to("MainScene", { bundle: "main-scene" });
-        });
+        };
+        // event 事件不存在，代表按的是界面上的按钮，直接跳转
+        if (!event) {
+            changeScene();
+            return;
+        }
+
+
+        this.toScene(preScene, changeScene);
     }
 
     toScene(preScene, toFn: () => void) {
@@ -66,7 +76,6 @@ export class KeyBoardListener implements IKeyboard {
             return;
         }
         if (this.count >= 1) {
-            tnt.toast.clear();
             this.count = 0;
             toFn();
         } else {

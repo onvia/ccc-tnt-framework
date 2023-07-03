@@ -1,20 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.2" tiledversion="1.3.5" orientation="hexagonal" renderorder="left-down" width="10" height="8" tilewidth="74" tileheight="64" infinite="0" hexsidelength="40" staggeraxis="x" staggerindex="even" nextlayerid="3" nextobjectid="2">
+<map version="1.2" tiledversion="1.3.5" orientation="hexagonal" renderorder="left-down" width="10" height="6" tilewidth="74" tileheight="64" infinite="0" hexsidelength="40" staggeraxis="x" staggerindex="even" nextlayerid="3" nextobjectid="2">
  <tileset firstgid="1" name="tiles" tilewidth="74" tileheight="64" tilecount="1" columns="0">
   <grid orientation="orthogonal" width="1" height="1"/>
   <tile id="1">
    <image width="74" height="64" source="g_hex_x.png"/>
   </tile>
  </tileset>
- <layer id="1" name="layer" width="10" height="8">
+ <layer id="1" name="layer" width="10" height="6">
   <data encoding="csv">
 2,2,2,2,2,2,2,2,2,2,
-2,2,0,0,0,0,0,2,2,0,
-2,0,2,2,0,0,2,0,2,0,
-2,0,2,2,0,2,2,0,2,2,
-2,0,0,2,2,2,0,0,2,0,
-2,0,2,0,0,2,0,0,2,0,
-2,0,2,0,0,0,2,2,2,2,
+2,2,0,0,2,0,2,0,2,2,
+2,2,2,2,2,0,2,2,0,2,
+2,0,2,0,0,2,2,0,2,2,
+2,0,0,2,0,2,0,2,0,2,
 2,2,2,2,2,2,2,2,2,2
 </data>
  </layer>
