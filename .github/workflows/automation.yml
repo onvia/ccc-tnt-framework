@@ -27,5 +27,5 @@ jobs:
     - name: Release  
       uses: softprops/action-gh-release@v1
       with:
-        files: tnt.zip
+        files: ./assets/tnt.zip
         token: ${{ secrets.TNT_TOKEN }}
