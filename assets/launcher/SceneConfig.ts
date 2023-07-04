@@ -36,9 +36,4 @@ export const SceneConfig: ISceneConfig[] = [
         button: "TiledMap",
         bundle: "tiled-map-example"
     },
-    {
-        scene: "LongPressDemo",
-        button: "长按按钮",
-        bundle: "test-example"
-    },
 ]

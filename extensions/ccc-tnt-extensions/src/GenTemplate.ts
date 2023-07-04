@@ -13,10 +13,10 @@ export class GenTemplate {
 
     async createTemplete() {
 
-        // if (Editor.Project.name == 'ccc-tnt-framework') {
-        //     console.log(`[TNT] 框架项目无法下载自身仓库的资源`);
-        //     return;
-        // }
+        if (Editor.Project.name == 'ccc-tnt-framework') {
+            console.log(`[TNT] 框架项目无法下载自身仓库的资源`);
+            return;
+        }
         // // 拷贝目录结构
         // await this.copyTo(join(Editor.Project.path,"extensions/ccc-tnt-extensions/assets","directory-templete"),config.path);
         // 
@@ -74,7 +74,7 @@ export class GenTemplate {
         try {
             for (const filename of Object.keys(files)) {
                 // 将最上层 assets 文件夹去除掉
-                const dest = path.join(savePath, filename.replace("assets/", ""));
+                const dest = path.join(savePath, filename);
                 // 如果该文件为目录需先创建文件夹
                 if (files[filename].dir) {
                     if ((!fs.existsSync(dest) || fs.statSync(dest).isFile())) {

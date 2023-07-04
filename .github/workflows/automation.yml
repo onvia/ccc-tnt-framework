@@ -9,12 +9,21 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v3 # If you're using actions/checkout@v2 you must set persist-credentials to false in most cases for the deployment to work correctly.
-    - name: Archive Release
-      uses: thedoctor0/zip-release@0.7.1
-      with:
-        type: 'zip'
-        filename: 'tnt.zip'
-        path: './assets/a-framework'
+
+    # - name: Archive Release
+    #   uses: thedoctor0/zip-release@0.7.1
+    #   with:
+    #     type: 'zip'
+    #     filename: 'tnt.zip'
+    #     path: './assets/a-framework'
+
+    - name: Install Zip
+      uses: montudor/action-zip@v1
+
+    - name: Zip output
+      run: zip -r tnt.zip a-framework a-framework.meta preload-tnt.js preload-tnt.js.meta
+      working-directory: ./assets  
+
     - name: Release  
       uses: softprops/action-gh-release@v1
       with:

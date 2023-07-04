@@ -24,7 +24,7 @@ export class Launcher extends Component {
         console.log(`Launcher-> 加载基础 bundle`);
 
         // 首先加载框架 Bundle
-        assetManager.loadBundle("framework", () => {
+        // assetManager.loadBundle("framework", () => {
             // framework bundle 加载完之后就可以使用 tnt 了
             // 添加任务1： 加载 游戏 bundle
             tnt.taskMgr.addTask((progress, done) => {
@@ -41,7 +41,7 @@ export class Launcher extends Component {
                 // 启动
                 this.onLaunch();
             });
-        });
+        // });
     }
     
     onLaunch() {
