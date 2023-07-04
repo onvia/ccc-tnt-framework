@@ -13,7 +13,7 @@
       "wechatgame": false
     },
     "isBundle": true,
-    "priority": 10,
+    "priority": 20,
     "bundleName": "framework"
   }
 }
