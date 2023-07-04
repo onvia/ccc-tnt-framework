@@ -38,7 +38,7 @@ export const methods: { [key: string]: (...any: any) => any } = {
  * @zh 扩展加载完成后触发的钩子
  */
 export const load = function () {
-
+    genTemplate.checkUpdate();
 };
 
 /**

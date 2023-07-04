@@ -8,8 +8,40 @@ import download from 'download';
 
 // github 镜像加速
 const githubProxy = 'https://ghproxy.com/';
+const framework = "a-framework"
 
 export class GenTemplate {
+
+    async checkUpdate() {
+        console.log(`[TNT] 检查更新。`);
+        let versionPath = path.join(Editor.Project.path, "assets", framework, "tnt-version.json");
+        let tntPath = path.join(Editor.Project.path, "assets", framework, "TNT.ts");
+        let tntExists = fs.existsSync(tntPath);
+        let versionExists = fs.existsSync(versionPath);
+        if (tntExists && versionExists) {
+            // 进行版本对比
+            let octokit = new Octokit();
+            let lastRelease = await octokit.rest.repos.getLatestRelease({
+                'owner': config.owner,
+                'repo': config.repo,
+            });
+            let localVersionContent = fs.readFileSync(versionPath, 'utf-8');
+            let localVersionConfig = JSON.parse(localVersionContent);
+
+            let remoteVersion = lastRelease.data.tag_name;
+            let result = this._versionCompareHandle(remoteVersion, localVersionConfig.version);
+            if (result > 0) {
+                // 更新
+                console.log(`[TNT] 框架发现新版本。当前版本： ${localVersionConfig.version}，新版本： ${remoteVersion}`);
+            } else {
+                console.log(`[TNT] 框架无更新。`);
+            }
+        } else if (tntExists && !versionExists) {
+            console.log(`[TNT] 版本文件不存在，无法检测版本更新。`);
+        } else if (!tntExists && !versionExists) {
+            console.log(`[TNT] 框架不存在，请下载。`);
+        }
+    }
 
     async createTemplete() {
 
@@ -17,11 +49,14 @@ export class GenTemplate {
             console.log(`[TNT] 框架项目无法下载自身仓库的资源`);
             return;
         }
-        // // 拷贝目录结构
-        // await this.copyTo(join(Editor.Project.path,"extensions/ccc-tnt-extensions/assets","directory-templete"),config.path);
-        // 
-        // this.downloadFromGithub(true);
-        this.downloadRelease();
+
+        Editor.Dialog.info("点击确定更新 [TNT] 框架", { 'buttons': ['确定', '取消'] }).then((result) => {
+            if (result.response === 0) {
+                this.downloadRelease();
+            } else {
+                console.log('[TNT] 取消更新');
+            }
+        })
     }
 
     async downloadRelease() {
@@ -48,8 +83,8 @@ export class GenTemplate {
                 this.saveZipFiles(path.join(config.path), zip.files);
             }).then(async () => {
                 console.log(`[TNT] 刷新框架`);
-                await Editor.Message.request("asset-db", "refresh-asset", "db://assets/a-framework");
-                console.log(`[TNT] 请重启编辑器`);
+                await Editor.Message.request("asset-db", "refresh-asset", `db://assets/${framework}`);
+                console.log(`[TNT] 下载框架完成，如果有报错请重启编辑器。`);
             });
         } catch (error) {
             console.log(`[TNT] 获取资源失败`, error);
@@ -97,38 +132,61 @@ export class GenTemplate {
             return error;
         }
     }
-    // /**
-    //  * 下载
-    //  *
-    //  * @param {boolean} flag 下载失败使用本地资源
-    //  * @memberof GenTemplate
-    //  */
-    // async downloadFromGithub(flag: boolean = true) {
-    //     console.log(`[TNT] 开始下载`);
 
-    //     let octokit = new Octokit();
-    //     let buffer = null;
-    //     try {
-    //         // 从 github 下载
-    //         let res = await octokit.rest.repos.downloadZipballArchive({
-    //             owner: config.owner,
-    //             repo: config.repo,
-    //             ref: config.ref
-    //         })
-    //         buffer = res.data;
-    //         console.log(`[TNT] 下载完成`);
+    private _versionCompareHandle(remoteVersion: string, localVersion: string): number {
 
-    //     } catch (error) {
-    //         console.log(`[TNT] 下载失败`, error);
-    //         if (flag) {
-    //             console.log(`[TNT] 使用本地静态模板`);
-    //             // 下载失败使用本地静态资源
-    //             buffer = await fs.readFile(staticSourceDir, { encoding: "binary" });
-    //         }
-    //     }
-    //     // 解压      
-    //     this.unzip(buffer);
-    // }
+        if (remoteVersion.startsWith("v")) {
+            remoteVersion = remoteVersion.replace('v', "");
+        }
+        if (localVersion.startsWith("v")) {
+            localVersion = localVersion.replace('v', "");
+        }
+
+        let remoteSplitResult = remoteVersion.split('-');
+        let localSplitResult = localVersion.split('-');
+        let remoteSuffixNum = 0;
+        let localSuffixNum = 0;
+        if (remoteSplitResult.length == 2) {
+            remoteVersion = remoteSplitResult[0];
+            remoteSuffixNum = this.digitization(remoteSplitResult[1]);
+        }
+
+        if (localSplitResult.length == 2) {
+            localVersion = localSplitResult[0];
+            localSuffixNum = this.digitization(localSplitResult[1]);
+        }
+
+
+        var vA = remoteVersion.split('.');
+        var vB = localVersion.split('.');
+        for (var i = 0; i < vA.length; ++i) {
+            var a = parseInt(vA[i]);
+            var b = parseInt(vB[i] || '0');
+            if (a === b) {
+                continue;
+            }
+            else {
+                return a - b;
+            }
+        }
+        if (vB.length > vA.length) {
+            return -1;
+        }
+        else {
+            // return 0;
+            return remoteSuffixNum - localSuffixNum;
+        }
+    }
+
+    digitization(tag: string) {
+        if (tag.toLocaleLowerCase() === 'beta') {
+            return 1;
+        }
+        if (tag.toLocaleLowerCase() === 'release' || tag == '') {
+            return 2;
+        }
+        return 0;
+    }
 
     // // 解压资源
     // unzip(buffer) {
@@ -168,23 +226,6 @@ export class GenTemplate {
     //             }
     //         }
     //         call();
-    //     })
-    // }
-
-
-
-
-    // // 解压
-    // async unzipSync(source: string, dest: string){
-    //     return new Promise<void>((resolve,reject)=>{
-    //       //解压 .zip
-    //       compressing.zip.uncompress(source, dest).then((res) => {
-    //         console.log(`[TNT] 解压成功`);
-    //         resolve();
-    //       }).catch(() => {
-    //         console.log(`[TNT] 解压失败`);
-    //         reject();
-    //       });
     //     })
     // }
 

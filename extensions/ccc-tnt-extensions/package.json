@@ -45,7 +45,7 @@
             },
             {
                 "path": "i18n:ccc-tnt-extensions.main_menu",
-                "label": "下载",
+                "label": "更新框架",
                 "message": "create-template"
             }
         ],

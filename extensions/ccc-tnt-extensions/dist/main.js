@@ -39,6 +39,7 @@ exports.methods = {
  * @zh 扩展加载完成后触发的钩子
  */
 const load = function () {
+    GenTemplate_1.genTemplate.checkUpdate();
 };
 exports.load = load;
 /**

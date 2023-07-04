@@ -2,8 +2,8 @@ import { join } from "path";
 
 export default {
     "owner": "onvia",
-    "repo": "actions-test",
+    "repo": "ccc-tnt-framework",
     "ref": "main",
     "token": "",
-    "path": join(Editor.Project.path, "assets-test")
+    "path": join(Editor.Project.path, "assets")
 }
