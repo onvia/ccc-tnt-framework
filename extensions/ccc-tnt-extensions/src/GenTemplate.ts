@@ -50,7 +50,7 @@ export class GenTemplate {
             return;
         }
 
-        Editor.Dialog.info("点击确定更新 [TNT] 框架", { 'buttons': ['确定', '取消'] }).then((result) => {
+        Editor.Dialog.info("点击确定更新 [TNT] 框架\n请确保没有开启 steam++ 等加速器", { 'buttons': ['确定', '取消'] }).then((result) => {
             if (result.response === 0) {
                 this.downloadRelease();
             } else {
