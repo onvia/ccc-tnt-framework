@@ -146,8 +146,12 @@ class AssetLoader {
     public key: string = "";
     public windowName: string = "";
     protected static loadedBundles: Map<string, BundleWrap> = new Map();
-    protected static bundleVersions: Map<string, string> = null!;
+    protected static bundleVersions: Map<string, string> = null;
 
+    /**
+     * 是否在 Bundle 引用计数归零的时候自动释放 Bundle 
+     */
+    public static autoReleaseBundle: boolean = false;
 
     public static getBundleVersions(bundleName: string): string | undefined {
         if (this.bundleVersions == null) return null;
