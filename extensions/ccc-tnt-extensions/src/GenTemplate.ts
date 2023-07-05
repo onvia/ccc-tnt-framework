@@ -9,6 +9,7 @@ import download from 'download';
 // github 镜像加速
 const githubProxy = 'https://ghproxy.com/';
 const framework = "a-framework"
+const tntAsset = "tnt.zip";
 
 export class GenTemplate {
 
@@ -52,14 +53,14 @@ export class GenTemplate {
 
         Editor.Dialog.info("点击确定更新 [TNT] 框架\n请确保没有开启 steam++ 等加速器", { 'buttons': ['确定', '取消'] }).then((result) => {
             if (result.response === 0) {
-                this.downloadRelease();
+                this.downloadTNTRelease();
             } else {
                 console.log('[TNT] 取消更新');
             }
         })
     }
 
-    async downloadRelease() {
+    async downloadTNTRelease() {
         let octokit = new Octokit();
         try {
             console.log(`[TNT] 获取最新版框架`);
@@ -67,7 +68,10 @@ export class GenTemplate {
                 'owner': config.owner,
                 'repo': config.repo,
             });
-            let asset = lastRelease.data.assets[0]
+            // 查找 框架 压缩包
+            let asset = lastRelease.data.assets.find((asset)=>{
+                return asset.name === tntAsset;
+            });
             // lastRelease.data.tag_name
             if (!fs.existsSync(config.path)) {
                 fs.mkdirSync(config.path);
