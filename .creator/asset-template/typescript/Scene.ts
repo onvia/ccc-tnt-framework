@@ -1,7 +1,7 @@
 import { _decorator, Node } from "cc";
 
 const { ccclass } = _decorator;
-let { node, sprite, button } = tnt._decorator;
+const { node, sprite, button } = tnt._decorator;
 
 
 declare global{
