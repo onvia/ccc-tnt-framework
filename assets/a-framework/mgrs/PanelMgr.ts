@@ -11,16 +11,15 @@ declare global {
 }
 
 enum PanelNameEnum {
-    LayerEffect = 0,
-    LayerTip = 1,
-    LayerLock = 2,
-    LayerPopup = 3,
-    LayerSys = 4,
+    LayerUIRoot = 1, // 弹窗层
+    LayerEffect = 2, // 特效层
+    LayerTip = 3, // 提示层
+    LayerSys = 4, // 系统层
+    LayerLock = 5, // 锁定层 屏蔽所有输入事件
 }
 
 @ccclass('PanelMgr')
 class PanelMgr {
-
 
     Enum = PanelNameEnum;
     root: Node = null;
@@ -32,11 +31,13 @@ class PanelMgr {
     getLayer(layerNameEnum: PanelNameEnum) {
         this.lazyInit();
         let layerName = PanelNameEnum[layerNameEnum];
+        layerName = layerName.replace("Layer","");
         let node = this.root.getChildByName(layerName);
         if (!node) {
             node = new Node(layerName);
             let transform = node.addComponent(UITransform);
             transform.setContentSize(view.getVisibleSize());
+            transform.priority = layerNameEnum; // 根据枚举值进行排序
             node.parent = this.root;
             node.layer = this.root.layer;
         }

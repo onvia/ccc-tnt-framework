@@ -1,5 +1,6 @@
 
 import { EDITOR } from 'cc/env';
+import { game } from 'cc';
 
 import './TNT';
 
@@ -51,7 +52,7 @@ import "./hot-update/_hot-update"
 import "./red-point/_red-point"
 
 
-
 if (!EDITOR) {
-    tnt.eventMgr.emit(tnt.EVENT_FRAMEWORK_INITED);
+    game.emit(tnt.EVENT_TNT_INITED);
+    tnt.eventMgr.emit(tnt.EVENT_TNT_INITED);
 }

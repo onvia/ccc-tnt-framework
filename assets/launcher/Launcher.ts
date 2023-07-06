@@ -2,7 +2,6 @@
 import { Component, Node, macro, _decorator, assetManager } from "cc";
 import { startupOptions } from "./StartupConfig";
 import { KeyBoardListener } from "./listeners/KeyBoardListener";
-import { SceneListener } from "./listeners/SceneListener";
 const { ccclass, property } = _decorator;
 
 /**
@@ -22,28 +21,29 @@ export class Launcher extends Component {
 
     start() {
         console.log(`Launcher-> 加载基础 bundle`);
-
-        // 首先加载框架 Bundle
-        // assetManager.loadBundle("framework", () => {
-            // framework bundle 加载完之后就可以使用 tnt 了
-            // 添加任务1： 加载 游戏 bundle
-            tnt.taskMgr.addTask((progress, done) => {
-                tnt.AssetLoader.loadBundle("main-scene", () => {
-                    done();
-                });
+        
+        // 添加任务1： 加载 游戏 bundle
+        tnt.taskMgr.addTask((progress, done) => {
+            tnt.AssetLoader.loadBundle("main-scene", () => {
+                done();
             });
-            // 添加任务2: xxx
-
-            // 添加任务3: xxx            
-
-            // 执行任务
-            tnt.taskMgr.startTasksParallel(() => {
-                // 启动
-                this.onLaunch();
+        });
+        // 添加任务2: 加载通用 bundle
+        tnt.taskMgr.addTask((progress, done) => {
+            tnt.AssetLoader.loadBundle("common-bundle", () => {
+                tnt.resourcesMgr.loadPrefabAsset(tnt.loaderMgr.share, "LoadingTips");
+                done();
             });
-        // });
+        });
+        // 添加任务3: xxx
+
+        // 执行任务
+        tnt.taskMgr.startTasksParallel(() => {
+            // 启动
+            this.onLaunch();
+        });
     }
-    
+
     onLaunch() {
         console.log(`Launcher-> 启动`);
 
@@ -58,8 +58,7 @@ export class Launcher extends Component {
         tnt.startup(startupOptions);
         // 键盘事件
         tnt.keyboard.on(KeyBoardListener.getInstance());
-        // 场景切换监听
-        tnt.sceneMgr.addSceneListener(SceneListener.getInstance());
+
 
         // 显示开始按钮
         this.btnQuickStart.active = true;

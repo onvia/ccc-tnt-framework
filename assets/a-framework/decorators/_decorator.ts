@@ -24,7 +24,7 @@ declare global {
 
 let __pluginMgrMap: Map<string, IPluginMgr<any>> = new Map();
 let __pluginMap: Map<string, any[]> = new Map();
-
+let __isRegistedPlugin = false;
 
 
 function component_sound(name?: string, type?: GConstructor<Component>, parent?: string | ButtonPropertyOptions, options?: ButtonPropertyOptions) {
@@ -45,7 +45,6 @@ function component_sound(name?: string, type?: GConstructor<Component>, parent?:
 
 let __decorator = {
 
-
     /**
      * 枚举值请实现 interface IPuginType{ }
      *
@@ -56,7 +55,59 @@ let __decorator = {
      */
     pluginMgr<T extends string & keyof IPluginType>(name: T) {
         return (target: any) => {
+            console.log(`_decorator-> ${name} 变身成为插件管理类`);
+
+            // 注入 注册方法
+            if (!target.registerPluginAuto) {
+                target.___plugins = [];
+                target.registerPluginAuto = (plugins: IPluginCommon | IPluginCommon[]) => {
+                    if (!Array.isArray(plugins)) {
+                        plugins = [plugins];
+                    }
+
+                    plugins.forEach((plugin) => {
+                        //插件能不重复
+                        let findPlugin = target.___plugins.find(item => item.name === plugin.name || item === plugin);
+                        if (findPlugin) {
+                            console.log(`UIMgr-> 已存在相同名称的插件 ${plugin.name}`);
+                            return;
+                        }
+
+                        //执行插件注册事件
+                        target.___plugins.push(plugin);
+                        plugin.onPluginRegister?.();
+                    });
+
+                    target.___plugins.sort((a, b) => {
+                        return (b.priority || 0) - (a.priority || 0);
+                    });
+                }
+
+                target.unregisterPlugin = (plugin: IPluginCommon | string) => {
+                    for (let i = 0; i < target.___plugins.length; i++) {
+                        const element = target.___plugins[i];
+
+                        if ((typeof plugin === 'string' && element.name === plugin)
+                            || (typeof plugin === 'object' && element.name === plugin.name)) {
+                            target.___plugins.splice(i, 1);
+                            element.onPluginUnRegister?.();
+                        }
+                    }
+                }
+
+                target.prototype.registerPlugin = (plugins: IPluginCommon | IPluginCommon[]) => {
+                    target.registerPluginAuto(plugins);
+                }
+                target.prototype.unregisterPlugin = (plugin: IPluginCommon | string) => {
+                    target.unregisterPlugin(plugin);
+                }
+
+            }
+            
             __pluginMgrMap.set(name, target);
+
+            // 检查是否有可以注册的插件
+            __decorator.__registePlugins(name);
         }
     },
 
@@ -70,6 +121,7 @@ let __decorator = {
      * @return {*} 
      */
     plugin: function <T extends string & keyof IPluginType>(name: T) {
+
         return (target: any) => {
             let _plugins: any[] = null;
             if (!__pluginMap.has(name)) {
@@ -79,29 +131,61 @@ let __decorator = {
                 _plugins = __pluginMap.get(name);
             }
             _plugins.push(target);
+
+            console.log(`_decorator-> ${name} 增加插件 ${js.getClassName(target)}`);
+
+            // 检查是否可以注册插件
+            __decorator.__registePlugins(name);
         }
+    },
+
+    __registePlugins(pluginName: string) {
+        if (!__isRegistedPlugin) {
+            return;
+        }
+        let mgr = __pluginMgrMap.get(pluginName);
+        let plugins = __pluginMap.get(pluginName);
+        if (!mgr || !plugins?.length) {
+            return;
+        }
+
+        if (mgr.registerPluginAuto) {
+            console.warn(`插件管理器【${pluginName}】 请实现 registerPluginAuto 静态方法`);
+        }
+
+        for (let i = 0; i < plugins.length; i++) {
+            const ctor = plugins[i];
+            let ins = new ctor();
+            mgr.registerPluginAuto(ins);          
+            console.log(`后加载插件 ${pluginName}： ${js.getClassName(ctor)}`);
+        }
+        plugins.length = 0;
     },
 
     /**
      * 无需手动调用
      */
     _registePlugins() {
+        if (__isRegistedPlugin) {
+            return;
+        }
+        __isRegistedPlugin = true;
+        console.log(`_decorator-> 注入所有插件`);
+
         __pluginMgrMap.forEach((target, key) => {
+            if (!target.registerPluginAuto) {
+                console.warn(`插件管理器【${key}】 请实现 registerPluginAuto 静态方法`);
+                return;
+            }
             if (__pluginMap.has(key)) {
                 let plugins = __pluginMap.get(key);
                 for (let i = 0; i < plugins.length; i++) {
                     const ctor = plugins[i];
-                    if (target.registerPluginAuto) {
-                        let ins = new ctor();
-                        target.registerPluginAuto(ins);
-                        if (DEV) {
-                            console.log(`${key} 加载插件 ${js.getClassName(ctor)}`);
-                        }
-                    } else {
-                        console.warn(`插件管理器【${key}】 请实现 registerPluginAuto 静态方法`);
-                        break;
-                    }
+                    let ins = new ctor();
+                    target.registerPluginAuto(ins);
+                    console.log(`正常加载插件 ${key} ： ${js.getClassName(ctor)}`);
                 }
+                plugins.length = 0;
             } else {
                 console.warn(`【${key}】没有任何插件`);
             }

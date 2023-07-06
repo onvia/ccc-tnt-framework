@@ -57,7 +57,7 @@ class AudioMgr {
         }
 
         if(config){
-            Object.assign(this._config,config);
+            this._config = Object.assign(this._config,config);
         }
 
 

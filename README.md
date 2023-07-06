@@ -1,7 +1,7 @@
 
-# CocosCreator 3.7.x 游戏开发框架
+# CocosCreator 3.x 游戏开发框架
 
-- [CocosCreator 3.7.x 游戏开发框架](#cocoscreator-37x-游戏开发框架)
+- [CocosCreator 3.x 游戏开发框架](#cocoscreator-3x-游戏开发框架)
     - [介绍](#介绍)
     - [基类](./docs/%E5%9F%BA%E7%B1%BB.md)
     - [资源管理](./docs/%E8%B5%84%E6%BA%90%E7%AE%A1%E7%90%86.md)
@@ -28,13 +28,24 @@
       - [其他](#其他)
 ### 介绍
 
-使用本框架可以不再深度依赖编辑器，不需要在编辑器中挂载脚本到节点（多语言还是须要的），在运行时会自动挂载脚本到节点。  
+ TNT 是基于 Cocos Creator 3.x 游戏框架。  
+
+使用本框架可以不再深度依赖编辑器，不需要在编辑器中挂载脚本到节点（多语言还是需要的），在运行时会自动挂载脚本到节点。  
 这样做的优势在于可控性高，团队协作方便。  
 框架所有管理者单例和大部分类都挂载到了全局变量 `tnt` 上。  
 游戏启动需要有一个启动类和启动场景，将启动类挂载到启动场景中，在后续使用过程中，基本不再需要手动在节点挂载组件了。  
 
->本框架作为单独的 Bundle 使用，Bundle 名为 `framework`  
->为保证在编辑器内优先加载框架代码，这里名为 `framework` 的 Bundle 使用了 `a-framework` 作为文件夹名，开发过程中其他 Bundle 尽量保证在框架 Bundle 后加载
+
+### 安装
+
+#### 方式一 (推荐)
+通过 Cocos Store 下载 TNT 插件安装
+
+#### 方式二
+通过 仓库 Release 直接下载解压
+
+
+### 启动
 
 框架启动需要实现 `IStartupOptions`  
 详细的使用可以启动实例 `Launcher.scene` 查看，脚本同名。
@@ -48,6 +59,13 @@ assetManager.loadBundle("framework", () => {
 });
 
 ```
+
+>本框架作为单独的 Bundle 使用，Bundle 名为 `framework`  
+>为保证在编辑器内优先加载框架代码，这里名为 `framework` 的 Bundle 使用了 `a-framework` 作为文件夹名，开发过程中其他 Bundle 尽量保证在框架 Bundle 后加载
+
+### 在线示例
+https://onvia.gitlab.io/ccc-demo/tnt-example/
+
 
 ### 参考  
 #### MVVM  

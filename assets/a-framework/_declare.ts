@@ -114,10 +114,21 @@ declare global {
     }
 
 
-    interface IUIWindowPlugin {
+    interface IPluginMgr{
+        registerPlugin?(plugins: IPluginCommon | IPluginCommon[]);
+        unregisterPlugin?(plugin: IPluginCommon | string);
+    }
+    interface IPluginCommon {
+        
         name: string;
         // 优先级，越大越先执行
         priority?: number;
+
+        onPluginRegister?();
+        onPluginUnRegister?();
+    }
+
+    interface IUIWindowPlugin extends IPluginCommon{
 
         onUIMgrReInit?();
 
@@ -133,10 +144,26 @@ declare global {
 
         onWindowDestroy?(view: tnt.UIWindowBase, name: string);
 
-
-        onPluginRegister?();
-        onPluginUnRegister?();
     }
 
+    interface IScenePlugin extends IPluginCommon, ISceneListener{
+        /**
+         * 开始切换场景，当切换场景的方法被调用时执行
+         *
+         * @param {string} currentScene
+         * @param {string} nextScene
+         * @memberof IScenePlugin
+         */
+        onSceneChangeBegin?(currentScene: string,nextScene: string);
+        
+        /**
+         * 切换场景结束，完全进入（过渡动画结束）到新的场景后执行
+         *
+         * @param {string} previousScene
+         * @param {string} currentScene
+         * @memberof IScenePlugin
+         */
+        onSceneChangeEnd(previousScene: string,currentScene: string);
+    }
 
 }

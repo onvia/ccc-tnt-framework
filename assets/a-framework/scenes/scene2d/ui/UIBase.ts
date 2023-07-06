@@ -1,5 +1,5 @@
 import "../../../components/GComponent"
-import { _decorator, Button, Node, EditBox, Toggle, Label, Sprite, Slider, ToggleContainer, ProgressBar, Layout } from "cc";
+import { _decorator, Button, Node, EditBox, Toggle, Label, Sprite, Slider, ToggleContainer, ProgressBar, Layout, js, Prefab } from "cc";
 const { ccclass, } = _decorator;
 
 
@@ -189,7 +189,66 @@ class UIBase<Options = any> extends tnt.GComponent<Options> implements IUIAble {
      * @memberof UIWindowBase
      */
     public addPanel<Options, T extends tnt.UIPanel<Options>>(container: string | Node, uiPanelCtor: GConstructor<T> | string, uiPanelName?: string, param?: Options): boolean {
-        return tnt.uiMgr.addPanel(this, container, uiPanelCtor, uiPanelName, param);
+        
+        if (!this.uiPanelPackMap) {
+            console.error(`UIBase-> [ uiPanelPackMap ] 未初始化`);
+            return false;
+        }
+
+        let _uiPanelCtor: GConstructor<T> = null;
+        if (typeof uiPanelCtor === 'string') {
+            _uiPanelCtor = js.getClassByName(uiPanelCtor) as GConstructor<T>;
+        } else {
+            _uiPanelCtor = uiPanelCtor;
+        }
+        if (!uiPanelName) {
+            uiPanelName = js.getClassName(_uiPanelCtor);
+        }
+        let parent: Node = null;
+        if (typeof container === 'string') {
+            parent = this.find(container);
+        } else {
+            parent = container;
+        }
+        if (!parent) {
+            console.error(`UIBase-> 容器节点不存在`);
+            return false;
+        }
+        let groupName = parent.name;
+        let uiPanelPackArray = this.uiPanelPackMap[groupName];
+        if (!uiPanelPackArray) {
+            uiPanelPackArray = [];
+            this.uiPanelPackMap[groupName] = uiPanelPackArray;
+        }
+
+        if (this.uiPanelParentMap[uiPanelName]) {
+            console.error(`UIBase-> 已存在同名面板 ${uiPanelName}`);
+            return false;
+        }
+        this.uiPanelParentMap[uiPanelName] = groupName;
+
+
+        let findPanel = uiPanelPackArray.find((item) => { item.name === uiPanelName });
+        if (findPanel) {
+            console.log(`UIBase-> 已存在相同名称的内嵌节点 ${findPanel.name}`);
+
+            return false;
+        }
+
+        uiPanelPackArray.push({
+            ctor: _uiPanelCtor,
+            name: uiPanelName,
+            instance: null,
+            container: parent,
+            param: param,
+            isChecked: false,
+        });
+
+        // 预加载
+        let { prefabUrl, bundle } = tnt.resourcesMgr._parseAssetUrl(_uiPanelCtor, param);
+        tnt.loaderMgr.get(this.loaderKey).preload(prefabUrl, Prefab, bundle);
+
+        return true;
     }
 
     /**
@@ -204,32 +263,78 @@ class UIBase<Options = any> extends tnt.GComponent<Options> implements IUIAble {
      */
     public showPanel<Options, T extends tnt.UIPanel<Options>>(key: string | GConstructor<T>, options?: Options): Promise<T> {
         return new Promise<T>((resolve, reject) => {
-            tnt.uiMgr.showPanel(this, key, options).then((result) => {
-                if (result.isInit) {
-                    tnt.btnCommonEventMgr.bind(result.ins.node);
+            let __switch = true; // 常量 true
+            let _name = tnt.uiMgr._getClassName(key);
+            let groupName = this.uiPanelParentMap[_name];
+            let uiPanelPackArray = this.uiPanelPackMap[groupName] as UIPanelPack<T>[];
+            if (!uiPanelPackArray) {
+                console.error(`UIMgr-> showPanel [${groupName}]`);
+                return;
+            }
+            let length = uiPanelPackArray.length;
+            for (let i = 0; i < length; i++) {
+                const pack = uiPanelPackArray[i];
+                if (pack.name === _name) {
+                    if (pack.isChecked) {
+                        continue;
+                    }
+                    if (pack.instance) {
+                        pack.instance.node.active = true;
+                        pack.isChecked = true;
+                        pack.instance.updateOptions(options);
+                        pack.instance.onActive?.();
+                        resolve(pack.instance);
+                    } else {
+                        pack.isChecked = true;
+                        // 创建
+                        this._createPanel(this, pack, (uiEmbed) => {
+                            pack.instance.node.active = pack.isChecked;
+                            if (!pack.isChecked) {
+                                pack.instance.onFreeze?.();
+                            }
+                            tnt.btnCommonEventMgr.bind(pack.instance.node);
+                            resolve(pack.instance);
+                        });
+                    }
+                    continue;
                 }
-                resolve(result.ins);
-            });
+                if (__switch) {
+                    if (pack.instance && pack.isChecked) {
+                        pack.instance.onFreeze?.();
+                        // 隐藏其他
+                        pack.instance.node.active = false;
+                    }
+                    pack.isChecked = false;
+                }
+            }
         })
     }
 
 
+    private _createPanel<T extends tnt.UIPanel>(uiable: IUIAble, pack: UIPanelPack<T>, callback: Runnable1<T>) {
+        let clazz = pack.ctor;
+
+        tnt.resourcesMgr.addPrefabNode(uiable, clazz, pack.container, pack.param).then((uiPanel) => {
+            pack.instance = uiPanel;
+            callback?.(uiPanel);
+        });
+    }
     /**
      * 内嵌预制体 ui，添加并显示
      *
      * @template T
      * @param {T} clazz
      * @param {string | Node} parentNode
-     * @param {Key_Golbal_UI_Item_Options<T>} [param]
+     * @param {Key_Golbal_UI_Item_Options<T>} [options]
      * @return {*}  {Promise<Key_Golbal_UI_Item_Ctor<T>>}
      * @memberof UIBase
      */
-    public addUI<T extends Key_Golbal_UI_Type>(clazz: T, parentNode: string | Node, param?: Key_Golbal_UI_Item_Options<T>): Promise<Key_Golbal_UI_Item_Ctor<T>> {
+    public addUI<T extends Key_Golbal_UI_Type>(clazz: T, parentNode: string | Node, options?: Key_Golbal_UI_Item_Options<T>): Promise<Key_Golbal_UI_Item_Ctor<T>> {
         return new Promise<Key_Golbal_UI_Item_Ctor<T>>((resolve, reject) => {
             if (typeof parentNode == 'string') {
                 parentNode = this.find(parentNode);
             }
-            tnt.uiMgr.addUI(this, clazz, parentNode, param).then((result) => {
+            tnt.resourcesMgr.addPrefabNode(this, clazz, parentNode, options).then((result)=>{
                 tnt.btnCommonEventMgr.bind(result);
                 resolve(result);
             });
@@ -247,7 +352,7 @@ class UIBase<Options = any> extends tnt.GComponent<Options> implements IUIAble {
      */
     public loadUI<T extends Key_Golbal_UI_Type>(clazz: T, options?: Key_Golbal_UI_Item_Options<T>): Promise<Key_Golbal_UI_Item_Ctor<T>> {
         return new Promise<Key_Golbal_UI_Item_Ctor<T>>((resolve, reject) => {
-            tnt.uiMgr.loadUI(this, clazz, options).then((result) => {
+            tnt.resourcesMgr.loadPrefabNode(this, clazz, options).then((result) => {
                 tnt.btnCommonEventMgr.bind(result);
                 resolve(result);
             });
@@ -270,7 +375,7 @@ class UIBase<Options = any> extends tnt.GComponent<Options> implements IUIAble {
             if (typeof parentNode == 'string') {
                 parentNode = this.find(parentNode);
             }
-            tnt.uiMgr.addUIWithCtor(this, clazz, parentNode, options).then((result) => {
+            tnt.resourcesMgr.addPrefabNode(this, clazz, parentNode, options).then((result)=>{
                 tnt.btnCommonEventMgr.bind(result);
                 resolve(result);
             });
@@ -289,7 +394,7 @@ class UIBase<Options = any> extends tnt.GComponent<Options> implements IUIAble {
      */
     public loadUIWithCtor<Options, T extends UIBase<Options>>(clazz: GConstructor<T>, options?: Options): Promise<T> {
         return new Promise<T>((resolve, reject) => {
-            tnt.uiMgr.loadUIWithCtor(this, clazz, options).then((result) => {
+            tnt.resourcesMgr.loadPrefabNode(this, clazz, options).then((result) => {
                 tnt.btnCommonEventMgr.bind(result);
                 resolve(result);
             });

@@ -19,7 +19,7 @@ export default class TopMenuBarMgr{
     
     async createTopMenuBar(){
         if(!this._topMenuBar){
-            this._topMenuBar = await tnt.uiMgr.loadUIWithCtor({loaderKey: tnt.loaderMgr.KEY_UI_MGR},TopMenuBar);    
+            this._topMenuBar = await tnt.resourcesMgr.loadPrefabNode({loaderKey: tnt.loaderMgr.KEY_UI_MGR},TopMenuBar);    
         }
         return this._topMenuBar;
     }

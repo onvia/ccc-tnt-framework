@@ -1,6 +1,6 @@
 
 
-import { profiler, EffectAsset } from "cc";
+import { profiler, EffectAsset, game } from "cc";
 
 declare global {
 
@@ -28,8 +28,11 @@ declare global {
         enableTimer();
 
 
-        /** 引擎初始化完成事件 */
-        readonly EVENT_FRAMEWORK_INITED;
+        /** TNT 框架初始化完成事件 */
+        readonly EVENT_TNT_INITED;
+
+        /** 框架启动 */
+        readonly EVENT_TNT_STARTUP;
     }
 
     const tnt: ITNT;
@@ -51,7 +54,9 @@ tnt.startup = (options?: IStartupOptions) => {
     tnt.i18n.init(options.i18nConfig);
     tnt._decorator._registePlugins();
     options.debug && profiler.showStats();
-
+    
+    game.emit(tnt.EVENT_TNT_STARTUP);
+    tnt.eventMgr.emit(tnt.EVENT_TNT_STARTUP);
     // 加载内置 EffectAsset
     tnt.loaderMgr.share.loadDir("framework#resources/shader/effect", EffectAsset, (err, assets) => {
         if (err) {

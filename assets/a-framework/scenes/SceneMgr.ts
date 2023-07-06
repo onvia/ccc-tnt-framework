@@ -1,5 +1,6 @@
 import { Node, AssetManager, assetManager, BlockInputEvents, Canvas, Color, director, find, game, js, Layers, log, Scene, SceneAsset, Sprite, SpriteFrame, tween, UIOpacity, UITransform, view, _decorator, Director } from "cc";
 const { ccclass } = _decorator;
+const { pluginMgr } = tnt._decorator;
 
 
 
@@ -8,8 +9,11 @@ declare global {
     interface ITNT {
         sceneMgr: SceneMgr;
     }
+    interface IPluginType {
+        SceneMgr: any;
+    }
+    
 }
-
 
 interface SceneOptions<Options> {
     /** 传递给下一个场景的参数 */
@@ -18,8 +22,6 @@ interface SceneOptions<Options> {
     layer?: any;
     /** 过渡动画颜色 */
     color?: Color;
-    /** 跳转界面监听 */
-    listener?: ISceneListener;
     /** 是否是纯净模式 -- 直接跳转不播放动画 */
     pure?: boolean;
     /** 从哪个 bundle 加载场景资源 */
@@ -31,13 +33,17 @@ interface SceneOptions<Options> {
 }
 type SceneBase<T = any> = tnt.SceneBase<T>;
 
+@pluginMgr("SceneMgr")
 @ccclass('SceneMgr')
-class SceneMgr extends tnt.EventMgr implements ISceneListener {
+class SceneMgr extends tnt.EventMgr implements IScenePlugin, IPluginMgr{
+    name: string = "SceneMgr";
+        
+    
+    public static ___plugins: IScenePlugin[] = [];
 
     readonly EVENT_EXIT_SCENE = "EVENT_EXIT_SCENE";
 
-
-    private currentScene: SceneBase = null; //当前的
+    private currentScene: SceneBase = null; //当前的场景类
 
 
     private previousSceneName: string = null;
@@ -56,13 +62,12 @@ class SceneMgr extends tnt.EventMgr implements ISceneListener {
             director.addPersistRootNode(canvasNode);
             this._canvas = canvasNode;
         }
-
+        
         return this._canvas;
     }
     public set canvas(value: Node) {
         this._canvas = value;
     }
-    private listeners: Array<ISceneListener> = [];
 
     public layer = Layers.Enum.UI_2D;
 
@@ -70,18 +75,6 @@ class SceneMgr extends tnt.EventMgr implements ISceneListener {
     isTransform = false;
 
 
-    addSceneListener(listener: ISceneListener) {
-        if (!listener) { return; }
-        this.listeners.push(listener);
-
-    }
-    removeSceneListener(listener: ISceneListener) {
-        if (!listener) { return; }
-        let idx = this.listeners.indexOf(listener);
-        if (idx != -1) {
-            this.listeners.splice(idx, 1);
-        }
-    }
 
     public async to<T extends string & keyof GlobalSceneType>(sceneName: T, options?: SceneOptions<GlobalSceneType[T]["options"]>) {
         return this.toScene(sceneName, options);
@@ -92,6 +85,10 @@ class SceneMgr extends tnt.EventMgr implements ISceneListener {
             log(`SceneMgr-> 正在跳转场景`);
             return;
         }
+        console.time('[tnt] loadScene');
+        
+        this.onSceneChangeBegin(this.currentSceneName,typeof clazz === 'string' ? clazz : js.getClassName(clazz));
+
         this.isTransform = true;
 
         let bundleName = null;
@@ -142,7 +139,6 @@ class SceneMgr extends tnt.EventMgr implements ISceneListener {
         }
 
 
-        let listener: ISceneListener = options && options.listener;
         let color = (options && options.color && options.color) || new Color(0, 0, 0, 255);
         let pure = (options && options.pure) || false;
         let duration = (options && options.duration) || 1;
@@ -154,8 +150,6 @@ class SceneMgr extends tnt.EventMgr implements ISceneListener {
         this.previousSceneName = this.currentSceneName;
         this.currentSceneName = nextSceneName;
 
-
-        listener && this.listeners.unshift(listener);
 
         let onLaunched = (error: null | Error, scene?: Scene) => {
             let enterSceneName = scene.name;
@@ -196,13 +190,12 @@ class SceneMgr extends tnt.EventMgr implements ISceneListener {
                 .call(() => {
                     this.canvas.active = false;
                     this.onEnterTransitionFinished(enterSceneName);
-                    this.removeSceneListener(listener);
+                    this.onSceneChangeEnd(this.previousSceneName,enterSceneName);
                 })
                 .start();
         }
 
-        if (!sceneAsset) {
-            
+        if (!sceneAsset) {            
             director.emit(Director.EVENT_BEFORE_SCENE_LOADING, nextSceneName);
             sceneAsset = await new Promise<SceneAsset>((resolve, reject) => {
                 let loader = tnt.loaderMgr.share;
@@ -240,6 +233,7 @@ class SceneMgr extends tnt.EventMgr implements ISceneListener {
                 exitBundleName = exitBundleName(exitScene.options);
             }
             let exitBundleWrap = tnt.AssetLoader.getBundleWrap(exitBundleName);
+            console.timeEnd('[tnt] loadScene');
             this.onExitTransitionStart(exitSceneName);
              // 蒙版渐显
             tween(uiOpacity)
@@ -342,57 +336,66 @@ class SceneMgr extends tnt.EventMgr implements ISceneListener {
     }
 
 
+    onSceneChangeBegin(currentScene: string, nextScene: string) {
+        SceneMgr.___plugins.forEach((listener) => {
+            listener.onSceneChangeBegin(currentScene,nextScene);
+        });
+    }
+    onSceneChangeEnd(previousScene: string, currentScene: string) {
+        SceneMgr.___plugins.forEach((listener) => {
+            listener.onSceneChangeEnd(previousScene,currentScene);
+        });
+    }
+    
     /** 进入场景，过渡动画开始 */
     onEnterTransitionStart(sceneName: string) {
-        for (let index = 0; index < this.listeners.length; index++) {
-            const listener = this.listeners[index];
-            listener.onEnterTransitionStart?.(sceneName);
-        }
+        SceneMgr.___plugins.forEach((listener) => {
+            listener.onEnterTransitionStart(sceneName);
+        });
         this.currentScene?.onEnterTransitionStart();
     }
 
     /** 进入场景，过渡动画将要结束 */
     onEnterTransitionWillFinished(sceneName: string) {
-        for (let index = 0; index < this.listeners.length; index++) {
-            const listener = this.listeners[index];
-            listener.onEnterTransitionWillFinished?.(sceneName);
-        }
+        SceneMgr.___plugins.forEach((listener) => {
+            listener.onEnterTransitionWillFinished(sceneName);
+        });
         this.currentScene?.onEnterTransitionWillFinished();
     }
     /** 进入场景，过渡动画结束 */
     onEnterTransitionFinished(sceneName: string) {
-        for (let index = 0; index < this.listeners.length; index++) {
-            const listener = this.listeners[index];
-            listener.onEnterTransitionFinished?.(sceneName);
-        }
+        SceneMgr.___plugins.forEach((listener) => {
+            listener.onEnterTransitionFinished(sceneName);
+        });
         this.currentScene?.onEnterTransitionFinished();
     }
 
 
     /** 退出场景，过渡动画开始 */
     onExitTransitionStart(sceneName: string) {
-        for (let index = 0; index < this.listeners.length; index++) {
-            const listener = this.listeners[index];
-            listener.onExitTransitionStart?.(sceneName);
-        }
+        SceneMgr.___plugins.forEach((listener) => {
+            listener.onExitTransitionStart(sceneName);
+        });
         this.currentScene?.onExitTransitionStart();
     }
     /** 退出场景，过渡动画将要结束 */
     onExitTransitionWillFinished(sceneName: string) {
-        for (let index = 0; index < this.listeners.length; index++) {
-            const listener = this.listeners[index];
-            listener.onExitTransitionWillFinished?.(sceneName);
-        }
+        SceneMgr.___plugins.forEach((listener) => {
+            listener.onExitTransitionWillFinished(sceneName);
+        });
         this.currentScene?.onExitTransitionWillFinished();
     }
     /** 退出场景，过渡动画结束 */
     onExitTransitionFinished(sceneName: string) {
-        for (let index = 0; index < this.listeners.length; index++) {
-            const listener = this.listeners[index];
-            listener.onExitTransitionFinished?.(sceneName);
-        }
+        SceneMgr.___plugins.forEach((listener) => {
+            listener.onExitTransitionFinished(sceneName);
+        });
         this.currentScene?.onExitTransitionFinished();
     }
+    
+    registerPlugin?(plugins: IScenePlugin | IScenePlugin[]);
+    unregisterPlugin?(plugin: IScenePlugin | string);
+    
 
     private static _instance: SceneMgr = null
     public static getInstance(): SceneMgr {

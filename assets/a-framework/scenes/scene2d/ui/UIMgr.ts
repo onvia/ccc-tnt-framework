@@ -178,11 +178,13 @@ let maskNodePool = new tnt.NodePool(maskNodePoolOptions);
 
 const ACTION_TAG = 10000;
 
-let _uiWindowPlugins: IUIWindowPlugin[] = [];
 
 @pluginMgr("UIMgr")
 @ccclass("UIMgr")
-export class UIMgr extends tnt.EventMgr {
+export class UIMgr extends tnt.EventMgr implements IPluginMgr {
+
+    public static ___plugins: IUIWindowPlugin[] = [];
+
     public readonly Event = {
         All_VIEW_CLOSED: 'All_VIEW_CLOSED',
         WILL_SHOW_VIEW: "WILL_SHOW_VIEW",
@@ -391,7 +393,7 @@ export class UIMgr extends tnt.EventMgr {
         let { prefabUrl, bundle } = tnt.resourcesMgr._parseAssetUrl(_windowCtor, param);
         this.loader.preload(prefabUrl, Prefab, bundle);
     }
-    
+
     /**
      * 显示弹窗
      *
@@ -821,7 +823,7 @@ export class UIMgr extends tnt.EventMgr {
         return null;
     }
 
-    private _getClassName<T extends tnt.UIWindowBase>(clazz: GConstructor<T> | Object | string): string {
+    public _getClassName<T extends tnt.UIWindowBase>(clazz: GConstructor<T> | Object | string): string {
         let name: string = "";
         if (typeof clazz == 'string') {
             name = clazz;
@@ -914,211 +916,6 @@ export class UIMgr extends tnt.EventMgr {
         this._stageWindows.length = 0;
     }
 
-    //#region ----------------------------- 内嵌 预制体 -----------------------------
-    /**
-     * 内嵌 预制体 UI ,预加载处理
-     *
-     * @template Options
-     * @template T
-     * @param {IUIAble} uiAble
-     * @param {(string | Node)} container
-     * @param {(GConstructor<T> | string)} uiPanelCtor
-     * @param {string} [uiPanelName] 面板名称，可能使用的是同一个预制体
-     * @param {Options} [param]
-     * @return {*}  {boolean}
-     * @memberof UIMgr
-     */
-    public addPanel<Options, T extends tnt.UIPanel = any>(uiAble: IUIAble, container: string | Node, uiPanelCtor: GConstructor<T> | string, uiPanelName?: string, param?: Options): boolean {
-        if (!uiAble.uiPanelPackMap) {
-            console.error(`UIMgr-> [ uiPanelPackMap ] 未初始化`);
-            return false;
-        }
-
-        let _uiPanelCtor: GConstructor<T> = null;
-        if (typeof uiPanelCtor === 'string') {
-            _uiPanelCtor = js.getClassByName(uiPanelCtor) as GConstructor<T>;
-        } else {
-            _uiPanelCtor = uiPanelCtor;
-        }
-        if (!uiPanelName) {
-            uiPanelName = js.getClassName(_uiPanelCtor);
-        }
-        let parent: Node = null;
-        if (typeof container === 'string') {
-            parent = uiAble.find(container);
-        } else {
-            parent = container;
-        }
-        if (!parent) {
-            console.error(`UIMgr-> 容器节点不存在`);
-            return false;
-        }
-        let groupName = parent.name;
-        let uiPanelPackArray = uiAble.uiPanelPackMap[groupName];
-        if (!uiPanelPackArray) {
-            uiPanelPackArray = [];
-            uiAble.uiPanelPackMap[groupName] = uiPanelPackArray;
-        }
-
-        if (uiAble.uiPanelParentMap[uiPanelName]) {
-            console.error(`UIMgr-> 已存在同名面板 ${uiPanelName}`);
-            return false;
-        }
-        uiAble.uiPanelParentMap[uiPanelName] = groupName;
-
-
-        let findPanel = uiPanelPackArray.find((item) => { item.name === uiPanelName });
-        if (findPanel) {
-            console.log(`UIMgr-> 已存在相同名称的内嵌节点 ${findPanel.name}`);
-
-            return false;
-        }
-
-
-        uiPanelPackArray.push({
-            ctor: _uiPanelCtor,
-            name: uiPanelName,
-            instance: null,
-            container: parent,
-            param: param,
-            isChecked: false,
-        });
-
-        // 预加载
-        let { prefabUrl, bundle } = tnt.resourcesMgr._parseAssetUrl(_uiPanelCtor, param);
-        tnt.loaderMgr.get(uiAble.loaderKey).preload(prefabUrl, Prefab, bundle);
-
-        return true;
-    }
-
-
-    /**
-     * 显示 预制体 UI，加载并显示
-     *
-     * @template Options
-     * @template T
-     * @param {IUIAble} uiAble
-     * @param {(string | GConstructor<T>)} key
-     * @param {Options} [options]
-     * @return {*}  {Promise<{ ins: T, isInit: boolean }>}
-     * @memberof UIMgr
-     */
-    public showPanel<Options, T extends tnt.UIPanel>(uiAble: IUIAble, key: string | GConstructor<T>, options?: Options): Promise<{ ins: T, isInit: boolean }> {
-        return new Promise<{ ins: T, isInit: boolean }>((resolve, reject) => {
-            let __switch = true; // 常量 true
-            let _name = this._getClassName(key);
-            let groupName = uiAble.uiPanelParentMap[_name];
-            let uiPanelPackArray = uiAble.uiPanelPackMap[groupName] as UIPanelPack<T>[];
-            if (!uiPanelPackArray) {
-                console.error(`UIMgr-> showPanel [${groupName}]`);
-                return;
-            }
-            let length = uiPanelPackArray.length;
-            for (let i = 0; i < length; i++) {
-                const pack = uiPanelPackArray[i];
-                if (pack.name === _name) {
-                    if (pack.isChecked) {
-                        continue;
-                    }
-                    if (pack.instance) {
-                        pack.instance.node.active = true;
-                        pack.isChecked = true;
-                        pack.instance.updateOptions(options);
-                        pack.instance.onActive?.();
-                        resolve({ ins: pack.instance, isInit: false });
-                    } else {
-                        pack.isChecked = true;
-                        // 创建
-                        this._createPanel(uiAble, pack, (uiEmbed) => {
-                            pack.instance.node.active = pack.isChecked;
-                            if (!pack.isChecked) {
-                                pack.instance.onFreeze?.();
-                            }
-                            resolve({ ins: pack.instance, isInit: true });
-                        });
-                    }
-                    continue;
-                }
-                if (__switch) {
-                    if (pack.instance && pack.isChecked) {
-                        pack.instance.onFreeze?.();
-                        // 隐藏其他
-                        pack.instance.node.active = false;
-                    }
-                    pack.isChecked = false;
-                }
-            }
-        })
-    }
-
-    private _createPanel<T extends tnt.UIPanel>(uiable: IUIAble, pack: UIPanelPack<T>, callback: Runnable1<T>) {
-        let clazz = pack.ctor;
-
-        tnt.resourcesMgr.addPrefabNode(uiable, clazz, pack.container, pack.param).then((uiPanel) => {
-            pack.instance = uiPanel;
-            callback?.(uiPanel);
-        });
-    }
-
-    /**
-     * 内嵌预制体 ui，添加并显示
-     *
-     * @param {ILoaderKeyAble} loaderKeyAble
-     * @param {(GConstructor<T>| string)} clazz
-     * @param {Node} parent
-     * @param {{param: Options,callback?:  Runnable1<T>}} [options]
-     * @return {*}  {Promise<T>}
-     * @memberof UIMgr
-     */
-    public addUIWithCtor<Options, T extends tnt.UIBase<Options>>(loaderKeyAble: ILoaderKeyAble, clazz: GConstructor<T> | string, parent: Node, options?: Options): Promise<T> {
-        return tnt.resourcesMgr.addPrefabNode(loaderKeyAble, clazz, parent, options);
-    }
-
-    /**
-     * 创建预制体ui，只创建，不添加
-     *
-     * @param {ILoaderKeyAble} loaderKeyAble
-     * @param {(GConstructor<T>| string)} clazz
-     * @param {{param: Options,callback?:  Runnable1<T>}} [options]
-     * @return {*}  {Promise<T>}
-     * @memberof UIMgr
-     */
-    public loadUIWithCtor<Options, T extends tnt.UIBase<Options>>(loaderKeyAble: ILoaderKeyAble, clazz: GConstructor<T> | string, options?: Options): Promise<T> {
-        return tnt.resourcesMgr.loadPrefabNode(loaderKeyAble, clazz, options);
-    }
-
-
-    /**
-     * 内嵌预制体 ui，添加并显示
-     *
-     * @param {ILoaderKeyAble} loaderKeyAble
-     * @param {T extends string} clazz
-     * @param {Node} parent
-     * @param {{param: Options,callback?:  Runnable1<T>}} [options]
-     * @return {*}  {Promise<T>}
-     * @memberof UIMgr
-     */
-    public addUI<T extends Key_Golbal_UI_Type>(loaderKeyAble: ILoaderKeyAble, clazz: T, parent: Node, options?: Key_Golbal_UI_Item_Options<T>): Promise<Key_Golbal_UI_Item_Ctor<T>> {
-        return this.addUIWithCtor(loaderKeyAble, clazz, parent, options);
-    }
-
-    /**
-     * 创建预制体ui，只创建，不添加
-     *
-     * @param {ILoaderKeyAble} loaderKeyAble
-     * @param {T extends string} clazz
-     * @param {{param: Options,callback?:  Runnable1<T>}} [options]
-     * @return {*}  {Promise<T>}
-     * @memberof UIMgr
-     */
-    public loadUI<T extends Key_Golbal_UI_Type>(loaderKeyAble: ILoaderKeyAble, clazz: T, options?: Key_Golbal_UI_Item_Options<T>): Promise<Key_Golbal_UI_Item_Ctor<T>> {
-        return this.loadUIWithCtor(loaderKeyAble, clazz, options);
-    }
-
-    //#endregion ----------------------------- 内嵌 预制体 -----------------------------
-
-
-
 
     public async showDebugToast(msg: string) {
         if (!DEBUG) {
@@ -1196,86 +993,48 @@ export class UIMgr extends tnt.EventMgr {
     }
 
     private _onUIMgrReInit() {
-        _uiWindowPlugins.forEach((listener) => {
+        UIMgr.___plugins.forEach((listener) => {
             listener.onUIMgrReInit();
         });
     }
 
     private _onPluginWindowCreated(view: tnt.UIWindowBase, name: string) {
-        _uiWindowPlugins.forEach((listener) => {
+        UIMgr.___plugins.forEach((listener) => {
             listener.onWindowCreated?.(view, name);
         });
     }
 
     private _onPluginsWindowShowBefor(view: tnt.UIWindowBase, name: string) {
-        _uiWindowPlugins.forEach((listener) => {
+        UIMgr.___plugins.forEach((listener) => {
             listener.onWindowShowBefor?.(view, name);
         });
     }
 
     private _onPluginsWindowShowAfter(view: tnt.UIWindowBase, name: string) {
-        _uiWindowPlugins.forEach((listener) => {
+        UIMgr.___plugins.forEach((listener) => {
             listener.onWindowShowAfter?.(view, name);
         });
     }
 
     private _onPluginsWindowClose(view: tnt.UIWindowBase, name: string) {
-        _uiWindowPlugins.forEach((listener) => {
+        UIMgr.___plugins.forEach((listener) => {
             listener.onWindowClose?.(view, name);
         });
     }
     private _onPluginsWindowBeClean(view: tnt.UIWindowBase, name: string) {
-        _uiWindowPlugins.forEach((listener) => {
+        UIMgr.___plugins.forEach((listener) => {
             listener.onBeClean?.(view, name);
         });
     }
 
     private _onPluginsWindowDestroy(view: tnt.UIWindowBase, name: string) {
-        _uiWindowPlugins.forEach((listener) => {
+        UIMgr.___plugins.forEach((listener) => {
             listener.onWindowDestroy?.(view, name);
         });
     }
 
-    public registerPlugin(plugins: IUIWindowPlugin | IUIWindowPlugin[]) {
-        UIMgr.registerPluginAuto(plugins);
-    }
-
-    public unregisterPlugin(plugin: IUIWindowPlugin) {
-        UIMgr.unregisterPlugin(plugin);
-    }
-
-    public static registerPluginAuto(plugins: IUIWindowPlugin | IUIWindowPlugin[]) {
-        if (!Array.isArray(plugins)) {
-            plugins = [plugins];
-        }
-
-        plugins.forEach((plugin) => {
-            //插件能不重复
-            let findPlugin = _uiWindowPlugins.find(item => item.name === plugin.name || item === plugin);
-            if (findPlugin) {
-                console.log(`UIMgr-> 已存在相同名称的插件 ${plugin.name}`);
-                return;
-            }
-
-            //执行插件注册事件
-            _uiWindowPlugins.push(plugin);
-            plugin.onPluginRegister?.();
-        });
-
-        _uiWindowPlugins.sort((a, b) => {
-            return (b.priority || 0) - (a.priority || 0);
-        });
-    }
-    public static unregisterPlugin(plugin: IUIWindowPlugin) {
-
-        for (let i = 0; i < _uiWindowPlugins.length; i++) {
-            const element = _uiWindowPlugins[i];
-            if (element.name === plugin.name) {
-                _uiWindowPlugins.splice(i, 1);
-                plugin.onPluginUnRegister?.();
-            }
-        }
-    }
+    registerPlugin?(plugins: IUIWindowPlugin | IUIWindowPlugin[]);
+    unregisterPlugin?(plugin: IUIWindowPlugin | string);
 
     private static _instance: UIMgr = null
     public static getInstance(): UIMgr {
@@ -1301,7 +1060,6 @@ class DefaultMaskLayerController implements IMaskLayerController {
     onWindowDestroy(view: tnt.UIWindowBase<any>, mask: Node) {
         maskNodePool.put(mask);
     }
-
 }
 
 tnt.uiMgr = UIMgr.getInstance();

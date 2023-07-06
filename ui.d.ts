@@ -1,3 +1,6 @@
+import { RedPointComp } from "./assets/a-framework/red-point/RedPointComp"
+import { LoadingTips } from "./assets/bundles/common-bundle/scripts/LoadingTips"
+import { VMItem } from "./assets/bundles/mvvm-example/scripts/VMItem"
 import { AutoCloseWindow } from "./assets/bundles/window-example/scripts/AutoCloseWindow"
 import { DialogWindow } from "./assets/bundles/window-example/scripts/DialogWindow"
 import { UIEmbedItem } from "./assets/bundles/window-example/scripts/embeds/UIEmbedItem"
@@ -10,6 +13,9 @@ import { TopMenuBar } from "./assets/bundles/window-example/scripts/topMenuBar/T
 import { VictoryWindow } from "./assets/bundles/window-example/scripts/VictoryWindow"
 
 declare global {
+	interface RedPointCompOptions{}
+	interface LoadingTipsOptions{}
+	interface VMItemOptions{}
 	interface AutoCloseWindowOptions{}
 	interface DialogWindowOptions{}
 	interface UIEmbedItemOptions{}
@@ -44,6 +50,18 @@ declare global {
 		}
 	}
 	interface GlobalUIType{
+		"RedPointComp": {
+			ctor: RedPointComp,
+			options: RedPointCompOptions,
+		}
+		"LoadingTips": {
+			ctor: LoadingTips,
+			options: LoadingTipsOptions,
+		}
+		"VMItem": {
+			ctor: VMItem,
+			options: VMItemOptions,
+		}
 		"UIEmbedItem": {
 			ctor: UIEmbedItem,
 			options: UIEmbedItemOptions,

@@ -136,7 +136,13 @@ class Toast {
             this.toastArray.splice(idx, 1);
         }
         this.toastArray.push(toast);
-
+        
+        for (let k = toastArray.length; k--;) {
+            const element = toastArray[k];
+            if(!element.isValid){
+                toastArray.splice(k,1);
+            }
+        }
         // 做位置的排列，这里测试位置没问题，如果显示位置不正确，是因为两个 toast 出现的时间间隔太短，暂时没有好的处理方法
         for (let j = toastArray.length - 1; j > 0; j--) {
             const node1 = toastArray[j];
@@ -184,7 +190,7 @@ class Toast {
     }
 
 
-    clear() {        
+    clear() {
         this.toastArray.forEach((toast) => {
             let opacityCom = toast.getComponent(UIOpacity)
             Tween.stopAllByTarget(toast);
@@ -201,7 +207,7 @@ class Toast {
         if (!this.instance) {
             this.instance = new Toast();
             // 加载新场景前清空当前显示的 Toast
-            director.on(Director.EVENT_BEFORE_SCENE_LOADING,()=>{
+            director.on(Director.EVENT_BEFORE_SCENE_LOADING, () => {
                 this.instance.clear();
             })
         }

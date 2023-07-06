@@ -216,8 +216,12 @@ class AssetLoader {
 
                 assetManager.loadBundle(bundleName, options, (err: Error | null, data: Bundle) => {
                     if (err == null) {
-                        bundle = new BundleWrap(bundleName as string, data);
-                        this.loadedBundles.set(bundleName as string, bundle);
+                        if(this.loadedBundles.has(bundleName as string)){
+                            bundle = this.loadedBundles.get(bundleName as string);
+                        }else{
+                            bundle = new BundleWrap(bundleName as string, data);
+                            this.loadedBundles.set(bundleName as string, bundle);
+                        }
                         onComplete?.(null, bundle);
                     } else {
                         onComplete?.(err, null);

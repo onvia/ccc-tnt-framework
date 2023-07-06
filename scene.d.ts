@@ -7,6 +7,8 @@ import { DemoVMNormal } from "./assets/bundles/mvvm-example/scripts/DemoVMNormal
 import { DemoVMProgress } from "./assets/bundles/mvvm-example/scripts/DemoVMProgress"
 import { DemoVMSprite } from "./assets/bundles/mvvm-example/scripts/DemoVMSprite"
 import { MVVMDemoList } from "./assets/bundles/mvvm-example/scripts/MVVMDemoList"
+import { BaseDemo } from "./assets/bundles/test-example/scripts/BaseDemo"
+import { LongPressDemo } from "./assets/bundles/test-example/scripts/LongPressDemo"
 import { TiledMapOrientationDemo } from "./assets/bundles/tiled-map-example/scripts/TiledMapOrientationDemo"
 import { WindowScene } from "./assets/bundles/window-example/scripts/WindowScene"
 
@@ -20,6 +22,8 @@ declare global {
 	interface DemoVMProgressOptions{}
 	interface DemoVMSpriteOptions{}
 	interface MVVMDemoListOptions{}
+	interface BaseDemoOptions{}
+	interface LongPressDemoOptions{}
 	interface TiledMapOrientationDemoOptions{}
 	interface WindowSceneOptions{}
 
@@ -59,6 +63,14 @@ declare global {
 		"MVVMDemoList": {
 			ctor: MVVMDemoList,
 			options: MVVMDemoListOptions,
+		}
+		"BaseDemo": {
+			ctor: BaseDemo,
+			options: BaseDemoOptions,
+		}
+		"LongPressDemo": {
+			ctor: LongPressDemo,
+			options: LongPressDemoOptions,
 		}
 		"TiledMapOrientationDemo": {
 			ctor: TiledMapOrientationDemo,

@@ -17,7 +17,7 @@ export class VMForHandler extends VMBaseImplHandler {
     pool: tnt.Pool<Promise<tnt.UIBase>> = new tnt.Pool({
         maxCount: 32,
         newObject: () => {
-            return tnt.uiMgr.loadUIWithCtor(this.userControllerComponent, this.attr.component);
+            return tnt.resourcesMgr.loadPrefabNode(this.userControllerComponent, this.attr.component);
         },
     });
 
