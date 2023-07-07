@@ -1,33 +1,39 @@
 import { Game, game, input, Input, KeyCode } from "cc";
 
-declare global{
-    interface ITNT{
+declare global {
+    interface ITNT {
         keyboard: KeyboardMgr;
     }
 }
 export class KeyboardMgr {
-    private keyBordHandler: IKeyboard [] = [];
+    private keyBordHandler: IKeyboard[] = [];
     private _downKeyList = [];
     private static _keyboard: KeyboardMgr = null;
-    private _ctrlKeys = [KeyCode.CTRL_LEFT,KeyCode.SHIFT_LEFT,KeyCode.ALT_LEFT];
+    private _ctrlKeys = [KeyCode.CTRL_LEFT, KeyCode.SHIFT_LEFT, KeyCode.ALT_LEFT];
 
     // 是否启用组合键
     public enableCombination = false;
 
-    constructor(){
-        game.on(Game.EVENT_HIDE,()=>{
+    constructor() {
+        game.on(Game.EVENT_HIDE, () => {
             this._downKeyList.length = 0;
         });
     }
-    public static getInstance() : KeyboardMgr {
-        if(!this._keyboard){
+    public static getInstance(): KeyboardMgr {
+        if (!this._keyboard) {
             this._keyboard = new KeyboardMgr();
         }
         return this._keyboard;
     }
-    
+
     public on(target: IKeyboard) {
         this._KeyBordEvent(true);
+
+        // 防止重复注册同一事件
+        let findPlugin = this.keyBordHandler.find(item => item === target);
+        if (findPlugin) {
+            return;
+        }
         this.keyBordHandler.push(target);
     }
     public off(target: IKeyboard) {
@@ -69,19 +75,19 @@ export class KeyboardMgr {
             this._downKeyList.push(event.keyCode);
         }
 
-        if(this.enableCombination){
+        if (this.enableCombination) {
             // 检查组合键
             for (let i = 0; i < this._ctrlKeys.length; i++) {
                 const ctrlKey = this._ctrlKeys[i];
-                if(ctrlKey === event.keyCode){
+                if (ctrlKey === event.keyCode) {
                     continue;
                 }
                 // 有摁下的 控制键
                 if (this._downKeyList.indexOf(ctrlKey) !== -1) {
-                    
+
 
                     this.keyBordHandler.forEach((target, index) => {
-                        target.onKeyCombination?.call(target, ctrlKey,event.keyCode);
+                        target.onKeyCombination?.call(target, ctrlKey, event.keyCode);
                     });
                     return;
                 }
@@ -98,7 +104,7 @@ export class KeyboardMgr {
 
     private _onKeyUp(event) {
         var index = this._downKeyList.indexOf(event.keyCode);
-        if (index != -1) {               
+        if (index != -1) {
             if (index > -1) {
                 this._downKeyList.splice(index, 1);
             }
@@ -107,20 +113,20 @@ export class KeyboardMgr {
             target.onKeyUp?.call(target, event);
         });
     };
-    
-    private _onKeyPressing(event){
 
-        if(this.enableCombination){
+    private _onKeyPressing(event) {
+
+        if (this.enableCombination) {
             // 检查组合键
             for (let i = 0; i < this._ctrlKeys.length; i++) {
                 const ctrlKey = this._ctrlKeys[i];
-                if(ctrlKey === event.keyCode){
+                if (ctrlKey === event.keyCode) {
                     continue;
                 }
                 // 有摁下的 控制键  组合键长摁
                 if (this._downKeyList.indexOf(ctrlKey) !== -1) {
                     this.keyBordHandler.forEach((target, index) => {
-                        target.onKeyCombinationPressing?.call(target, ctrlKey,event.keyCode);
+                        target.onKeyCombinationPressing?.call(target, ctrlKey, event.keyCode);
                     });
                     return;
                 }
