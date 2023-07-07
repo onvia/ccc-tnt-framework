@@ -128,7 +128,7 @@ declare global {
         onPluginUnRegister?();
     }
 
-    interface IUIWindowPlugin extends IPluginCommon{
+    interface IUIMgrPlugin extends IPluginCommon{
 
         onUIMgrReInit?();
 
@@ -146,7 +146,7 @@ declare global {
 
     }
 
-    interface IScenePlugin extends IPluginCommon, ISceneListener{
+    interface ISceneMgrPlugin extends IPluginCommon, ISceneListener{
         /**
          * 开始切换场景，当切换场景的方法被调用时执行
          *

@@ -4,7 +4,7 @@ const { ccclass } = _decorator;
 
 @plugin("UIMgr")
 @ccclass("TopMenuBarPlugin")
-export default class TopMenuBarPlugin implements IUIWindowPlugin {
+export default class TopMenuBarPlugin implements IUIMgrPlugin {
     name: string = "TopMenuBarPlugin";
 
     constructor() {

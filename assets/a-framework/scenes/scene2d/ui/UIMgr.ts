@@ -28,7 +28,7 @@ declare global {
     }
 
     interface IPluginType {
-        UIMgr: any;
+        UIMgr: IUIMgrPlugin;
     }
 
     interface UIQueueOpts<T extends Key_Golbal_Window_Type> {
@@ -183,7 +183,7 @@ const ACTION_TAG = 10000;
 @ccclass("UIMgr")
 export class UIMgr extends tnt.EventMgr implements IPluginMgr {
 
-    public static ___plugins: IUIWindowPlugin[] = [];
+    public static ___plugins: IUIMgrPlugin[] = [];
 
     public readonly Event = {
         All_VIEW_CLOSED: 'All_VIEW_CLOSED',
@@ -1033,8 +1033,8 @@ export class UIMgr extends tnt.EventMgr implements IPluginMgr {
         });
     }
 
-    registerPlugin?(plugins: IUIWindowPlugin | IUIWindowPlugin[]);
-    unregisterPlugin?(plugin: IUIWindowPlugin | string);
+    registerPlugin?(plugins: IUIMgrPlugin | IUIMgrPlugin[]);
+    unregisterPlugin?(plugin: IUIMgrPlugin | string);
 
     private static _instance: UIMgr = null
     public static getInstance(): UIMgr {

@@ -10,7 +10,7 @@ declare global {
         sceneMgr: SceneMgr;
     }
     interface IPluginType {
-        SceneMgr: any;
+        SceneMgr: ISceneMgrPlugin;
     }
     
 }
@@ -35,11 +35,10 @@ type SceneBase<T = any> = tnt.SceneBase<T>;
 
 @pluginMgr("SceneMgr")
 @ccclass('SceneMgr')
-class SceneMgr extends tnt.EventMgr implements IScenePlugin, IPluginMgr{
+class SceneMgr extends tnt.EventMgr implements ISceneMgrPlugin, IPluginMgr{
     name: string = "SceneMgr";
-        
     
-    public static ___plugins: IScenePlugin[] = [];
+    public static ___plugins: ISceneMgrPlugin[] = [];
 
     readonly EVENT_EXIT_SCENE = "EVENT_EXIT_SCENE";
 
@@ -393,8 +392,8 @@ class SceneMgr extends tnt.EventMgr implements IScenePlugin, IPluginMgr{
         this.currentScene?.onExitTransitionFinished();
     }
     
-    registerPlugin?(plugins: IScenePlugin | IScenePlugin[]);
-    unregisterPlugin?(plugin: IScenePlugin | string);
+    registerPlugin?(plugins: ISceneMgrPlugin | ISceneMgrPlugin[]);
+    unregisterPlugin?(plugin: ISceneMgrPlugin | string);
     
 
     private static _instance: SceneMgr = null

@@ -20,6 +20,8 @@ export class MainScene extends tnt.SceneBase {
                 tnt.sceneMgr.to(element.scene as any,{bundle: element.bundle});
             });
         }
+        
+        tnt.btnCommonEventMgr.bind(this);
     }
     
     onEnterTransitionFinished(sceneName?: string): void {

@@ -30,11 +30,12 @@ declare global {
     }
 }
 
-let _plugins: IBtnEventPlugin[] = [];
 
 @pluginMgr('BtnCommonEventMgr')
 @ccclass('BtnCommonEventMgr')
-export class BtnCommonEventMgr {
+export class BtnCommonEventMgr implements IPluginMgr{
+
+    public static ___plugins: IBtnEventPlugin[] = [];
 
     public bind(target: Node | Component) {
         let node: Node = target as any;
@@ -88,32 +89,15 @@ export class BtnCommonEventMgr {
     }
 
     private _execPluginOnClick(button: Button) {
-        _plugins.forEach((plugin) => {
+        BtnCommonEventMgr.___plugins.forEach((plugin) => {
             plugin.onClick(button);
         });
     }
 
-    public static registerPluginAuto(plugins: IBtnEventPlugin | IBtnEventPlugin[]) {
-        if (!Array.isArray(plugins)) {
-            plugins = [plugins];
-        }
-
-        plugins.forEach((plugin) => {
-            //插件能不重复
-            let findPlugin = _plugins.find(item => item.name === plugin.name || item === plugin);
-            if (findPlugin) {
-                console.log(`BtnCommonEventMgr-> 已存在相同名称的插件 ${plugin.name}`);
-                return;
-            }
-
-            _plugins.push(plugin);
-        });
-
-        _plugins.sort((a, b) => {
-            return (b.priority || 0) - (a.priority || 0);
-        });
-    }
-
+    
+    registerPlugin?(plugins: IPluginCommon | IPluginCommon[]);
+    unregisterPlugin?(plugin: IPluginCommon | string);
+    
     private static _instance: BtnCommonEventMgr = null
     public static getInstance(): BtnCommonEventMgr {
         if (!this._instance) {

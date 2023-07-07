@@ -27,7 +27,7 @@ let __pluginMap: Map<string, any[]> = new Map();
 let __isRegistedPlugin = false;
 
 
-function component_sound(name?: string, type?: GConstructor<Component>, parent?: string | ButtonPropertyOptions, options?: ButtonPropertyOptions) {
+function _component_sound(name?: string, type?: GConstructor<Component>, parent?: string | ButtonPropertyOptions, options?: ButtonPropertyOptions) {
     return (target: any, propertyKey: string) => {
         if (!options && typeof parent == "object") {
             options = parent;
@@ -42,6 +42,66 @@ function component_sound(name?: string, type?: GConstructor<Component>, parent?:
     }
 }
 
+/**
+ * 补充注册插件
+ *
+ * @param {string} pluginName
+ * @return {*} 
+ */
+function __registePlugins(pluginName: string) {
+    if (!__isRegistedPlugin) {
+        return;
+    }
+    let mgr = __pluginMgrMap.get(pluginName);
+    let plugins = __pluginMap.get(pluginName);
+    if (!mgr || !plugins?.length) {
+        return;
+    }
+
+    if (mgr.registerPluginAuto) {
+        console.warn(`插件管理器【${pluginName}】 请实现 registerPluginAuto 静态方法`);
+    }
+
+    for (let i = 0; i < plugins.length; i++) {
+        const ctor = plugins[i];
+        let ins = new ctor();
+        mgr.registerPluginAuto(ins);          
+        console.log(`后加载插件 ${pluginName}： ${js.getClassName(ctor)}`);
+    }
+    plugins.length = 0;
+}
+
+/**
+ * 统一注册插件
+ *
+ * @return {*} 
+ */
+function _registePlugins() {
+    if (__isRegistedPlugin) {
+        return;
+    }
+    __isRegistedPlugin = true;
+    console.log(`_decorator-> 注入所有插件`);
+
+    __pluginMgrMap.forEach((target, key) => {
+        if (!target.registerPluginAuto) {
+            console.warn(`插件管理器【${key}】 请实现 registerPluginAuto 静态方法`);
+            return;
+        }
+        if (__pluginMap.has(key)) {
+            let plugins = __pluginMap.get(key);
+            for (let i = 0; i < plugins.length; i++) {
+                const ctor = plugins[i];
+                let ins = new ctor();
+                target.registerPluginAuto(ins);
+                console.log(`正常加载插件 ${key} ： ${js.getClassName(ctor)}`);
+            }
+            plugins.length = 0;
+        } else {
+            console.warn(`【${key}】没有任何插件`);
+        }
+    });
+}
 
 let __decorator = {
 
@@ -69,7 +129,7 @@ let __decorator = {
                         //插件能不重复
                         let findPlugin = target.___plugins.find(item => item.name === plugin.name || item === plugin);
                         if (findPlugin) {
-                            console.log(`UIMgr-> 已存在相同名称的插件 ${plugin.name}`);
+                            console.log(`${name}-> 已存在相同名称的插件 ${plugin.name}`);
                             return;
                         }
 
@@ -103,11 +163,11 @@ let __decorator = {
                 }
 
             }
-            
+
             __pluginMgrMap.set(name, target);
 
             // 检查是否有可以注册的插件
-            __decorator.__registePlugins(name);
+            __registePlugins(name);
         }
     },
 
@@ -135,62 +195,10 @@ let __decorator = {
             console.log(`_decorator-> ${name} 增加插件 ${js.getClassName(target)}`);
 
             // 检查是否可以注册插件
-            __decorator.__registePlugins(name);
+            __registePlugins(name);
         }
     },
-
-    __registePlugins(pluginName: string) {
-        if (!__isRegistedPlugin) {
-            return;
-        }
-        let mgr = __pluginMgrMap.get(pluginName);
-        let plugins = __pluginMap.get(pluginName);
-        if (!mgr || !plugins?.length) {
-            return;
-        }
-
-        if (mgr.registerPluginAuto) {
-            console.warn(`插件管理器【${pluginName}】 请实现 registerPluginAuto 静态方法`);
-        }
-
-        for (let i = 0; i < plugins.length; i++) {
-            const ctor = plugins[i];
-            let ins = new ctor();
-            mgr.registerPluginAuto(ins);          
-            console.log(`后加载插件 ${pluginName}： ${js.getClassName(ctor)}`);
-        }
-        plugins.length = 0;
-    },
-
-    /**
-     * 无需手动调用
-     */
-    _registePlugins() {
-        if (__isRegistedPlugin) {
-            return;
-        }
-        __isRegistedPlugin = true;
-        console.log(`_decorator-> 注入所有插件`);
-
-        __pluginMgrMap.forEach((target, key) => {
-            if (!target.registerPluginAuto) {
-                console.warn(`插件管理器【${key}】 请实现 registerPluginAuto 静态方法`);
-                return;
-            }
-            if (__pluginMap.has(key)) {
-                let plugins = __pluginMap.get(key);
-                for (let i = 0; i < plugins.length; i++) {
-                    const ctor = plugins[i];
-                    let ins = new ctor();
-                    target.registerPluginAuto(ins);
-                    console.log(`正常加载插件 ${key} ： ${js.getClassName(ctor)}`);
-                }
-                plugins.length = 0;
-            } else {
-                console.warn(`【${key}】没有任何插件`);
-            }
-        });
-    },
+    _registePlugins: _registePlugins,
 
     /**
      * UI 的预制体路径
@@ -249,11 +257,11 @@ let __decorator = {
 
 
     toggle(name?: string, parent?: string | ButtonPropertyOptions, options?: ButtonPropertyOptions,) {
-        return component_sound(name, Toggle, parent, options);
+        return _component_sound(name, Toggle, parent, options);
     },
 
     button(name?: string, parent?: string | ButtonPropertyOptions, options?: ButtonPropertyOptions) {
-        return component_sound(name, Button, parent, options);
+        return _component_sound(name, Button, parent, options);
     },
 
     //  component(type: Constructor<Component>,parent?: string)

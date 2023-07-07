@@ -1,4 +1,4 @@
-import { _decorator, Node, tween, Tween } from "cc";
+import { _decorator, Node, tween, Tween, game } from "cc";
 
 const { ccclass } = _decorator;
 const { prefabUrl, node, sprite, button } = tnt._decorator;
@@ -29,7 +29,7 @@ export class LoadingTips extends tnt.UIPanel<LoadingTipsOptions> {
     protected onEnable(): void {
         this.loading.active = false;
         // 下一帧才显示 loading 动画
-        tween(this).delay(0).call(()=>{
+        tween(this).delay(game.deltaTime).call(()=>{
             this.loading.active = true;
         }).start();
     }

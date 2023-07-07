@@ -32,7 +32,7 @@ declare global {
         onComplete: T | null;
     }
 
-    interface ILoaderPlugin {
+    interface IAssetLoaderPlugin {
         name: string;
         priority?: number;
         onLoadComplete(loader: AssetLoader, path: string, asset: Asset, bundle: Bundle): void;
@@ -55,7 +55,7 @@ declare global {
     }
 
     interface IPluginType {
-        AssetLoader: ILoaderPlugin;
+        AssetLoader: IAssetLoaderPlugin;
     }
 }
 
@@ -139,14 +139,14 @@ class Cache {
 
 }
 
-let _plugins: ILoaderPlugin[] = [];
 
 @pluginMgr("AssetLoader")
-class AssetLoader {
+class AssetLoader implements IPluginMgr {
     public key: string = "";
     public windowName: string = "";
     protected static loadedBundles: Map<string, BundleWrap> = new Map();
     protected static bundleVersions: Map<string, string> = null;
+    public static ___plugins: IAssetLoaderPlugin[] = [];
 
     /**
      * 是否在 Bundle 引用计数归零的时候自动释放 Bundle 
@@ -216,9 +216,9 @@ class AssetLoader {
 
                 assetManager.loadBundle(bundleName, options, (err: Error | null, data: Bundle) => {
                     if (err == null) {
-                        if(this.loadedBundles.has(bundleName as string)){
+                        if (this.loadedBundles.has(bundleName as string)) {
                             bundle = this.loadedBundles.get(bundleName as string);
-                        }else{
+                        } else {
                             bundle = new BundleWrap(bundleName as string, data);
                             this.loadedBundles.set(bundleName as string, bundle);
                         }
@@ -274,8 +274,9 @@ class AssetLoader {
         this._loadCount--;
     }
     /**
-     * 升维，不会释放资源。  
-     * 正在加载的资源不会执行 onProgress & onComplete 回调
+     * 升维  
+     * 正在加载的资源不会执行 onProgress & onComplete 回调  
+     * 加载完成后，如果当前 加载器 isValid == false 资源也不会被释放  
      *
      * @memberof AssetLoader
      */
@@ -283,53 +284,31 @@ class AssetLoader {
         this._level++;
     }
 
-    public static registerPluginAuto(plugins: ILoaderPlugin | ILoaderPlugin[]) {
-        if (EDITOR) {
-            return;
-        }
-        if (!Array.isArray(plugins)) {
-            plugins = new Array(plugins);
-        }
-
-        plugins.forEach((plugin) => {
-            //插件能不重复
-            let findPlugin = _plugins.some(item => item.name === plugin.name || item === plugin);
-            if (findPlugin) {
-                return;
-            }
-            _plugins.push(plugin);
-        });
-
-        _plugins.sort((a, b) => {
-            return (b.priority || 0) - (a.priority || 0);
-        });
-    }
-
     private onLoadArrayComplete(path: string[], assets: Asset[], bundle: Bundle) {
-        _plugins.forEach((plugin) => {
+        AssetLoader.___plugins.forEach((plugin) => {
             plugin.onLoadArrayComplete(this, path, assets, bundle);
         });
     }
     private onLoadComplete(path: string, asset: Asset, bundle: Bundle) {
-        _plugins.forEach((plugin) => {
+        AssetLoader.___plugins.forEach((plugin) => {
             plugin.onLoadComplete(this, path, asset, bundle);
         });
     }
 
     private onLoadDirComplete(path: string, assets: Asset[], bundle: Bundle) {
-        _plugins.forEach((plugin) => {
+        AssetLoader.___plugins.forEach((plugin) => {
             plugin.onLoadDirComplete(this, path, assets, bundle);
         });
     }
 
     private onRelease(path: string, asset: Asset) {
-        _plugins.forEach((plugin) => {
+        AssetLoader.___plugins.forEach((plugin) => {
             plugin.onRelease(this, path, asset);
         });
     }
 
     private onLoadSceneComplete(sceneName: string, scene: SceneAsset, bundle: Bundle) {
-        _plugins.forEach((plugin) => {
+        AssetLoader.___plugins.forEach((plugin) => {
             plugin.onLoadSceneComplete(this, sceneName, scene, bundle);
         });
     }
@@ -337,12 +316,14 @@ class AssetLoader {
     /** 预处理资源 */
     private onAssetPreProcessing(path: string, asset: Asset, bundle: Bundle) {
         let final_asset = asset;
-        _plugins.forEach((plugin) => {
+        AssetLoader.___plugins.forEach((plugin) => {
             final_asset = plugin.onAssetPreProcessing(this, path, final_asset, bundle);
         });
         return final_asset;
     }
 
+    registerPlugin?(plugins: IPluginCommon | IPluginCommon[]);
+    unregisterPlugin?(plugin: IPluginCommon | string);
 
     /**
      * 只会释放当前 AssetLoader 持有的指定 Bundle 资源
@@ -558,9 +539,11 @@ class AssetLoader {
 
         let _level = this._level;
         this.loadBundleWrap(bundle, (err, bundleWrap) => {
+
             if (err) {
+                let isSameLevel = _level == this._level;
                 this._decCount();
-                onComplete?.(err, null);
+                isSameLevel && onComplete?.(err, null);
                 return;
             }
 
@@ -579,17 +562,16 @@ class AssetLoader {
                 onProgress?.(finish, total, item);
             }, (error: Error, assets: T[]) => {
                 this._decCount();
-                if (_level != this._level) {
-                    return;
-                }
+                let isSameLevel = _level == this._level;
+
                 if (error) {
-                    onComplete?.(error, assets);
+                    isSameLevel && onComplete?.(error, assets);
                     return;
                 }
                 // 重新分配元素
                 assets = assets.map((asset) => {
 
-                    if (!this.isValid) {
+                    if (!this.isValid && isSameLevel) {
                         asset.addRef();
                         asset.decRef();
                         return null;
@@ -614,8 +596,10 @@ class AssetLoader {
                     return;
                 }
 
-                this.onLoadArrayComplete(paths, assets, bundleWrap.bundle);
-                onComplete?.(error, assets);
+                if (isSameLevel) {
+                    this.onLoadArrayComplete(paths, assets, bundleWrap.bundle);
+                    onComplete?.(error, assets);
+                }
             });
         });
 
@@ -644,9 +628,11 @@ class AssetLoader {
         }
 
         this.loadBundleWrap(bundle, (err, bundleWrap) => {
+
             if (err) {
+                let isSameLevel = _level == this._level;
                 this._decCount();
-                onComplete?.(err, null);
+                isSameLevel && onComplete?.(err, null);
                 return;
             }
 
@@ -659,13 +645,11 @@ class AssetLoader {
                 onProgress?.(finish, total, item);
             }, (error: Error, asset: T) => {
                 this._decCount();
-                if (_level != this._level) {
-                    return;
-                }
+                let isSameLevel = _level == this._level;
                 if (error) {
-                    onComplete?.(error, asset);
+                    isSameLevel && onComplete?.(error, asset);
                 } else {
-                    if (!this.isValid) {
+                    if (!this.isValid && isSameLevel) {
                         asset.addRef();
                         asset.decRef();
                         return;
@@ -676,8 +660,10 @@ class AssetLoader {
                     if (assetWrap) {
                         assetWrap.addRef();
                         let _asset: Asset = assetWrap.asset;
-                        this.onLoadComplete(path, _asset, bundleWrap.bundle);
-                        onComplete?.(null, _asset);
+                        if (isSameLevel) {
+                            this.onLoadComplete(path, _asset, bundleWrap.bundle);
+                            onComplete?.(null, _asset);
+                        }
                         return;
                     }
 
@@ -687,9 +673,10 @@ class AssetLoader {
                     assetWrap.addRef();
                     this._cache.set(u_path, assetWrap);
 
-
-                    this.onLoadComplete(path, asset, bundleWrap.bundle);
-                    onComplete?.(error, asset);
+                    if (isSameLevel) {
+                        this.onLoadComplete(path, asset, bundleWrap.bundle);
+                        onComplete?.(error, asset);
+                    }
                 }
             });
         });
@@ -742,8 +729,9 @@ class AssetLoader {
         }
         this.loadBundleWrap(bundle, (err, bundleWrap) => {
             if (err) {
+                let isSameLevel = _level == this._level;
                 this._decCount();
-                onComplete?.(err, null);
+                isSameLevel && onComplete?.(err, null);
                 return;
             }
             bundleWrap.bundle.loadDir(path, type as any, (finish: number, total: number, item: RequestItem) => {
@@ -753,17 +741,16 @@ class AssetLoader {
                 onProgress?.(finish, total, item);
             }, (error: Error, assets: Array<T>) => {
                 this._decCount();
-                if (_level != this._level) {
-                    return;
-                }
+
+                let isSameLevel = _level == this._level;
 
                 if (error) {
-                    onComplete?.(error, assets);
+                    isSameLevel && onComplete?.(error, assets);
                     return;
                 }
                 // 重新分配元素
                 assets = assets.map((asset) => {
-                    if (!this.isValid) {
+                    if (!this.isValid && isSameLevel) {
                         asset.addRef();
                         asset.decRef();
                         return null;
@@ -791,8 +778,10 @@ class AssetLoader {
                     return;
                 }
 
-                this.onLoadDirComplete(path, assets, bundleWrap.bundle);
-                onComplete?.(error, assets);
+                if (isSameLevel) {
+                    this.onLoadDirComplete(path, assets, bundleWrap.bundle);
+                    onComplete?.(error, assets);
+                }
             });
         });
     }

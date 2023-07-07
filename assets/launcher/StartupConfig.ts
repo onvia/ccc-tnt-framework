@@ -8,8 +8,11 @@ export let startupOptions: IStartupOptions = {
     
     defaultBtnSound: "click",
     soundConfig: {
+        
     },
-
+    audioConfig:{
+        bundle: "common-bundle",
+    },
 
     i18nConfig: {
         language: "zh",

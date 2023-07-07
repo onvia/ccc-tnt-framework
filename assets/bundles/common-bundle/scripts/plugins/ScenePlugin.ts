@@ -7,12 +7,11 @@ const { plugin } = tnt._decorator;
 
 @plugin('SceneMgr') // 注册成为插件
 @ccclass('ScenePlugin')
-export class ScenePlugin implements IScenePlugin {
+export class ScenePlugin implements ISceneMgrPlugin {
 
     name: string = "ScenePlugin";
 
-    loadingTips: LoadingTips = null;
-
+    loadingTipsPromise: Promise<LoadingTips> = null;
     private constructor() {
 
     }
@@ -26,11 +25,20 @@ export class ScenePlugin implements IScenePlugin {
     }
     async onSceneChangeBegin(currentScene: string, nextScene: string) {
         let lock = tnt.panelMgr.getLayer(tnt.panelMgr.Enum.LayerLock);
-        // 转菊花
-        if(!this.loadingTips){
-            this.loadingTips = await tnt.resourcesMgr.addPrefabNode(tnt.loaderMgr.share,LoadingTips,lock);
+        if(!this.loadingTipsPromise){
+            this.loadingTipsPromise = tnt.resourcesMgr.addPrefabNode(tnt.loaderMgr.share,LoadingTips,lock);
+           console.log(`ScenePlugin-> 顺序执行显示菊花`);           
+            this.loadingTipsPromise.then(()=>{
+                console.log(`ScenePlugin-> 显示菊花`);
+                console.time('[tnt] 展示菊花');
+                
+            });
         }else{
-            this.loadingTips.node.parent = lock;
+            this.loadingTipsPromise.then((res)=>{
+                console.time('[tnt] 展示菊花');
+                res.node.parent = lock;
+                console.log(`ScenePlugin-> 显示菊花`);
+            });
         }
     }
 
@@ -40,17 +48,17 @@ export class ScenePlugin implements IScenePlugin {
     
     /** 进入新场景后的过渡动画开始 */
     onEnterTransitionStart?(sceneName: string) {
-        console.log(`ScenePlugin-> 进入场景，过渡动画开始  ${sceneName || "LoadingScene"}`);
+        console.log(`ScenePlugin-> 进入新场景，过渡动画开始  ${sceneName || "LoadingScene"}`);
 
     }
     /** 进入新场景后的过渡动画将要结束 */
     onEnterTransitionWillFinished?(sceneName: string) {
-        console.log(`ScenePlugin-> 进入场景，过渡动画将要结束  ${sceneName || "LoadingScene"}`);
+        console.log(`ScenePlugin-> 进入新场景，过渡动画将要结束  ${sceneName || "LoadingScene"}`);
 
     }
     /** 进入新场景后的过渡动画结束 */
     onEnterTransitionFinished?(sceneName: string) {
-        console.log(`ScenePlugin-> 进入场景，过渡动画结束  ${sceneName || "LoadingScene"}`);
+        console.log(`ScenePlugin-> 进入新场景，过渡动画结束  ${sceneName || "LoadingScene"}`);
 
     }
 
@@ -59,9 +67,14 @@ export class ScenePlugin implements IScenePlugin {
     onExitTransitionStart?(sceneName: string) {
         console.log(`ScenePlugin-> 退出场景，过渡动画开始  ${sceneName || "LoadingScene"}`);
         // 隐藏菊花
-
-        if(this.loadingTips){
-            this.loadingTips.node.removeFromParent();
+        console.log(`ScenePlugin-> 顺序执行隐藏菊花`);
+        if(this.loadingTipsPromise){
+            this.loadingTipsPromise.then((res)=>{
+                console.log(`ScenePlugin-> 隐藏菊花`);
+                console.timeEnd('[tnt] 展示菊花');
+                res.node.removeFromParent();
+            });
+          
         }
 
     }

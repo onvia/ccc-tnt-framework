@@ -4,7 +4,7 @@ const { plugin } = tnt._decorator;
 
 @plugin("UIMgr")
 @ccclass('UIDebugToastPlugin')
-export class UIDebugToastPlugin implements IUIWindowPlugin {
+export class UIDebugToastPlugin implements IUIMgrPlugin {
     name: string = "UIDebugToastPlugin";
 
     onUIMgrReInit?() {
