@@ -1,10 +1,11 @@
-import { AssetManager, assetManager, Asset, Node, Prefab, instantiate, js } from "cc";
+import { AssetManager, assetManager, Asset, Node, Prefab, instantiate, js, Sprite, SpriteFrame, isValid } from "cc";
 
 declare global {
     interface ITNT {
         resourcesMgr: ResourcesMgr;
     }
 }
+type LoaderType = ILoaderKeyAble | tnt.AssetLoader | string;
 
 type Bundle = AssetManager.Bundle;
 class ResourcesMgr {
@@ -17,23 +18,23 @@ class ResourcesMgr {
         tnt.AssetLoader.loadBundle(bundleName, onComplete);
     }
 
-    public getLoader(key: any) {
-        let loader = tnt.loaderMgr.get(key);
+    public getLoader(key: LoaderType) {
+        let loader = this._convertToLoader(key);
         return loader;
     }
 
-    public preload(key: any, paths: string | string[], type: CCAssetType, _bundle?: Bundle | string): void
-    public preload(key: any, paths: string | string[], type: CCAssetType, _onComplete?: CCCompleteCallbackWithData<RequestItem[]>, _bundle?: Bundle | string): void
-    public preload(key: any, paths: string | string[], type: CCAssetType, _onProgress: CCProgressCallback, _onComplete: CCCompleteCallbackWithData<RequestItem[]>, _bundle?: Bundle | string): void;
+    public preload(key: LoaderType, paths: string | string[], type: CCAssetType, _bundle?: Bundle | string): void
+    public preload(key: LoaderType, paths: string | string[], type: CCAssetType, _onComplete?: CCCompleteCallbackWithData<RequestItem[]>, _bundle?: Bundle | string): void
+    public preload(key: LoaderType, paths: string | string[], type: CCAssetType, _onProgress: CCProgressCallback, _onComplete: CCCompleteCallbackWithData<RequestItem[]>, _bundle?: Bundle | string): void;
     public preload(
-        key: any,
+        key: LoaderType,
         paths: string | string[],
         type: CCAssetType,
         _onProgress?: CCProgressCallback | CCCompleteCallbackWithData<RequestItem[]> | null | Bundle | string,
         _onComplete?: CCCompleteCallbackWithData<RequestItem[]> | null | Bundle | string,
         _bundle?: Bundle | string
     ) {
-        let loader = tnt.loaderMgr.get(key);
+        let loader = this._convertToLoader(key);
 
         let obj = loader.parsingLoadArgs(_onProgress, _onComplete, _bundle);
 
@@ -63,18 +64,18 @@ class ResourcesMgr {
     }
 
 
-    public preloadDir(key: any, dir: string, type: CCAssetType | null, _bundle?: Bundle | string)
-    public preloadDir(key: any, dir: string, type: CCAssetType | null, _onProgress: CCProgressCallback | null, _onComplete: CCCompleteCallbackWithData<RequestItem[]> | null, _bundle?: Bundle | string)
-    public preloadDir(key: any, dir: string, type: CCAssetType | null, _onComplete?: CCCompleteCallbackWithData<RequestItem[]> | null, _bundle?: Bundle | string)
+    public preloadDir(key: LoaderType, dir: string, type: CCAssetType | null, _bundle?: Bundle | string)
+    public preloadDir(key: LoaderType, dir: string, type: CCAssetType | null, _onProgress: CCProgressCallback | null, _onComplete: CCCompleteCallbackWithData<RequestItem[]> | null, _bundle?: Bundle | string)
+    public preloadDir(key: LoaderType, dir: string, type: CCAssetType | null, _onComplete?: CCCompleteCallbackWithData<RequestItem[]> | null, _bundle?: Bundle | string)
     public preloadDir(
-        key: any,
+        key: LoaderType,
         dir: string,
         type?: CCAssetType,
         _onProgress?: CCProgressCallback | CCCompleteCallbackWithData<RequestItem[]> | null | Bundle | string,
         _onComplete?: CCCompleteCallbackWithData<RequestItem[]> | null | Bundle | string,
         _bundle?: Bundle | string
     ) {
-        let loader = tnt.loaderMgr.get(key);
+        let loader = this._convertToLoader(key);
         let { onProgress, onComplete, bundle } = loader.parsingLoadArgs(_onProgress, _onComplete, _bundle);
         loader.loadBundleWrap(bundle, (err, bundleWrap) => {
             if (err) {
@@ -96,15 +97,15 @@ class ResourcesMgr {
     }
 
 
-    public preloadScene(key: any, sceneName: string, bundle?: AssetManager.Bundle | string)
-    public preloadScene(key: any, sceneName: string, onComplete?: CCCompleteCallbackNoData, bundle?: AssetManager.Bundle | string)
-    public preloadScene(key: any, sceneName: string, options?: CCIAssetOptions | null, bundle?: AssetManager.Bundle | string)
-    public preloadScene(key: any, sceneName: string, options?: CCIAssetOptions | null, onComplete?: CCCompleteCallbackNoData, bundle?: AssetManager.Bundle | string)
-    public preloadScene(key: any, sceneName: string, onProgress?: CCProgressCallback, onComplete?: CCCompleteCallbackNoData, bundle?: AssetManager.Bundle | string)
-    public preloadScene(key: any, sceneName: string, _options?: CCIAssetOptions | null | CCProgressCallback | AssetManager.Bundle | string, _onProgress?: CCProgressCallback | CCCompleteCallbackNoData | AssetManager.Bundle | string, _onComplete?: CCCompleteCallbackNoData | AssetManager.Bundle | string, _bundle?: AssetManager.Bundle | string) {
+    public preloadScene(key: LoaderType, sceneName: string, bundle?: AssetManager.Bundle | string)
+    public preloadScene(key: LoaderType, sceneName: string, onComplete?: CCCompleteCallbackNoData, bundle?: AssetManager.Bundle | string)
+    public preloadScene(key: LoaderType, sceneName: string, options?: CCIAssetOptions | null, bundle?: AssetManager.Bundle | string)
+    public preloadScene(key: LoaderType, sceneName: string, options?: CCIAssetOptions | null, onComplete?: CCCompleteCallbackNoData, bundle?: AssetManager.Bundle | string)
+    public preloadScene(key: LoaderType, sceneName: string, onProgress?: CCProgressCallback, onComplete?: CCCompleteCallbackNoData, bundle?: AssetManager.Bundle | string)
+    public preloadScene(key: LoaderType, sceneName: string, _options?: CCIAssetOptions | null | CCProgressCallback | AssetManager.Bundle | string, _onProgress?: CCProgressCallback | CCCompleteCallbackNoData | AssetManager.Bundle | string, _onComplete?: CCCompleteCallbackNoData | AssetManager.Bundle | string, _bundle?: AssetManager.Bundle | string) {
 
 
-        let loader = tnt.loaderMgr.get(key);
+        let loader = this._convertToLoader(key);
         let { options, onProgress, onComplete, bundle } = loader.parseParameters(_options, _onProgress, _onComplete, _bundle);
         if (!bundle) {
             bundle = assetManager.bundles.find((bundle) => {
@@ -126,12 +127,12 @@ class ResourcesMgr {
     }
 
 
-    public loadArray<T extends Asset>(key: any, paths: string[], type: CCAssetType<T>, _bundle?: Bundle | string)
-    public loadArray<T extends Asset>(key: any, paths: string[], type: CCAssetType<T>, _onComplete?: CCCompleteCallbackWithData<T[]>, _bundle?: Bundle | string)
-    public loadArray<T extends Asset>(key: any, paths: string[], type: CCAssetType<T>, _onProgress?: CCProgressCallback, _onComplete?: CCCompleteCallbackWithData<T[]>, _bundle?: Bundle | string)
-    public loadArray<T extends Asset>(key: any, paths: string[], type: CCAssetType<T>, _onProgress?: CCProgressCallback | CCCompleteCallbackWithData<T[]> | Bundle | string, _onComplete?: CCCompleteCallbackWithData<T[]> | Bundle | string, _bundle?: Bundle | string) {
+    public loadArray<T extends Asset>(key: LoaderType, paths: string[], type: CCAssetType<T>, _bundle?: Bundle | string)
+    public loadArray<T extends Asset>(key: LoaderType, paths: string[], type: CCAssetType<T>, _onComplete?: CCCompleteCallbackWithData<T[]>, _bundle?: Bundle | string)
+    public loadArray<T extends Asset>(key: LoaderType, paths: string[], type: CCAssetType<T>, _onProgress?: CCProgressCallback, _onComplete?: CCCompleteCallbackWithData<T[]>, _bundle?: Bundle | string)
+    public loadArray<T extends Asset>(key: LoaderType, paths: string[], type: CCAssetType<T>, _onProgress?: CCProgressCallback | CCCompleteCallbackWithData<T[]> | Bundle | string, _onComplete?: CCCompleteCallbackWithData<T[]> | Bundle | string, _bundle?: Bundle | string) {
 
-        let loader = tnt.loaderMgr.get(key);
+        let loader = this._convertToLoader(key);
 
         let { onProgress, onComplete, bundle } = loader.parsingLoadArgs(_onProgress, _onComplete, _bundle);
         _onProgress = (finish: number, total: number, item: AssetManager.RequestItem) => {
@@ -146,11 +147,11 @@ class ResourcesMgr {
     }
 
 
-    public load<T extends Asset>(key: any, path: string, type: CCAssetType<T>, _bundle?: AssetManager.Bundle | string)
-    public load<T extends Asset>(key: any, path: string, type: CCAssetType<T>, _onComplete?: CCCompleteCallbackWithData<T>, _bundle?: AssetManager.Bundle | string)
-    public load<T extends Asset>(key: any, path: string, type: CCAssetType<T>, _onProgress?: CCProgressCallback, _onComplete?: CCCompleteCallbackWithData<T>, _bundle?: AssetManager.Bundle | string)
-    public load<T extends Asset>(key: any, path: string, type: CCAssetType<T>, _onProgress?: CCProgressCallback | CCCompleteCallbackWithData<T> | AssetManager.Bundle | string, _onComplete?: CCCompleteCallbackWithData<T> | AssetManager.Bundle | string, _bundle?: AssetManager.Bundle | string) {
-        let loader = tnt.loaderMgr.get(key);
+    public load<T extends Asset>(key: LoaderType, path: string, type: CCAssetType<T>, _bundle?: AssetManager.Bundle | string)
+    public load<T extends Asset>(key: LoaderType, path: string, type: CCAssetType<T>, _onComplete?: CCCompleteCallbackWithData<T>, _bundle?: AssetManager.Bundle | string)
+    public load<T extends Asset>(key: LoaderType, path: string, type: CCAssetType<T>, _onProgress?: CCProgressCallback, _onComplete?: CCCompleteCallbackWithData<T>, _bundle?: AssetManager.Bundle | string)
+    public load<T extends Asset>(key: LoaderType, path: string, type: CCAssetType<T>, _onProgress?: CCProgressCallback | CCCompleteCallbackWithData<T> | AssetManager.Bundle | string, _onComplete?: CCCompleteCallbackWithData<T> | AssetManager.Bundle | string, _bundle?: AssetManager.Bundle | string) {
+        let loader = this._convertToLoader(key);
 
         let { onProgress, onComplete, bundle } = loader.parsingLoadArgs(_onProgress, _onComplete, _bundle);
         _onProgress = (finish: number, total: number, item: AssetManager.RequestItem) => {
@@ -164,11 +165,11 @@ class ResourcesMgr {
     }
 
 
-    public loadDir<T extends Asset>(key: any, dir: string, type: CCAssetType<T>, _bundle?: AssetManager.Bundle | string)
-    public loadDir<T extends Asset>(key: any, dir: string, type: CCAssetType<T>, _onComplete?: CCCompleteCallbackWithData, _bundle?: AssetManager.Bundle | string)
-    public loadDir<T extends Asset>(key: any, dir: string, type: CCAssetType<T>, _onProgress?: CCProgressCallback, _onComplete?: CCCompleteCallbackWithData, _bundle?: AssetManager.Bundle | string)
-    public loadDir<T extends Asset>(key: any, dir: string, type: CCAssetType<T>, _onProgress?: CCProgressCallback | CCCompleteCallbackWithData | AssetManager.Bundle | string, _onComplete?: CCCompleteCallbackWithData | AssetManager.Bundle | string, _bundle?: AssetManager.Bundle | string) {
-        let loader = tnt.loaderMgr.get(key);
+    public loadDir<T extends Asset>(key: LoaderType, dir: string, type: CCAssetType<T>, _bundle?: AssetManager.Bundle | string)
+    public loadDir<T extends Asset>(key: LoaderType, dir: string, type: CCAssetType<T>, _onComplete?: CCCompleteCallbackWithData, _bundle?: AssetManager.Bundle | string)
+    public loadDir<T extends Asset>(key: LoaderType, dir: string, type: CCAssetType<T>, _onProgress?: CCProgressCallback, _onComplete?: CCCompleteCallbackWithData, _bundle?: AssetManager.Bundle | string)
+    public loadDir<T extends Asset>(key: LoaderType, dir: string, type: CCAssetType<T>, _onProgress?: CCProgressCallback | CCCompleteCallbackWithData | AssetManager.Bundle | string, _onComplete?: CCCompleteCallbackWithData | AssetManager.Bundle | string, _bundle?: AssetManager.Bundle | string) {
+        let loader = this._convertToLoader(key);
 
         let { onProgress, onComplete, bundle } = loader.parsingLoadArgs(_onProgress, _onComplete, _bundle);
         _onProgress = (finish: number, total: number, item: AssetManager.RequestItem) => {
@@ -184,11 +185,11 @@ class ResourcesMgr {
         loader.loadDir(dir, type, _onProgress, _onComplete, bundle);
     }
 
-    public loadScene(key: any, sceneName: string, _bundle?: AssetManager.Bundle | string)
-    public loadScene(key: any, sceneName: string, _onComplete?: CCCompleteCallbackWithData, _bundle?: AssetManager.Bundle | string)
-    public loadScene(key: any, sceneName: string, _onProgress: CCProgressCallback, _onComplete?: CCCompleteCallbackWithData, _bundle?: AssetManager.Bundle | string)
-    public loadScene(key: any, sceneName: string, _onProgress: CCProgressCallback | CCCompleteCallbackWithData | AssetManager.Bundle | string, _onComplete?: CCCompleteCallbackWithData | AssetManager.Bundle | string, _bundle?: AssetManager.Bundle | string) {
-        let loader = tnt.loaderMgr.get(key);
+    public loadScene(key: LoaderType, sceneName: string, _bundle?: AssetManager.Bundle | string)
+    public loadScene(key: LoaderType, sceneName: string, _onComplete?: CCCompleteCallbackWithData, _bundle?: AssetManager.Bundle | string)
+    public loadScene(key: LoaderType, sceneName: string, _onProgress: CCProgressCallback, _onComplete?: CCCompleteCallbackWithData, _bundle?: AssetManager.Bundle | string)
+    public loadScene(key: LoaderType, sceneName: string, _onProgress: CCProgressCallback | CCCompleteCallbackWithData | AssetManager.Bundle | string, _onComplete?: CCCompleteCallbackWithData | AssetManager.Bundle | string, _bundle?: AssetManager.Bundle | string) {
+        let loader = this._convertToLoader(key);
 
         let { onProgress, onComplete, bundle } = loader.parsingLoadArgs(_onProgress, _onComplete, _bundle);
         _onProgress = (finish: number, total: number, item: AssetManager.RequestItem) => {
@@ -219,8 +220,26 @@ class ResourcesMgr {
         return { prefabUrl, bundle };
     }
 
-    private _formatArgs<Options, T extends tnt.GComponent<Options>>(loaderKeyAble: ILoaderKeyAble | tnt.AssetLoader | string, clazz: GConstructor<T> | string) {
+    private _formatArgs<Options, T extends tnt.GComponent<Options>>(loaderKeyAble: LoaderType, clazz: GConstructor<T> | string) {
 
+        if (!loaderKeyAble) {
+            console.error(`ResourcesMgr-> loaderKeyAble 不能为空`);
+            return;
+        }
+
+        let loader = this._convertToLoader(loaderKeyAble);
+
+        let cls: GConstructor<T> = null;
+        if (typeof clazz === 'string') {
+            cls = js.getClassByName(clazz) as GConstructor<T>;
+        } else {
+            cls = clazz as GConstructor<T>;
+        }
+
+        return { loader, cls }
+    }
+
+    _convertToLoader(loaderKeyAble: LoaderType): tnt.AssetLoader {
         if (!loaderKeyAble) {
             console.error(`ResourcesMgr-> loaderKeyAble 不能为空`);
             return;
@@ -234,15 +253,50 @@ class ResourcesMgr {
         } else {
             loader = tnt.loaderMgr.get(loaderKeyAble.loaderKey)
         }
+        return loader;
+    }
 
-        let cls: GConstructor<T> = null;
-        if (typeof clazz === 'string') {
-            cls = js.getClassByName(clazz) as GConstructor<T>;
+    /**
+     * 更新 SpriteFrame
+     *
+     * @param {LoaderType} loaderKeyAble
+     * @param {Sprite} spriteOrNode
+     * @param {string} url
+     * @param {string} [bundle]
+     * @memberof ResourcesMgr
+     */
+
+    public updateSpriteFrame(loaderKeyAble: LoaderType, spriteOrNode: Sprite | Node, url: string, cb: Runnable): void
+    public updateSpriteFrame(loaderKeyAble: LoaderType, spriteOrNode: Sprite | Node, url: string, bundle: string): void
+    public updateSpriteFrame(loaderKeyAble: LoaderType, spriteOrNode: Sprite | Node, url: string, cb: Runnable, bundle: string): void
+    public updateSpriteFrame(loaderKeyAble: LoaderType, spriteOrNode: Sprite | Node, url: string, cbOrBundle?: Runnable | string, bundle?: string): void 
+    public updateSpriteFrame(loaderKeyAble: LoaderType, spriteOrNode: Sprite | Node, url: string, cbOrBundle?: Runnable | string, bundle?: string): void {
+        let loader = this._convertToLoader(loaderKeyAble);
+        let sprite = spriteOrNode instanceof Node ? spriteOrNode.getComponent(Sprite) : spriteOrNode;
+
+        let callback: Runnable = null;
+        if (!bundle) {
+            if (typeof cbOrBundle == 'string') {
+                bundle = cbOrBundle;
+            } else {
+                callback = cbOrBundle;
+            }
         } else {
-            cls = clazz as GConstructor<T>;
+            callback = cbOrBundle as Runnable;
         }
 
-        return { loader, cls }
+        loader.load(url, SpriteFrame, (err, asset: SpriteFrame) => {
+            if (err) {
+                console.warn(`ResourcesMgr-> updateSpriteFrame err: ${url}`);
+                callback?.(null);
+                return;
+            }
+            if (isValid(spriteOrNode, true)) {
+                sprite.spriteFrame = asset;
+                callback?.(asset);
+            }
+
+        }, bundle);
     }
 
     public loadPrefabAsset<Options, T extends tnt.GComponent<Options>>(loaderKeyAble: ILoaderKeyAble | tnt.AssetLoader | string, clazz: GConstructor<T> | string, options?: Options) {
@@ -312,7 +366,7 @@ class ResourcesMgr {
      * @memberof ResourcesMgr
      */
     public releaseAsset<T extends Asset>(loaderKey: any, path: string, type: CCAssetType<T>) {
-        let loader = tnt.loaderMgr.get(loaderKey);
+        let loader = this._convertToLoader(loaderKey);
         loader.releaseAsset(path, type);
     }
     /**
@@ -357,4 +411,4 @@ class ResourcesMgr {
 
 tnt.resourcesMgr = ResourcesMgr.getInstance();
 
-export {};
+export { };

@@ -74,7 +74,7 @@ class UIWindowBase<Options = any> extends tnt.UIBase<Options> implements ILoader
     public addCloseListener(func: Runnable) {
         this._closeListeners.push(func);
     }
-    
+
     public addWillCloseListener(func: Runnable) {
         this._willCloseListeners.push(func);
     }
@@ -217,14 +217,19 @@ class UIWindowBase<Options = any> extends tnt.UIBase<Options> implements ILoader
             console.warn(`UIWindowBase->_registerClickClose mask is null`);
             return;
         }
+        let blockInputEvents = mask.getComponent(BlockInputEvents);
         if (this._isClickAnyWhereClose) {
-            let blockInputEvents = mask.getComponent(BlockInputEvents);
             blockInputEvents?.destroy();
-            mask.addComponent(Button);
-            mask.once("click", this.close, this);
+            if (!mask.getComponent(Button)) {
+                mask.addComponent(Button);
+                mask.once("click", this.close, this);
+            }
         } else {
-
-            !this._isPenetrate && mask.addComponent(BlockInputEvents);
+            if (!this._isPenetrate) {
+                !blockInputEvents && mask.addComponent(BlockInputEvents);
+            } else {
+                blockInputEvents?.destroy();
+            }
         }
     }
     _unregisterClickClose() {
@@ -278,6 +283,12 @@ class UIWindowBase<Options = any> extends tnt.UIBase<Options> implements ILoader
      */
     public setClickAnyWhereClose(enable: boolean = true, callback?: Runnable) {
         this._isClickAnyWhereClose = enable;
+        if (this._isClickAnyWhereClose) {
+            this._registerClickClose();
+        } else {
+            this._unregisterClickClose();
+        }
+        
         if (this._clickAnyWhereCloseCallback) {
             this.removeCloseListener(this._clickAnyWhereCloseCallback);
         }

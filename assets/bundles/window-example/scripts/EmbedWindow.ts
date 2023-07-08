@@ -9,11 +9,10 @@ let { prefabUrl } = tnt._decorator;
 
 @prefabUrl("window-example#prefabs/EmbedWindow")
 @ccclass('EmbedWindow')
-export class EmbedWindow extends tnt.UIWindowBase {
+export class EmbedWindow extends tnt.UIWindow {
 
 
     onStart(): void {
-        this.setClickAnyWhereClose();
         this.registeButtonClick("btnClose", () => this.close());
 
         // 面板 0

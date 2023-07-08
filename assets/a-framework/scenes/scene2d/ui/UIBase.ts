@@ -179,8 +179,24 @@ class UIBase<Options = any> extends tnt.GComponent<Options> implements IUIAble {
         }
     }
 
+
     /**
-     * 添加预制体面板，没有真正创建实例
+     * 更新节点 SpriteFrame
+     *
+     * @param {(Node | Sprite)} node
+     * @param {string} url
+     * @param {Runnable} cb
+     * @memberof UIBase
+     */
+    public updateSpriteFrame(node: Node | Sprite, url: string, cb: Runnable)
+    public updateSpriteFrame(node: Node | Sprite, url: string, bundle: string)
+    public updateSpriteFrame(node: Node | Sprite, url: string, cb: Runnable, bundle: string)
+    public updateSpriteFrame(node: Node | Sprite, url: string, callbackOrBundle?: Runnable | string, bundle?: string) {
+        tnt.resourcesMgr.updateSpriteFrame(this, node, url, callbackOrBundle, bundle)
+    }
+
+    /**
+     * 添加预制体面板，没有真正创建实例，会预加载
      *
      * @param {(string | Node)} container 容器节点
      * @param {GConstructor} uiPanelCtor 
@@ -189,7 +205,7 @@ class UIBase<Options = any> extends tnt.GComponent<Options> implements IUIAble {
      * @memberof UIWindowBase
      */
     public addPanel<Options, T extends tnt.UIPanel<Options>>(container: string | Node, uiPanelCtor: GConstructor<T> | string, uiPanelName?: string, param?: Options): boolean {
-        
+
         if (!this.uiPanelPackMap) {
             console.error(`UIBase-> [ uiPanelPackMap ] 未初始化`);
             return false;
@@ -334,7 +350,7 @@ class UIBase<Options = any> extends tnt.GComponent<Options> implements IUIAble {
             if (typeof parentNode == 'string') {
                 parentNode = this.find(parentNode);
             }
-            tnt.resourcesMgr.addPrefabNode(this, clazz, parentNode, options).then((result)=>{
+            tnt.resourcesMgr.addPrefabNode(this, clazz, parentNode, options).then((result) => {
                 tnt.btnCommonEventMgr.bind(result);
                 resolve(result);
             });
@@ -375,7 +391,7 @@ class UIBase<Options = any> extends tnt.GComponent<Options> implements IUIAble {
             if (typeof parentNode == 'string') {
                 parentNode = this.find(parentNode);
             }
-            tnt.resourcesMgr.addPrefabNode(this, clazz, parentNode, options).then((result)=>{
+            tnt.resourcesMgr.addPrefabNode(this, clazz, parentNode, options).then((result) => {
                 tnt.btnCommonEventMgr.bind(result);
                 resolve(result);
             });
