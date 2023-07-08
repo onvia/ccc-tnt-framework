@@ -49,8 +49,6 @@ export class Launcher extends Component {
 
         // 多点触控
         macro.ENABLE_MULTI_TOUCH = true;
-        // 启用键盘组合键
-        tnt.keyboard.enableCombination = true;
         // 多语言
         tnt.i18n.enable = true;
 

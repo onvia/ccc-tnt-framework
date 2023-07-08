@@ -190,6 +190,7 @@ class SceneMgr extends tnt.EventMgr implements ISceneMgrPlugin, IPluginMgr{
                     this.canvas.active = false;
                     this.onEnterTransitionFinished(enterSceneName);
                     this.onSceneChangeEnd(this.previousSceneName,enterSceneName);
+                    tnt.btnCommonEventMgr.bind(this.currentScene);
                 })
                 .start();
         }

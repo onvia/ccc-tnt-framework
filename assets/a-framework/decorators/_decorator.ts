@@ -65,7 +65,7 @@ function __registePlugins(pluginName: string) {
     for (let i = 0; i < plugins.length; i++) {
         const ctor = plugins[i];
         let ins = new ctor();
-        mgr.registerPluginAuto(ins);          
+        mgr.registerPluginAuto(ins);
         console.log(`后加载插件 ${pluginName}： ${js.getClassName(ctor)}`);
     }
     plugins.length = 0;
@@ -115,6 +115,9 @@ let __decorator = {
      */
     pluginMgr<T extends string & keyof IPluginType>(name: T) {
         return (target: any) => {
+            if (EDITOR) {
+                return;
+            }
             console.log(`_decorator-> ${name} 变身成为插件管理类`);
 
             // 注入 注册方法
@@ -183,6 +186,9 @@ let __decorator = {
     plugin: function <T extends string & keyof IPluginType>(name: T) {
 
         return (target: any) => {
+            if (EDITOR) {
+                return;
+            }
             let _plugins: any[] = null;
             if (!__pluginMap.has(name)) {
                 _plugins = [];

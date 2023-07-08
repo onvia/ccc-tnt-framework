@@ -47,7 +47,7 @@ export class KeyBoardListener implements IKeyboard {
 
         let preScene = tnt.sceneMgr.getPreviousScene();
         if (!preScene) {
-            
+
             tnt.toast.show(`无法返回上一场景`, 1.5, 0, true);
             return;
         }
@@ -114,13 +114,13 @@ export class KeyBoardListener implements IKeyboard {
 
     }
     onKeyCombination(ctrlKey: KeyCode, mainKey: KeyCode) {
-        console.log(`KeyBoardListener->onKeyCombination `, KeyCode[ctrlKey], KeyCode[mainKey]);
+        console.log(`KeyBoardListener->onKeyCombination `, KeyCode[ctrlKey], "+", KeyCode[mainKey]);
     }
     onKeyCombinationPressing(ctrlKey: KeyCode, mainKey: KeyCode) {
-        console.log(`KeyBoardListener->onKeyCombinationPressing `, KeyCode[ctrlKey], KeyCode[mainKey]);
+        console.log(`KeyBoardListener->onKeyCombinationPressing `, KeyCode[ctrlKey], "+", KeyCode[mainKey]);
     }
     onKeyPressing(event: EventKeyboard) {
-        console.log(`KeyBoardListener->onKeyPressing `, event.keyCode);
+        console.log(`KeyBoardListener->onKeyPressing `, KeyCode[event.keyCode]);
 
     }
 

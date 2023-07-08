@@ -21,7 +21,7 @@ export class MainScene extends tnt.SceneBase {
             });
         }
         
-        tnt.btnCommonEventMgr.bind(this);
+        // tnt.btnCommonEventMgr.bind(this);
     }
     
     onEnterTransitionFinished(sceneName?: string): void {

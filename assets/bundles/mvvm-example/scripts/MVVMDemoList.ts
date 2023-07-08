@@ -67,13 +67,7 @@ export class MVVMDemoList extends tnt.SceneBase {
                 // @ts-ignore
                 tnt.sceneMgr.toScene(clazz);
             } else {
-                tnt.sceneMgr.toScene(MVVMDemoList, {
-                    listener: {
-                        onEnterTransitionStart() {
-                            director.loadScene(scenename);
-                        }
-                    }
-                });
+                tnt.toast.show(`无法跳转到场景： ${js.getClassName(clazz)}`);
             }
         });
 

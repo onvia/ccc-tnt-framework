@@ -38,10 +38,40 @@ declare global {
     const tnt: ITNT;
 
     interface IStartupOptions {
+        /**
+         * 调试模式
+         * @type {boolean}
+         */
         debug?: boolean;
-        audioConfig?: AudioMgrOptions;
-        i18nConfig: I18NConfig;
+
+        /**
+         * 默认按钮音效
+         * @type {string}
+         */
         defaultBtnSound?: string;
+        /**
+         * 设置默认 `Bundle` ，不设置则为 `resources`
+         * @type {string}
+         */
+        defaultBundle?: string;
+
+        /**
+         * 开启键盘组合键
+         * @type {boolean}
+         */
+        enableKeyboardCombination?: boolean;
+
+        /**
+         * 音效配置
+         * @type {AudioMgrOptions}
+         */
+        audioConfig?: AudioMgrOptions;
+
+        /**
+         * 多语言配置
+         * @type {I18NConfig}
+         */
+        i18nConfig?: I18NConfig;
 
         /** 音效配置，键名为 节点名 */
         soundConfig?: { [k in string]: string };
@@ -49,12 +79,17 @@ declare global {
 }
 
 tnt.startup = (options?: IStartupOptions) => {
+
+    defineTNTOptions(options);
     tnt.options = options;
-    tnt.audioMgr.init(options?.audioConfig);
-    tnt.i18n.init(options.i18nConfig);
+    tnt.keyboard.enableCombination = options.enableKeyboardCombination ?? tnt.keyboard.enableCombination;
+    tnt.AssetLoader.defaultBundle = options.defaultBundle ?? tnt.AssetLoader.defaultBundle;
+    options?.audioConfig && tnt.audioMgr.init(options?.audioConfig);
+    options?.i18nConfig && tnt.i18n.init(options?.i18nConfig);
     tnt._decorator._registePlugins();
     options.debug && profiler.showStats();
-    
+
+
     game.emit(tnt.EVENT_TNT_STARTUP);
     tnt.eventMgr.emit(tnt.EVENT_TNT_STARTUP);
     // 加载内置 EffectAsset
@@ -68,4 +103,21 @@ tnt.startup = (options?: IStartupOptions) => {
         });
     });
 }
+
+function defineTNTOptions(options?: IStartupOptions) {
+    let _debug = options.debug;
+    Object.defineProperty(options, "debug", {
+        set(v) {
+            if (_debug === v) {
+                return;
+            }
+            _debug = v;
+            _debug ? profiler.showStats() : profiler.hideStats();
+        },
+        get() {
+            return _debug;
+        },
+    });
+}
+
 export { };

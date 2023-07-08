@@ -9,7 +9,10 @@ export class KeyboardMgr {
     private keyBordHandler: IKeyboard[] = [];
     private _downKeyList = [];
     private static _keyboard: KeyboardMgr = null;
-    private _ctrlKeys = [KeyCode.CTRL_LEFT, KeyCode.SHIFT_LEFT, KeyCode.ALT_LEFT];
+    private _ctrlKeys = [
+        KeyCode.CTRL_LEFT, KeyCode.SHIFT_LEFT, KeyCode.ALT_LEFT,
+        KeyCode.CTRL_RIGHT, KeyCode.SHIFT_RIGHT, KeyCode.ALT_RIGHT
+    ];
 
     // 是否启用组合键
     public enableCombination = false;

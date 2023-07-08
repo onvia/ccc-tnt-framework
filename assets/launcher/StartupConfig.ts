@@ -4,12 +4,12 @@ import { Asset, AssetManager, js, JsonAsset, SpriteFrame, warn } from "cc";
 export let startupOptions: IStartupOptions = {
 
     debug: true,
-
-    
+    enableKeyboardCombination: true,
     defaultBtnSound: "click",
     soundConfig: {
         
     },
+    
     audioConfig:{
         bundle: "common-bundle",
     },
