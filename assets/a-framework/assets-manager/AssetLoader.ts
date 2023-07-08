@@ -142,8 +142,7 @@ class Cache {
 
 @pluginMgr("AssetLoader")
 class AssetLoader implements IPluginMgr {
-    public key: string = "";
-    public windowName: string = "";
+
     protected static loadedBundles: Map<string, BundleWrap> = new Map();
     protected static bundleVersions: Map<string, string> = null;
     public static ___plugins: IAssetLoaderPlugin[] = [];
@@ -153,9 +152,40 @@ class AssetLoader implements IPluginMgr {
      */
     public static autoReleaseBundle: boolean = false;
 
+    /**
+     * 默认 Bundle
+     */
+    public static defaultBundle: string = "resources";
+
+
+    public key: string = "";
+    public windowName: string = "";
+
+    protected _cache: Cache = new Cache();
+    public get cache() {
+        return this._cache;
+    }
+
+    private _level = 0;
+    private _loadCount = 0;
+    public get loadCount() {
+        return this._loadCount;
+    }
+    public isValid = false;
+
+
+    /**
+     * 获取 Bundle 版本
+     */
     public static getBundleVersions(bundleName: string): string | undefined {
         if (this.bundleVersions == null) return null;
         return this.bundleVersions.get(bundleName);
+    }
+    /**
+     * 更新 Bundle 版本
+     */
+    public static updateBundleVersion(bundleName: string, version: string | number) {
+        this.bundleVersions.set(bundleName, version.toString());
     }
 
     //删除bundle
@@ -188,7 +218,7 @@ class AssetLoader implements IPluginMgr {
     protected static loadBundleWrap(bundleName: string | Bundle, onComplete: LoadBundleAssetCompleteFunc) {
 
         if (!bundleName) {
-            bundleName = resources.name;
+            bundleName = this.defaultBundle || resources.name;
         }
 
         if (bundleName instanceof AssetManager.Bundle) {
@@ -255,17 +285,6 @@ class AssetLoader implements IPluginMgr {
         return AssetLoader.getBundle(name);
     }
 
-    protected _cache: Cache = new Cache();
-    public get cache() {
-        return this._cache;
-    }
-
-    private _level = 0;
-    private _loadCount = 0;
-    public get loadCount() {
-        return this._loadCount;
-    }
-    public isValid = false;
 
     protected _addCount() {
         this._loadCount++;
