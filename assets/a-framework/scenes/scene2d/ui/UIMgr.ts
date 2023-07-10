@@ -1,6 +1,7 @@
 
 import { _decorator, Node, isValid, UITransform, view, Tween, BlockInputEvents, UIOpacity, v3, Layers, Sprite, Color, assetManager, SpriteFrame, js, error, instantiate, Prefab, tween, Label, find, dynamicAtlasManager, Camera, RenderTexture, Widget } from "cc";
 import { DEBUG, EDITOR } from "cc/env";
+import "../../../decorators/_decorator";
 const { ccclass } = _decorator;
 const { pluginMgr } = tnt._decorator;
 

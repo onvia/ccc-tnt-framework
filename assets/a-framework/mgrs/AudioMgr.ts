@@ -18,7 +18,7 @@ const { ccclass } = _decorator;
 class AudioMgr {
     readonly LOADER_KEY = "audio";
     
-    storageKey(){
+    get storageKey(){
         return "audioSetting"
     }
 
@@ -62,7 +62,7 @@ class AudioMgr {
 
 
         this._isInited = true;
-        let localSetting = sys.localStorage.getItem(this.storageKey());
+        let localSetting = sys.localStorage.getItem(this.storageKey);
         if(localSetting){
             this.audioSetting = JSON.parse(localSetting);
         }
@@ -211,7 +211,7 @@ class AudioMgr {
     }
 
     saveSetting(){
-        sys.localStorage.setItem(this.storageKey(), JSON.stringify(this.audioSetting));
+        sys.localStorage.setItem(this.storageKey, JSON.stringify(this.audioSetting));
     }
 
     private static _instance:AudioMgr = null

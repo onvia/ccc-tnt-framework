@@ -1,4 +1,5 @@
 import { Node, AssetManager, assetManager, BlockInputEvents, Canvas, Color, director, find, game, js, Layers, log, Scene, SceneAsset, Sprite, SpriteFrame, tween, UIOpacity, UITransform, view, _decorator, Director } from "cc";
+import "../decorators/_decorator";
 const { ccclass } = _decorator;
 const { pluginMgr } = tnt._decorator;
 

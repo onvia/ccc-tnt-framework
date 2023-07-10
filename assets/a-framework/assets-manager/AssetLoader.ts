@@ -4,6 +4,7 @@ import { AssetWrap } from "./AssetWrap";
 import { Asset, assetManager, AssetManager, js, path, Prefab, resources, SceneAsset, SpriteFrame, __private, Texture2D, warn, JsonAsset } from "cc";
 import { EDITOR } from "cc/env";
 import downloadFile from "./download-file";
+import "../decorators/_decorator";
 const { pluginMgr } = tnt._decorator;
 
 type Bundle = AssetManager.Bundle;

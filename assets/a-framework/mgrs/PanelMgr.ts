@@ -20,8 +20,8 @@ enum PanelNameEnum {
 
 @ccclass('PanelMgr')
 class PanelMgr {
-
-    Enum = PanelNameEnum;
+    readonly Enum = PanelNameEnum;
+    
     root: Node = null;
 
     lazyInit() {

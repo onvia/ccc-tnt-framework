@@ -154,8 +154,8 @@ declare module "cc" {
         copyAsVec2(): Vec2;
     }
 
-    export interface UIRenderer {
-        visible: boolean;
-    }
+    // export interface UIRenderer {
+    //     visible: boolean;
+    // }
 }
 

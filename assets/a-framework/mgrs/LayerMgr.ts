@@ -8,6 +8,9 @@ declare global {
     }
 }
 
+/**
+ * 此 Layer 为节点分组，并非 节点树中的层级，节点树层级管理请使用 PanelMgr
+ */
 @ccclass('LayerMgr')
 class LayerMgr {
 

@@ -1,10 +1,9 @@
 
-import { _decorator, Component, Node, Button, EditBox, Toggle } from 'cc';
+import { _decorator, Component, Node, Button } from 'cc';
 import { DEV } from 'cc/env';
-
+import "../decorators/_decorator";
+const { ccclass } = _decorator;
 const { pluginMgr, plugin } = tnt._decorator;
-
-const { ccclass, property } = _decorator;
 
 
 

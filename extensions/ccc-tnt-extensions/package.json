@@ -5,7 +5,6 @@
     "description": "i18n:ccc-tnt-extensions.description",
     "main": "./dist/main.js",
     "dependencies": {
-        "compressing": "^1.6.2",
         "download": "^8.0.0",
         "fs-extra": "^10.0.0",
         "jszip": "^3.10.1",

@@ -7,14 +7,15 @@
     - [资源管理](./docs/%E8%B5%84%E6%BA%90%E7%AE%A1%E7%90%86.md)
     - [场景管理](./docs/%E5%9C%BA%E6%99%AF%E7%AE%A1%E7%90%86.md)
     - [弹窗管理](./docs/%E5%BC%B9%E7%AA%97%E7%AE%A1%E7%90%86.md)
-    - [输入](./docs/%E8%BE%93%E5%85%A5.md)
     - [事件管理](./docs/%E4%BA%8B%E4%BB%B6%E7%AE%A1%E7%90%86.md)
+    - [音效管理](./docs/%E9%9F%B3%E6%95%88%E7%AE%A1%E7%90%86.md)
+    - [网络管理](./docs/%E7%BD%91%E7%BB%9C%E7%AE%A1%E7%90%86.md)
+    - [输入](./docs/%E8%BE%93%E5%85%A5.md)
     - [全局定时器](./docs/%E5%85%A8%E5%B1%80%E5%AE%9A%E6%97%B6%E5%99%A8.md)
     - [池管理](./docs/%E6%B1%A0%E7%AE%A1%E7%90%86.md)
     - [拖放管理](./docs/Drag%26Drop.md)
     - [截图管理](./docs/%E6%88%AA%E5%9B%BE%E7%AE%A1%E7%90%86.md)
     - [按钮通用事件管理](./docs/%E6%8C%89%E9%92%AE%E9%80%9A%E7%94%A8%E4%BA%8B%E4%BB%B6%E7%AE%A1%E7%90%86.md)
-    - [网络管理](./docs/%E7%BD%91%E7%BB%9C%E7%AE%A1%E7%90%86.md)
     - [多语言](./docs/%E5%A4%9A%E8%AF%AD%E8%A8%80.md)
     - [TiledMap](./docs/TiledMap.md)
     - [MVVM](./docs/MVVM.md)
@@ -51,16 +52,14 @@
 详细的使用可以启动实例 `Launcher.scene` 查看，脚本同名。
 
 ```
-// 首先加载框架 Bundle
-assetManager.loadBundle("framework", () => {
 
-    // 框架初始化
-    tnt.startup(startupOptions);
-});
+// 框架初始化
+tnt.startup(startupOptions);
 
 ```
 
 >本框架作为单独的 Bundle 使用，Bundle 名为 `framework`  
+>`Releases` 中发布的 `tnt.zip` 已内置 `preload-tnt.js` 脚本，作用是在引擎加载阶段加载 `framework` Bundle
 >为保证在编辑器内优先加载框架代码，这里名为 `framework` 的 Bundle 使用了 `a-framework` 作为文件夹名，开发过程中其他 Bundle 尽量保证在框架 Bundle 后加载
 
 ### 在线示例
@@ -81,3 +80,4 @@ https://blog.csdn.net/xzben/article/details/120039818
 https://github.com/1226085293/nodes/blob/master/assets/essential/engine/node/nodes.js   
 https://github.com/fairygui/FairyGUI-cocoscreator/blob/master/source/src/fairygui/GObject.ts   
 https://github.com/fairygui/FairyGUI-cocoscreator/blob/master/source/src/fairygui/DragDropManager.ts   
+https://github.com/mapeditor/tiled
