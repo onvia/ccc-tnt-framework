@@ -596,7 +596,7 @@ class AssetLoader implements IPluginMgr {
                         asset.decRef();
                         return null;
                     }
-                    let info = bundleWrap.bundle.getAssetInfo(asset.uuid);
+                    let info = bundleWrap.bundle.getAssetInfo(asset.uuid || asset._uuid);
                     // @ts-ignore
                     let path = info.path;
                     let u_path = this.jointKey(bundleWrap.name, path);
@@ -776,8 +776,11 @@ class AssetLoader implements IPluginMgr {
                         return null;
                     }
 
-                    // @ts-ignore
-                    let info = bundleWrap.bundle.getAssetInfo(asset.uuid);
+                    let info = bundleWrap.bundle.getAssetInfo(asset.uuid || asset._uuid);
+                    if(!info){
+                        console.warn(`AssetLoader-> loadDir 资源错误 ${asset.uuid}`);
+                        return null;
+                    }
                     // @ts-ignore
                     let path = info.path;
                     let u_path = this.jointKey(bundleWrap.name, path);

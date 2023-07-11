@@ -59,7 +59,7 @@ tnt.startup(startupOptions);
 ```
 
 >本框架作为单独的 Bundle 使用，Bundle 名为 `framework`  
->`Releases` 中发布的 `tnt.zip` 已内置 `preload-tnt.js` 脚本，作用是在引擎加载阶段加载 `framework` Bundle
+>`Releases` 中发布的 `tnt.zip` 已内置 `preload-tnt.js` 脚本，作用是在引擎加载阶段加载 `framework` Bundle  
 >为保证在编辑器内优先加载框架代码，这里名为 `framework` 的 Bundle 使用了 `a-framework` 作为文件夹名，开发过程中其他 Bundle 尽量保证在框架 Bundle 后加载
 
 ### 在线示例

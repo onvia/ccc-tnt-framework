@@ -13,7 +13,7 @@ class DebugUtils {
     showDynamicAtlasDebug(show) {
         let canvas = director.getScene().getComponentInChildren(Canvas)?.node;
         let mgr = dynamicAtlasManager;
-        console.log(`DynamicAtlasLearn-> ${mgr.enabled},${macro.CLEANUP_IMAGE_CACHE}`);
+        console.log(`DebugUtils-> ${mgr.enabled},${macro.CLEANUP_IMAGE_CACHE}`);
 
 
         let _debugNode = this._debugNode;
