@@ -79,7 +79,7 @@ class Cache {
             this.map.set(path, assetWrapArray);
         }
         // 记录 uuid 对应的 path
-        this.info.set(asset.asset.uuid, path);
+        this.info.set(asset.asset.uuid || asset.asset._uuid, path);
         assetWrapArray.push(asset);
     }
     get(path, type: CCAssetType): AssetWrap {
@@ -102,7 +102,7 @@ class Cache {
         if (!asset) {
             return null;
         }
-        return this.info.get(asset.uuid);
+        return this.info.get(asset.uuid || asset._uuid);
     }
 
     delete(path: string, type: CCAssetType) {
@@ -596,7 +596,12 @@ class AssetLoader implements IPluginMgr {
                         asset.decRef();
                         return null;
                     }
-                    let info = bundleWrap.bundle.getAssetInfo(asset.uuid || asset._uuid);
+                    let uuid = asset.uuid || asset._uuid;
+                    let info = bundleWrap.bundle.getAssetInfo(uuid);
+                    if (!info) {
+                        console.warn(`AssetLoader-> loadDir 资源错误 ${uuid}`);
+                        return null;
+                    }
                     // @ts-ignore
                     let path = info.path;
                     let u_path = this.jointKey(bundleWrap.name, path);
@@ -775,10 +780,10 @@ class AssetLoader implements IPluginMgr {
                         asset.decRef();
                         return null;
                     }
-
-                    let info = bundleWrap.bundle.getAssetInfo(asset.uuid || asset._uuid);
-                    if(!info){
-                        console.warn(`AssetLoader-> loadDir 资源错误 ${asset.uuid}`);
+                    let uuid = asset.uuid || asset._uuid;
+                    let info = bundleWrap.bundle.getAssetInfo(uuid);
+                    if (!info) {
+                        console.warn(`AssetLoader-> loadDir 资源错误 ${uuid}`);
                         return null;
                     }
                     // @ts-ignore
