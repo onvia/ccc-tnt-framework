@@ -13,7 +13,7 @@ declare global {
     interface IPluginType {
         SceneMgr: ISceneMgrPlugin;
     }
-    
+
 }
 
 interface SceneOptions<Options> {
@@ -36,9 +36,9 @@ type SceneBase<T = any> = tnt.SceneBase<T>;
 
 @pluginMgr("SceneMgr")
 @ccclass('SceneMgr')
-class SceneMgr extends tnt.EventMgr implements ISceneMgrPlugin, IPluginMgr{
+class SceneMgr extends tnt.EventMgr implements ISceneMgrPlugin, IPluginMgr {
     name: string = "SceneMgr";
-    
+
     public static ___plugins: ISceneMgrPlugin[] = [];
 
     readonly EVENT_EXIT_SCENE = "EVENT_EXIT_SCENE";
@@ -62,7 +62,7 @@ class SceneMgr extends tnt.EventMgr implements ISceneMgrPlugin, IPluginMgr{
             director.addPersistRootNode(canvasNode);
             this._canvas = canvasNode;
         }
-        
+
         return this._canvas;
     }
     public set canvas(value: Node) {
@@ -76,18 +76,18 @@ class SceneMgr extends tnt.EventMgr implements ISceneMgrPlugin, IPluginMgr{
 
 
 
-    public async to<T extends string & keyof GlobalSceneType>(sceneName: T, options?: SceneOptions<GlobalSceneType[T]["options"]>) {
+    public async to<T extends string & keyof GlobalSceneType>(sceneName: T, options?: SceneOptions<GlobalSceneType[T]["options"]>): Promise<boolean> {
         return this.toScene(sceneName, options);
     }
 
-    public async toScene<Options, T extends SceneBase = any>(clazz: GConstructor<T> | string, nextSceneOrOptions?: string | SceneAsset | SceneOptions<Options>, options?: SceneOptions<Options>) {
+    public async toScene<Options, T extends SceneBase = any>(clazz: GConstructor<T> | string, nextSceneOrOptions?: string | SceneAsset | SceneOptions<Options>, options?: SceneOptions<Options>): Promise<boolean> {
         if (this.isTransform) {
             log(`SceneMgr-> 正在跳转场景`);
-            return;
+            return true;
         }
         console.time('[tnt] loadScene');
-        
-        this.onSceneChangeBegin(this.currentSceneName,typeof clazz === 'string' ? clazz : js.getClassName(clazz));
+
+        this.onSceneChangeBegin(this.currentSceneName, typeof clazz === 'string' ? clazz : js.getClassName(clazz));
 
         this.isTransform = true;
 
@@ -111,7 +111,7 @@ class SceneMgr extends tnt.EventMgr implements ISceneMgrPlugin, IPluginMgr{
             if (!loadedBundle) {
                 console.error(`SceneMgr-> 加载 Bundle ${bundleName} 失败`);
                 this.isTransform = false;
-                return;
+                return false;
             }
         }
         let sceneAsset: SceneAsset = null;
@@ -122,7 +122,7 @@ class SceneMgr extends tnt.EventMgr implements ISceneMgrPlugin, IPluginMgr{
             if (!clazz) {
                 console.error(`SceneMgr-> 没有找到场景 ${clazz} 类`);
                 this.isTransform = false;
-                return;
+                return false;
             }
         }
 
@@ -190,13 +190,13 @@ class SceneMgr extends tnt.EventMgr implements ISceneMgrPlugin, IPluginMgr{
                 .call(() => {
                     this.canvas.active = false;
                     this.onEnterTransitionFinished(enterSceneName);
-                    this.onSceneChangeEnd(this.previousSceneName,enterSceneName);
+                    this.onSceneChangeEnd(this.previousSceneName, enterSceneName);
                     tnt.btnCommonEventMgr.bind(this.currentScene);
                 })
                 .start();
         }
 
-        if (!sceneAsset) {            
+        if (!sceneAsset) {
             director.emit(Director.EVENT_BEFORE_SCENE_LOADING, nextSceneName);
             sceneAsset = await new Promise<SceneAsset>((resolve, reject) => {
                 let loader = tnt.loaderMgr.share;
@@ -236,7 +236,7 @@ class SceneMgr extends tnt.EventMgr implements ISceneMgrPlugin, IPluginMgr{
             let exitBundleWrap = tnt.AssetLoader.getBundleWrap(exitBundleName);
             console.timeEnd('[tnt] loadScene');
             this.onExitTransitionStart(exitSceneName);
-             // 蒙版渐显
+            // 蒙版渐显
             tween(uiOpacity)
                 .to(pure ? 0 : 0.5 * duration, { opacity: pure ? 0 : 255 })
                 .call(() => {
@@ -262,8 +262,11 @@ class SceneMgr extends tnt.EventMgr implements ISceneMgrPlugin, IPluginMgr{
                     }, onLaunched);
                 })
                 .start();
+
+            return true;
         }
 
+        return false;
     }
 
     async updateTransition(color: Color, layer: number) {
@@ -339,15 +342,15 @@ class SceneMgr extends tnt.EventMgr implements ISceneMgrPlugin, IPluginMgr{
 
     onSceneChangeBegin(currentScene: string, nextScene: string) {
         SceneMgr.___plugins.forEach((listener) => {
-            listener.onSceneChangeBegin(currentScene,nextScene);
+            listener.onSceneChangeBegin(currentScene, nextScene);
         });
     }
     onSceneChangeEnd(previousScene: string, currentScene: string) {
         SceneMgr.___plugins.forEach((listener) => {
-            listener.onSceneChangeEnd(previousScene,currentScene);
+            listener.onSceneChangeEnd(previousScene, currentScene);
         });
     }
-    
+
     /** 进入场景，过渡动画开始 */
     onEnterTransitionStart(sceneName: string) {
         SceneMgr.___plugins.forEach((listener) => {
@@ -393,10 +396,10 @@ class SceneMgr extends tnt.EventMgr implements ISceneMgrPlugin, IPluginMgr{
         });
         this.currentScene?.onExitTransitionFinished();
     }
-    
+
     registerPlugin?(plugins: ISceneMgrPlugin | ISceneMgrPlugin[]);
     unregisterPlugin?(plugin: ISceneMgrPlugin | string);
-    
+
 
     private static _instance: SceneMgr = null
     public static getInstance(): SceneMgr {

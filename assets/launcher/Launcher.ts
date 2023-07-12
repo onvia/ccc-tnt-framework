@@ -2,6 +2,7 @@
 import { Component, Node, macro, _decorator, assetManager } from "cc";
 import { startupOptions } from "./StartupConfig";
 import { KeyBoardListener } from "./listeners/KeyBoardListener";
+import { SceneConfig } from "./SceneConfig";
 const { ccclass, property } = _decorator;
 
 /**
@@ -21,7 +22,7 @@ export class Launcher extends Component {
 
     start() {
         console.log(`Launcher-> 加载基础 bundle`);
-        
+
         // 添加任务1： 加载 游戏 bundle
         tnt.taskMgr.addTask((progress, done) => {
             tnt.AssetLoader.loadBundle("main-scene", () => {
@@ -44,7 +45,7 @@ export class Launcher extends Component {
         });
     }
 
-    onLaunch() {
+    async onLaunch() {
         console.log(`Launcher-> 启动`);
 
         // 多点触控
@@ -58,8 +59,42 @@ export class Launcher extends Component {
         tnt.keyboard.on(KeyBoardListener.getInstance());
 
 
+        let isSucc = await this.parseUrl();
+
+        if(isSucc){            
+            return;
+        }
         // 显示开始按钮
         this.btnQuickStart.active = true;
+    }
+
+    async parseUrl() {
+        const res = {};
+        const search = window.location.search.substring(1);
+        const paramArr = search.split('&');
+        paramArr.forEach(item => {
+            const itemArr = item.split('=');
+            const key = itemArr[0];
+            const value = itemArr[1];
+            res[key] = value;
+        });
+
+        // 场景参数
+        let scene = res["demo"];
+        if(!scene){
+            return false;
+        }
+        let element = SceneConfig.find((element)=>{
+            return element.scene == scene
+        });
+
+        if(!element){
+            console.error(`Launcher-> 没有 [${scene}] demo`);
+            return false;
+        }
+        let result = await tnt.sceneMgr.to(element.scene as any,{bundle: element.bundle});
+
+        return result;
     }
 
     onClickToExample() {

@@ -47,6 +47,14 @@ export class KeyBoardListener implements IKeyboard {
 
         let preScene = tnt.sceneMgr.getPreviousScene();
         if (!preScene) {
+            let element = SceneConfig.find((element)=>{
+                return element.scene == scenename;
+            });
+
+            if(element && scenename !== 'MainScene' && scenename !== "Launcher"){
+                this.toMainScene();
+                return;
+            }
 
             tnt.toast.show(`无法返回上一场景`, 1.5, 0, true);
             return;
@@ -59,7 +67,7 @@ export class KeyBoardListener implements IKeyboard {
                 return;
             }
 
-            tnt.sceneMgr.to("MainScene", { bundle: "main-scene" });
+            this.toMainScene();
         };
         // event 事件不存在，代表按的是界面上的按钮，直接跳转
         if (!event) {
@@ -86,7 +94,10 @@ export class KeyBoardListener implements IKeyboard {
             }, 2000);
         }
     }
-
+    toMainScene(){
+        
+        tnt.sceneMgr.to("MainScene", { bundle: "main-scene" });
+    }
     onKeyUp(event: EventKeyboard) {
         if (event.keyCode === KeyCode.F5) {
             let currentScene = tnt.sceneMgr.getCurrentScene();
