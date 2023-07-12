@@ -40,5 +40,11 @@ export const SceneConfig: ISceneConfig[] = [
         scene: "LongPressDemo",
         button: "长按",
         bundle: "test-example"
+    },
+    {
+        scene: "CameraShakeDemo",
+        button: "屏幕震动",
+        bundle: "camera-controls",
+
     }
 ]
