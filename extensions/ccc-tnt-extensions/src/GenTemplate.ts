@@ -14,6 +14,8 @@ const tntAsset = "tnt.zip";
 export class GenTemplate {
 
     async checkUpdate() {
+        // 自动检查更新
+        
         console.log(`[TNT] 检查更新。`);
         let versionPath = path.join(Editor.Project.path, "assets", framework, "tnt-version.json");
         let tntPath = path.join(Editor.Project.path, "assets", framework, "TNT.ts");
@@ -183,10 +185,10 @@ export class GenTemplate {
     }
 
     digitization(tag: string) {
-        if (tag.toLocaleLowerCase() === 'beta') {
+        if (tag.toLowerCase().includes('beta')) {
             return 1;
         }
-        if (tag.toLocaleLowerCase() === 'release' || tag == '') {
+        if (tag.toLowerCase().includes('release') || tag == '') {
             return 2;
         }
         return 0;
