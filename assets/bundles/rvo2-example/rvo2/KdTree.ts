@@ -47,7 +47,7 @@ export default class KdTree {
     buildObstacleTree() {
         this.obstacleTree = new ObstacleTreeNode();
 
-        let obstacles = new Array<Obstacle>(this.simulator.obstacles.length);
+        let obstacles: Obstacle[] = [];
 
         for (let i = 0; i < this.simulator.obstacles.length; ++i) {
             obstacles.push(this.simulator.obstacles[i]);

@@ -1,4 +1,4 @@
-import { _decorator, Node, Button, EventTouch, math, instantiate, Camera, v3 } from "cc";
+import { _decorator, Node, Button, EventTouch, math, instantiate, Camera, v3, KeyCode } from "cc";
 import RVOMath from "../rvo2/RVOMath";
 import Simulator from "../rvo2/Simulator";
 import Vector2D from "../rvo2/Vector2D";
@@ -26,12 +26,12 @@ export class RVO2Scene extends tnt.SceneBase<RVO2SceneOptions> implements ITouch
 
     gameCamera: Camera = null;
 
-    rects: Node[] = [];
 
-    speed: number = 100;
+    speed: number = 10;
 
     targetPosition: Vector2D = null;
-    rectWeak: WeakMap<Node, number> = new WeakMap();
+    rectMap: Map<number, Node> = new Map();
+    isDelMode = false;
 
     onEnterTransitionStart(sceneName?: string): void {
         this.simulator = new Simulator();
@@ -70,20 +70,37 @@ export class RVO2Scene extends tnt.SceneBase<RVO2SceneOptions> implements ITouch
     initGameObject() {
         let parent = this.rectTemplete.parent;
         this.rectTemplete.removeFromParent();
-        for (let i = 0; i < 5; i++) {
+        for (let i = 0; i < 100; i++) {
             let x = math.randomRangeInt(-400, 400);
             let y = math.randomRangeInt(-300, 300);
             let rect = instantiate(this.rectTemplete)
             rect.setPosition(x, y, 0);
-            this.rects.push(rect);
             rect.parent = parent;
 
             let sid = this.simulator.addAgent(new Vector2D(x, y));
-
-            this.rectWeak.set(rect, sid);
+            this.rectMap.set(sid, rect);
         }
+
+
+        // 障碍
+        let obstacles1 = this.find("obstacles1", null, this.scene);
+        let obstacles2 = this.find("obstacles2", null, this.scene);
+
+        this.generateObstacle(obstacles1);
+        this.generateObstacle(obstacles2);
+        this.simulator.processObstacles();
     }
 
+    generateObstacle(node: Node) {
+        let box = node.uiTransform.getBoundingBox();
+
+        let obs: Vector2D[] = [];
+        obs.push(new Vector2D(box.xMin, box.yMin));
+        obs.push(new Vector2D(box.xMax, box.yMin));
+        obs.push(new Vector2D(box.xMax, box.yMax));
+        obs.push(new Vector2D(box.xMin, box.yMax));
+        this.simulator.addObstacle(obs);
+    }
 
     onEnter(): void {
         tnt.touch.on(this);
@@ -97,20 +114,23 @@ export class RVO2Scene extends tnt.SceneBase<RVO2SceneOptions> implements ITouch
 
 
     onTouchBegan(event: EventTouch) {
-        this.updateTargetPosition(event);
+        if (tnt.keyboard.isPressed(KeyCode.CTRL_LEFT)) {
+            this.isDelMode = true;
+        } else {
+            this.isDelMode = false;
+        }
+
+        this.processTouch(event);
 
     }
 
     onTouchMoved(event: EventTouch) {
-        this.updateTargetPosition(event);
+        this.processTouch(event);
     }
 
     onTouchEnded(event: EventTouch) {
-        this.targetPosition = null;
-        // 停止移动
-        let agentCount = this.simulator.getNumAgents();
-        for (let i = 0; i < agentCount; i++) {
-            this.simulator.agents[i].prefVelocity = new Vector2D();
+        if (this.targetPosition) {
+            this.stopMove();
         }
     }
 
@@ -118,21 +138,40 @@ export class RVO2Scene extends tnt.SceneBase<RVO2SceneOptions> implements ITouch
 
     }
 
-    updateTargetPosition(event: EventTouch) {
+    // 停止移动
+    stopMove() {
+        this.targetPosition = null;
+        let agentCount = this.simulator.getNumAgents();
+        for (let i = 0; i < agentCount; i++) {
+            this.simulator.agents[i].prefVelocity.set(0, 0);
+        }
+    }
+
+    // 处理触摸
+    processTouch(event: EventTouch) {
         let location = event.getLocation();
-        console.log(`RVO2Scene-> 屏幕坐标 `, location);
 
         tmp1_v3.set(location.x, location.y);
         this.gameCamera.screenToWorld(tmp1_v3, tmp2_v3);
         this.gameRoot.uiTransform.convertToNodeSpaceAR(tmp2_v3, tmp2_v3);
 
-        console.log(`RVO2Scene-> `, tmp2_v3);
-
-        if (this.targetPosition) {
-            this.targetPosition.x = tmp2_v3.x;
-            this.targetPosition.y = tmp2_v3.y;;
+        // 删除模式
+        if (this.isDelMode) {
+            let agentNo = this.simulator.queryNearAgent(new Vector2D(tmp2_v3.x, tmp2_v3.y), 15);
+            if (agentNo == -1 || !this.rectMap.has(agentNo)) {
+                return;
+            }
+            this.simulator.delAgent(agentNo);
+            let rect = this.rectMap.get(agentNo);
+            rect.destroy();
+            this.rectMap.delete(agentNo);
         } else {
-            this.targetPosition = new Vector2D(tmp2_v3.x, tmp2_v3.y);
+            // 正常更新位置
+            if (this.targetPosition) {
+                this.targetPosition.set(tmp2_v3.x, tmp2_v3.y);
+            } else {
+                this.targetPosition = new Vector2D(tmp2_v3.x, tmp2_v3.y);
+            }
         }
     }
 
@@ -140,28 +179,25 @@ export class RVO2Scene extends tnt.SceneBase<RVO2SceneOptions> implements ITouch
         if (!this.targetPosition) {
             return;
         }
+
         // 更新逻辑坐标
         let agentCount = this.simulator.getNumAgents();
         for (let i = 0; i < agentCount; i++) {
-            // let prefVel = this.simulator.agents[i].prefVelocity;
             let agent = this.simulator.agents[i];
             let position = agent.position;
             let goalVector = this.targetPosition.minus(position);
             if (RVOMath.absSq(goalVector) > 1.0) {
                 goalVector = RVOMath.normalize(goalVector).scale(agent.maxSpeed);
             }
-
             agent.prefVelocity = goalVector;
         }
-
         this.simulator.update(dt);
 
-        // 更新渲染坐标
-        for (let j = 0; j < this.rects.length; j++) {
-            let node = this.rects[j];
-            let sid = this.rectWeak.get(node);
-            let pos = this.simulator.getAgentPosition(sid);
-            node.setPosition(pos.x, pos.y);
-        }
+        // // 更新渲染坐标
+        this.rectMap.forEach((v, k) => {
+            let pos = this.simulator.getAgentPosition(k);
+            v.setPosition(pos.x, pos.y);
+        });
+
     }
 }

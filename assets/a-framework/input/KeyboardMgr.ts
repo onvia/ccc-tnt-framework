@@ -1,4 +1,4 @@
-import { Game, game, input, Input, KeyCode } from "cc";
+import { EventKeyboard, Game, game, input, Input, KeyCode } from "cc";
 
 declare global {
     interface ITNT {
@@ -73,7 +73,7 @@ export class KeyboardMgr {
         }
 
     }
-    private _onKeyDown(event) {
+    private _onKeyDown(event: EventKeyboard) {
         if (this._downKeyList.indexOf(event.keyCode) === -1) {
             this._downKeyList.push(event.keyCode);
         }
@@ -105,7 +105,7 @@ export class KeyboardMgr {
         });
     }
 
-    private _onKeyUp(event) {
+    private _onKeyUp(event: EventKeyboard) {
         var index = this._downKeyList.indexOf(event.keyCode);
         if (index != -1) {
             if (index > -1) {
@@ -117,7 +117,7 @@ export class KeyboardMgr {
         });
     };
 
-    private _onKeyPressing(event) {
+    private _onKeyPressing(event: EventKeyboard) {
 
         if (this.enableCombination) {
             // 检查组合键
@@ -139,6 +139,10 @@ export class KeyboardMgr {
         this.keyBordHandler.forEach((target, index) => {
             target.onKeyPressing?.call(target, event);
         });
+    }
+
+    isPressed(keyCode: KeyCode) {
+        return this._downKeyList.indexOf(keyCode) != -1;
     }
 }
 tnt.keyboard = KeyboardMgr.getInstance();

@@ -16,7 +16,7 @@ export default class Simulator {
     // private _goals: Vector2D[] = [];
     public kdTree: KdTree = new KdTree();
 
-    public timeStep = 0;
+    public timeStep = 0.25;
     private defaultAgent: IAgent; // Agent
     private globalTime = 0;
     private delDirty = false;
@@ -124,7 +124,7 @@ export default class Simulator {
             throw new Error("no default agent");
         }
         let _agentConfig = agentConfig || this.defaultAgent;
-        if(!position){
+        if (!position) {
             position = new Vector2D();
         }
         let agent: Agent = new Agent();
@@ -497,7 +497,7 @@ export default class Simulator {
         return this.kdTree.queryVisibility(point1, point2, radius);
     }
 
-    public queryNearAgent(point, radius) {
+    public queryNearAgent(point: Vector2D, radius: number) {
         if (this.getNumAgents() == 0) {
             return -1;
         }
