@@ -46,5 +46,11 @@ export const SceneConfig: ISceneConfig[] = [
         button: "屏幕震动",
         bundle: "camera-controls",
 
+    },
+    {
+        scene: "RVO2Scene",
+        button: "RVO2",
+        bundle: "rvo2-example",
+
     }
 ]
