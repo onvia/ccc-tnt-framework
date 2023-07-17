@@ -23,6 +23,7 @@ export default class Simulator {
 
     private agentNo2indexDict: Record<number, number> = {};
     private index2agentNoDict: Record<number, number> = {};
+    private needDelArray: number[] = [];
 
     constructor() {
         this.kdTree.simulator = this;
@@ -86,28 +87,45 @@ export default class Simulator {
             this.defaultAgent.velocity = new Vector2D(velocityX, velocityY);
         }
     }
-
+    getAgentDefaults() {
+        return this.defaultAgent;
+    }
     delAgent(agentNo: number) {
         let index = this.agentNo2indexDict[agentNo];
         if (typeof index == 'number') {
-            this.agents[index].needDelete = true;
+            // this.agents[index].needDelete = true;
             this.delDirty = true;
+            this.needDelArray.push(agentNo);
         }
     }
 
     updateDeleteAgent() {
         if (this.delDirty) {
-            let isDelete = false;
-            for (let i = this.agents.length - 1; i >= 0; i--) {
-                if (this.agents[i].needDelete) {
-                    this.agents.splice(i, 1);
-                    isDelete = true;
+            // let isDelete = false;
+            for (let i = 0; i < this.needDelArray.length; i++) {
+                const agentNo = this.needDelArray[i];
+                let index = this.agentNo2indexDict[agentNo];
+
+                if (index >= 0) {
+
+                    this.agents[index] = this.agents[this.agents.length - 1];
+                    this.agents.length--;
+                    // isDelete = true;
+
+                    if (this.agents[index]) {
+                        delete this.agentNo2indexDict[agentNo];
+                        delete this.index2agentNoDict[this.agents.length];
+                        let newAgentNo = this.agents[index].id
+                        this.agentNo2indexDict[newAgentNo] = index;
+                        this.index2agentNoDict[index] = newAgentNo;
+                    }
                 }
             }
-            if (isDelete) {
-                this.onDelAgent();
-            }
+            // if (isDelete) {
+            //     this.onDelAgent();
+            // }
             this.delDirty = false;
+            this.needDelArray.length = 0;
         }
     }
 
@@ -138,24 +156,25 @@ export default class Simulator {
         agent.timeHorizon = _agentConfig.timeHorizon;
         agent.timeHorizonObst = _agentConfig.timeHorizonObst;
         agent.velocity = _agentConfig.velocity;
+        agent.mass = _agentConfig.mass;
         agent.simulator = this;
         this.agents.push(agent);
         this.onAddAgent();
         return agent.id;
     }
 
-    onDelAgent() {
-        this.agentNo2indexDict = {};
-        this.index2agentNoDict = {};
+    // private onDelAgent() {
+    //     this.agentNo2indexDict = {};
+    //     this.index2agentNoDict = {};
 
-        for (let i = 0; i < this.agents.length; i++) {
-            let agentNo = this.agents[i].id;
-            this.agentNo2indexDict[agentNo] = i;
-            this.index2agentNoDict[i] = agentNo;
-        }
-    }
+    //     for (let i = 0; i < this.agents.length; i++) {
+    //         let agentNo = this.agents[i].id;
+    //         this.agentNo2indexDict[agentNo] = i;
+    //         this.index2agentNoDict[i] = agentNo;
+    //     }
+    // }
 
-    onAddAgent() {
+    private onAddAgent() {
         if (this.agents.length == 0)
             return;
 
@@ -223,11 +242,12 @@ export default class Simulator {
         }
 
         this.kdTree.buildAgentTree();
+
+
         for (let i = 0; i < this.getNumAgents(); i++) {
             this.agents[i].computeNeighbors();
             this.agents[i].computeNewVelocity();
         }
-
         for (let i = 0; i < this.getNumAgents(); i++) {
             this.agents[i].update(dt);
         }
@@ -237,6 +257,9 @@ export default class Simulator {
         return this.globalTime;
     }
 
+    getAgent(agentNo: number) {
+        return this.agents[this.agentNo2indexDict[agentNo]];
+    }
     /**
      * Returns the specified agent neighbor of the specified agent.
      *

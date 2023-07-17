@@ -311,6 +311,9 @@ export default class KdTree {
     }
 
     private queryAgentTreeRecursiveByVector2D(position: Vector2D, options: { rangeSq: number, agentNo: number }, node: number) {
+        if (!this.agentTree.length) {
+            return;
+        }
         if (this.agentTree[node].end_ - this.agentTree[node].begin_ <= this.MAX_LEAF_SIZE) {
             for (let i = this.agentTree[node].begin_; i < this.agentTree[node].end_; ++i) {
                 let distSq = RVOMath.absSq(position.minus(this.agents[i].position));
@@ -357,7 +360,9 @@ export default class KdTree {
      * @memberof KdTree
      */
     private queryAgentTreeRecursive(agent: Agent, rangeSq: number, node: number): number {
-
+        if (!this.agentTree.length) {
+            return;
+        }
         if (this.agentTree[node].end_ - this.agentTree[node].begin_ <= this.MAX_LEAF_SIZE) {
             for (let i = this.agentTree[node].begin_; i < this.agentTree[node].end_; ++i) {
                 // rangeSq = agent.insertAgentNeighbor(this.agents[i], rangeSq);

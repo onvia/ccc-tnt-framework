@@ -32,7 +32,7 @@ export default class Agent implements IAgent {
     public timeHorizonObst = 0.0;
     public velocity: Vector2D;
 
-    public needDelete = false;
+    // public needDelete = false;
 
 
     /* Computes the neighbors of this agent. */
@@ -273,6 +273,7 @@ export default class Agent implements IAgent {
 
             let relativePosition = other.position.minus(this.position);
             let relativeVelocity = this.velocity.minus(other.velocity);
+
             let distSq = RVOMath.absSq(relativePosition);
             let combinedRadius = this.radius + other.radius;
             let combinedRadiusSq = RVOMath.sqr(combinedRadius);
@@ -403,7 +404,7 @@ export default class Agent implements IAgent {
      */
     update(dt: number) {
         this.velocity = this._newVelocity;
-        this.position.set(this.position.plus(this.velocity.scale(dt)));
+        this.position = this.position.plus(this.velocity.scale(dt));
     }
     /**
      * Solves a one-dimensional linear program on a specified line

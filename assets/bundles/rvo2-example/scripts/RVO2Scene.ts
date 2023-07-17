@@ -6,6 +6,7 @@ import Vector2D from "../rvo2/Vector2D";
 const { ccclass } = _decorator;
 const { node, sprite, button } = tnt._decorator;
 
+// 参考 https://github.com/warmtrue/RVO2-Unity.git
 
 declare global {
     interface RVO2SceneOptions {
@@ -52,7 +53,7 @@ export class RVO2Scene extends tnt.SceneBase<RVO2SceneOptions> implements ITouch
             15, // agent radius
 
             //小球最大速度值
-            this.speed, // max speed
+            this.speed, // max speed            
             //初始速度
             // 0, // default velocity for x
             // 0, // default velocity for y
@@ -70,7 +71,7 @@ export class RVO2Scene extends tnt.SceneBase<RVO2SceneOptions> implements ITouch
     initGameObject() {
         let parent = this.rectTemplete.parent;
         this.rectTemplete.removeFromParent();
-        for (let i = 0; i < 100; i++) {
+        for (let i = 0; i < 5; i++) {
             let x = math.randomRangeInt(-400, 400);
             let y = math.randomRangeInt(-300, 300);
             let rect = instantiate(this.rectTemplete)
@@ -78,6 +79,10 @@ export class RVO2Scene extends tnt.SceneBase<RVO2SceneOptions> implements ITouch
             rect.parent = parent;
 
             let sid = this.simulator.addAgent(new Vector2D(x, y));
+
+            if (i === 0) {
+                this.simulator.setAgentMaxSpeed(sid, 20);
+            }
             this.rectMap.set(sid, rect);
         }
 
