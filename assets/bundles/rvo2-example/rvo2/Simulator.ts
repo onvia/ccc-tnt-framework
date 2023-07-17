@@ -156,7 +156,6 @@ export default class Simulator {
         agent.timeHorizon = _agentConfig.timeHorizon;
         agent.timeHorizonObst = _agentConfig.timeHorizonObst;
         agent.velocity = _agentConfig.velocity;
-        agent.mass = _agentConfig.mass;
         agent.simulator = this;
         this.agents.push(agent);
         this.onAddAgent();
