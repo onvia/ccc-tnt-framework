@@ -192,7 +192,8 @@ class Toast {
 
     clear() {
         this.toastArray.forEach((toast) => {
-            if(toast.isValid){
+            // @ts-ignore
+            if(toast.isValid && toast._components){
                 let opacityCom = toast.getComponent(UIOpacity)
                 Tween.stopAllByTarget(toast);
                 Tween.stopAllByTarget(opacityCom);
