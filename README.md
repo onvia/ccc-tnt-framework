@@ -61,6 +61,7 @@ tnt.startup(startupOptions);
     - [工具类](./docs/%E5%B7%A5%E5%85%B7%E7%B1%BB.md)
     - [引擎扩展](./docs/%E5%BC%95%E6%93%8E%E6%89%A9%E5%B1%95.md)
     - [工具插件](./docs/%E5%B7%A5%E5%85%B7%E6%8F%92%E4%BB%B6.md)
+      - [PSD2Prefab工具](./docs/%E6%8F%92%E4%BB%B6%26%E5%B7%A5%E5%85%B7/PSD2Prefab%E5%B7%A5%E5%85%B7.md)
     - [参考](#参考)
       - [MVVM](#mvvm)
       - [其他](#其他)

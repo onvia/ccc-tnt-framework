@@ -142,7 +142,7 @@ class Main {
                     }
                 }
             }
-            console.log(`Main-> `, JSON.stringify(config_1.config, null, 2));
+            // console.log(`Main-> `, JSON.stringify(config_1.config, null, 2));
         });
     }
     exec(args) {

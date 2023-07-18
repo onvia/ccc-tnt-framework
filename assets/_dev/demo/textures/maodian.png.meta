@@ -2,7 +2,7 @@
   "ver": "1.0.25",
   "importer": "image",
   "imported": true,
-  "uuid": "2612b62a-4708-4956-9b16-1b771ba62485",
+  "uuid": "efc6b697-faa6-42b7-aac2-b67929295318",
   "files": [
     ".json",
     ".png"
@@ -10,14 +10,14 @@
   "subMetas": {
     "6c48a": {
       "importer": "texture",
-      "uuid": "2612b62a-4708-4956-9b16-1b771ba62485@6c48a",
+      "uuid": "efc6b697-faa6-42b7-aac2-b67929295318@6c48a",
       "displayName": "maodian",
       "id": "6c48a",
       "name": "texture",
       "userData": {
         "wrapModeS": "clamp-to-edge",
         "wrapModeT": "clamp-to-edge",
-        "imageUuidOrDatabaseUri": "2612b62a-4708-4956-9b16-1b771ba62485",
+        "imageUuidOrDatabaseUri": "efc6b697-faa6-42b7-aac2-b67929295318",
         "minfilter": "linear",
         "magfilter": "linear",
         "mipfilter": "none",
@@ -34,7 +34,7 @@
     },
     "f9941": {
       "importer": "sprite-frame",
-      "uuid": "2612b62a-4708-4956-9b16-1b771ba62485@f9941",
+      "uuid": "efc6b697-faa6-42b7-aac2-b67929295318@f9941",
       "displayName": "maodian",
       "id": "f9941",
       "name": "spriteFrame",
@@ -56,7 +56,7 @@
         "borderRight": 0,
         "packable": true,
         "isUuid": true,
-        "imageUuidOrDatabaseUri": "2612b62a-4708-4956-9b16-1b771ba62485@6c48a",
+        "imageUuidOrDatabaseUri": "efc6b697-faa6-42b7-aac2-b67929295318@6c48a",
         "atlasUuid": "",
         "pixelsToUnit": 100,
         "pivotX": 0.5,
@@ -128,7 +128,7 @@
   "userData": {
     "type": "sprite-frame",
     "hasAlpha": true,
-    "redirect": "2612b62a-4708-4956-9b16-1b771ba62485@f9941",
+    "redirect": "efc6b697-faa6-42b7-aac2-b67929295318@f9941",
     "fixAlphaTransparencyArtifacts": false
   }
 }

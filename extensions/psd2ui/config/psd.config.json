@@ -1,0 +1,14 @@
+{
+    "cc.Label": {
+        "_font": {
+            "__uuid__": "7ecfa26a-27ec-4e2c-9815-d7c4c744d53f",
+            "__expectedType__": "cc.TTFFont"
+        },
+        "_isSystemFontUsed": false
+    },
+    "textOffsetY": {
+        "default": 0,
+        "36": 0
+    },
+    "textLineHeightOffset": 0
+}
