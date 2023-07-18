@@ -1,4 +1,4 @@
-import { Node, Canvas, director, instantiate, Layers, Prefab, resources, UITransform, v3, Label, UIOpacity, tween, Tween, easing, Director } from "cc";
+import { Node, Canvas, director, instantiate, Layers, Prefab, resources, UITransform, v3, Label, UIOpacity, tween, Tween, easing, Director, isValid } from "cc";
 
 
 
@@ -192,10 +192,12 @@ class Toast {
 
     clear() {
         this.toastArray.forEach((toast) => {
-            let opacityCom = toast.getComponent(UIOpacity)
-            Tween.stopAllByTarget(toast);
-            Tween.stopAllByTarget(opacityCom);
-            toast.destroy();
+            if(toast.isValid){
+                let opacityCom = toast.getComponent(UIOpacity)
+                Tween.stopAllByTarget(toast);
+                Tween.stopAllByTarget(opacityCom);
+                toast.destroy();
+            }
         });
         this.toastArray.length = 0;
         this.singleMap = {};
