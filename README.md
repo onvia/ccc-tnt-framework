@@ -36,6 +36,8 @@ tnt.startup(startupOptions);
 >`Releases` 中发布的 `tnt.zip` 已内置 `preload-tnt.js` 脚本，作用是在引擎加载阶段加载 `framework` Bundle  
 >为保证在编辑器内优先加载框架代码，这里名为 `framework` 的 Bundle 使用了 `a-framework` 作为文件夹名，开发过程中其他 Bundle 尽量保证在框架 Bundle 后加载
 
+> 从本仓库获取到的插件请在插件目录 `./extensions/{插件}` 下执行 `npm install` 进行安装所需要的包
+
 ### 文档目录
 - [CocosCreator 3.x 游戏开发框架](#cocoscreator-3x-游戏开发框架)
     - [基类](./docs/%E5%9F%BA%E7%B1%BB.md)
