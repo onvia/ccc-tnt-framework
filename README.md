@@ -69,6 +69,12 @@ https://onvia.gitlab.io/ccc-demo/tnt-example/
 ### 感谢
 [Preview 插件](https://github.com/kaxifakl/cocos-preview) 由 [卡西法](https://github.com/kaxifakl) 提供
 
+
+### QQ群
+- 858173205
+
+
+
 ### 参考  
 #### MVVM  
 https://forum.cocos.org/t/topic/78821  
