@@ -87,7 +87,7 @@ tnt.startup = (options?: IStartupOptions) => {
     options?.audioConfig && tnt.audioMgr.init(options?.audioConfig);
     options?.i18nConfig && tnt.i18n.init(options?.i18nConfig);
     tnt._decorator._registePlugins();
-    options.debug && profiler.showStats();
+    options.debug && profiler?.showStats();
 
 
     game.emit(tnt.EVENT_TNT_STARTUP);
@@ -112,7 +112,7 @@ function defineTNTOptions(options?: IStartupOptions) {
                 return;
             }
             _debug = v;
-            _debug ? profiler.showStats() : profiler.hideStats();
+            _debug ? profiler?.showStats() : profiler?.hideStats();
         },
         get() {
             return _debug;

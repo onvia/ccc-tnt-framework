@@ -3,7 +3,7 @@ import { Node, Canvas, director, dynamicAtlasManager, macro, Layers, SpriteFrame
 
 declare global {
     interface ITNT {
-        debug: DebugUtils;
+        debugUtils: DebugUtils;
     }
 }
 
@@ -102,5 +102,5 @@ class DebugUtils {
     }
 }
 
-tnt.debug = new DebugUtils();
+tnt.debugUtils = new DebugUtils();
 export {};

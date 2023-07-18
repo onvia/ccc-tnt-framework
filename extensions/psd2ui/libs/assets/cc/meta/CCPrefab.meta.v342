@@ -1,0 +1,13 @@
+{
+  "ver": "1.1.35",
+  "importer": "prefab",
+  "imported": true,
+  "uuid": "$PREFB_UUID",
+  "files": [
+    ".json"
+  ],
+  "subMetas": {},
+  "userData": {
+    "syncNodeName": "$NODE_NAME"
+  }
+}
