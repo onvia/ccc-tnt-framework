@@ -7,7 +7,7 @@ import child_process from "child_process";
 let exec = child_process.exec;
 
 
-const ENGINE_VER = "v342";
+const ENGINE_VER = "v342"; // 
 const projectAssets = path.join(Editor.Project.path, "assets");
 const cacheFile = path.join(Editor.Project.path, "local", "psd-to-prefab-cache.json");
 const commandBat = path.join(Editor.Project.path, "extensions\\psd2ui\\libs\\psd2ui\\command.bat");
@@ -26,14 +26,18 @@ export const methods: { [key: string]: (...any: any) => any } = {
         console.log(`main-> onClickPsd2UICache111 `);
         return new Promise<void>((resolve, reject) => {
             console.log(`main-> onClickPsd2UICache`);
-            let cmds = 'start ' + commandBat + ' ' + `--project-assets ${projectAssets} --cache ${cacheFile} --init`;
-            console.log(cmds)
 
-            exec(cmds, { windowsHide: false }, (err, stdout, stderr) => {
 
+            let options = {
+                "project-assets": projectAssets,
+                "cache": cacheFile,
+                "init": true,
+            }
+
+            Promise.all(_exec(options, [])).then(() => {
                 console.log("[psd2prefab]  执行缓存结束");
                 resolve();
-            })
+            });
         })
     },
 
@@ -50,7 +54,7 @@ export const methods: { [key: string]: (...any: any) => any } = {
             "engine-version": ENGINE_VER,
         }
 
-        let tasks = [];
+        let tasks: Promise<void>[] = [];
         for (let i = 0; i < files.length; i++) {
             const file = files[i];
 
@@ -78,25 +82,28 @@ export const methods: { [key: string]: (...any: any) => any } = {
                 }
                 args["config"] = configFile;
             }
-            let jsonContent = JSON.stringify(args);
-
-            console.log("批处理命令参数：" + jsonContent);
-            let base64 = Buffer.from(jsonContent).toString("base64");
-
-            console.log('start ' + commandBat + ' ' + `--json ${base64}`);
-            tasks.push(new Promise<void>((rs) => {
-                exec('start ' + commandBat + ' ' + `--json ${base64}`, { windowsHide: false }, (err, stdout, stderr) => {
-                    rs();
-                })
-            }));
+            _exec(args, tasks)
         }
 
         await Promise.all(tasks);
-
         console.log("[psd2ui]  psd 导出完成");
     },
-};
 
+};
+function _exec(options: Record<string, any>, tasks: Promise<void>[]) {
+    let jsonContent = JSON.stringify(options);
+
+    console.log("批处理命令参数：" + jsonContent);
+    let base64 = Buffer.from(jsonContent).toString("base64");
+
+    console.log('start ' + commandBat + ' ' + `--json ${base64}`);
+    tasks.push(new Promise<void>((rs) => {
+        exec('start ' + commandBat + ' ' + `--json ${base64}`, { windowsHide: false }, (err, stdout, stderr) => {
+            rs();
+        })
+    }));
+    return tasks;
+}
 /**
  * @en Hooks triggered after extension loading is complete
  * @zh 扩展加载完成后触发的钩子

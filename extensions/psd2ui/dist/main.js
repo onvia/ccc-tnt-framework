@@ -10,7 +10,7 @@ const fs_extra_1 = __importDefault(require("fs-extra"));
 const path_1 = __importDefault(require("path"));
 const child_process_1 = __importDefault(require("child_process"));
 let exec = child_process_1.default.exec;
-const ENGINE_VER = "v342"; // v249 
+const ENGINE_VER = "v342"; // 
 const projectAssets = path_1.default.join(Editor.Project.path, "assets");
 const cacheFile = path_1.default.join(Editor.Project.path, "local", "psd-to-prefab-cache.json");
 const commandBat = path_1.default.join(Editor.Project.path, "extensions\\psd2ui\\libs\\psd2ui\\command.bat");
@@ -28,9 +28,12 @@ exports.methods = {
         console.log(`main-> onClickPsd2UICache111 `);
         return new Promise((resolve, reject) => {
             console.log(`main-> onClickPsd2UICache`);
-            let cmds = 'start ' + commandBat + ' ' + `--project-assets ${projectAssets} --cache ${cacheFile} --init`;
-            console.log(cmds);
-            exec(cmds, { windowsHide: false }, (err, stdout, stderr) => {
+            let options = {
+                "project-assets": projectAssets,
+                "cache": cacheFile,
+                "init": true,
+            };
+            Promise.all(_exec(options, [])).then(() => {
                 console.log("[psd2prefab]  执行缓存结束");
                 resolve();
             });
@@ -72,20 +75,24 @@ exports.methods = {
                 }
                 args["config"] = configFile;
             }
-            let jsonContent = JSON.stringify(args);
-            console.log("批处理命令参数：" + jsonContent);
-            let base64 = Buffer.from(jsonContent).toString("base64");
-            console.log('start ' + commandBat + ' ' + `--json ${base64}`);
-            tasks.push(new Promise((rs) => {
-                exec('start ' + commandBat + ' ' + `--json ${base64}`, { windowsHide: false }, (err, stdout, stderr) => {
-                    rs();
-                });
-            }));
+            _exec(args, tasks);
         }
         await Promise.all(tasks);
         console.log("[psd2ui]  psd 导出完成");
     },
 };
+function _exec(options, tasks) {
+    let jsonContent = JSON.stringify(options);
+    console.log("批处理命令参数：" + jsonContent);
+    let base64 = Buffer.from(jsonContent).toString("base64");
+    console.log('start ' + commandBat + ' ' + `--json ${base64}`);
+    tasks.push(new Promise((rs) => {
+        exec('start ' + commandBat + ' ' + `--json ${base64}`, { windowsHide: false }, (err, stdout, stderr) => {
+            rs();
+        });
+    }));
+    return tasks;
+}
 /**
  * @en Hooks triggered after extension loading is complete
  * @zh 扩展加载完成后触发的钩子
