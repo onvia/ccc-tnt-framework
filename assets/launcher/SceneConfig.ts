@@ -22,6 +22,12 @@ export const SceneConfig: ISceneConfig[] = [
         bundle: "window-example"
     },
     {
+        scene: "RedPointDemo",
+        button: "红点管理",
+        bundle: "red-point-example",
+
+    },
+    {
         scene: "CaptureScene",
         button: "截屏",
         bundle: "capture-example"

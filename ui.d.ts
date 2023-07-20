@@ -1,6 +1,10 @@
 import { RedPointComp } from "./assets/a-framework/red-point/RedPointComp"
-import { LoadingTips } from "./assets/bundles/common-bundle/scripts/LoadingTips"
+import { LoadingTips } from "./assets/bundles/common-bundle/scripts/prefabs/LoadingTips"
 import { VMItem } from "./assets/bundles/mvvm-example/scripts/VMItem"
+import { RedPointCompProxy } from "./assets/bundles/red-point-example/scripts/RedPointCompProxy"
+import { AlchemyPopup } from "./assets/bundles/red-point-example/scripts/view/AlchemyPopup"
+import { DanfangPopup } from "./assets/bundles/red-point-example/scripts/view/DanfangPopup"
+import { MailPopup } from "./assets/bundles/red-point-example/scripts/view/MailPopup"
 import { AutoCloseWindow } from "./assets/bundles/window-example/scripts/AutoCloseWindow"
 import { DialogWindow } from "./assets/bundles/window-example/scripts/DialogWindow"
 import { UIEmbedItem } from "./assets/bundles/window-example/scripts/embeds/UIEmbedItem"
@@ -16,6 +20,10 @@ declare global {
 	interface RedPointCompOptions{}
 	interface LoadingTipsOptions{}
 	interface VMItemOptions{}
+	interface RedPointCompProxyOptions{}
+	interface AlchemyPopupOptions{}
+	interface DanfangPopupOptions{}
+	interface MailPopupOptions{}
 	interface AutoCloseWindowOptions{}
 	interface DialogWindowOptions{}
 	interface UIEmbedItemOptions{}
@@ -28,6 +36,18 @@ declare global {
 	interface VictoryWindowOptions{}
 
 	interface GlobalWindowType{
+		"AlchemyPopup": {
+			ctor: AlchemyPopup,
+			options: AlchemyPopupOptions,
+		}
+		"DanfangPopup": {
+			ctor: DanfangPopup,
+			options: DanfangPopupOptions,
+		}
+		"MailPopup": {
+			ctor: MailPopup,
+			options: MailPopupOptions,
+		}
 		"AutoCloseWindow": {
 			ctor: AutoCloseWindow,
 			options: AutoCloseWindowOptions,
@@ -61,6 +81,10 @@ declare global {
 		"VMItem": {
 			ctor: VMItem,
 			options: VMItemOptions,
+		}
+		"RedPointCompProxy": {
+			ctor: RedPointCompProxy,
+			options: RedPointCompProxyOptions,
 		}
 		"UIEmbedItem": {
 			ctor: UIEmbedItem,

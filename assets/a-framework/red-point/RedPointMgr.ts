@@ -122,10 +122,15 @@ class RedPointMgr extends tnt.EventMgr {
      */
     private _setRedPointParent(redPoint: tnt.RedPoint) {
         let parent = this._redPointMap.get(redPoint.redPointInfo.parent);
-        parent?.addChild(redPoint);
         if (!parent) {
             console.error(`RedPointMgr-> ${redPoint.id} 没有父节点`);
+            return;
         }
+        if (redPoint.id === parent.id) {
+            console.warn(`RedPointMgr-> ${redPoint.id} 无法设置自己为自己的父节点`);
+            return;
+        }
+        parent.addChild(redPoint);
     }
 
     /**
@@ -254,7 +259,7 @@ class RedPointMgr extends tnt.EventMgr {
     }
 
     /**
-     * 更新红点，此方法会递归调用，如果是计算整棵树的红点，需要在最后调用一次 `calculateParentCount`，用法 查看 `updateRedPoint`
+     * 更新红点，递归
      *
      * @private
      * @param {RedPoint} redPoint
