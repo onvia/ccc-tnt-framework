@@ -1,9 +1,0 @@
-{
-  "ver": "1.3.2",
-  "uuid": "$PREFB_UUID",
-  "importer": "prefab",
-  "optimizationPolicy": "AUTO",
-  "asyncLoadAssets": false,
-  "readonly": false,
-  "subMetas": {}
-}

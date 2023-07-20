@@ -2,7 +2,7 @@
   "ver": "1.0.25",
   "importer": "image",
   "imported": true,
-  "uuid": "34d4947f-8361-4302-b2d6-7376ba31b7f5",
+  "uuid": "8a92af39-4ac4-4d79-a547-6593f407db1d",
   "files": [
     ".json",
     ".png"
@@ -10,14 +10,14 @@
   "subMetas": {
     "6c48a": {
       "importer": "texture",
-      "uuid": "34d4947f-8361-4302-b2d6-7376ba31b7f5@6c48a",
+      "uuid": "8a92af39-4ac4-4d79-a547-6593f407db1d@6c48a",
       "displayName": "chat_icon",
       "id": "6c48a",
       "name": "texture",
       "userData": {
         "wrapModeS": "clamp-to-edge",
         "wrapModeT": "clamp-to-edge",
-        "imageUuidOrDatabaseUri": "34d4947f-8361-4302-b2d6-7376ba31b7f5",
+        "imageUuidOrDatabaseUri": "8a92af39-4ac4-4d79-a547-6593f407db1d",
         "minfilter": "linear",
         "magfilter": "linear",
         "mipfilter": "none",
@@ -34,7 +34,7 @@
     },
     "f9941": {
       "importer": "sprite-frame",
-      "uuid": "34d4947f-8361-4302-b2d6-7376ba31b7f5@f9941",
+      "uuid": "8a92af39-4ac4-4d79-a547-6593f407db1d@f9941",
       "displayName": "chat_icon",
       "id": "f9941",
       "name": "spriteFrame",
@@ -56,7 +56,7 @@
         "borderRight": 0,
         "packable": true,
         "isUuid": true,
-        "imageUuidOrDatabaseUri": "34d4947f-8361-4302-b2d6-7376ba31b7f5@6c48a",
+        "imageUuidOrDatabaseUri": "8a92af39-4ac4-4d79-a547-6593f407db1d@6c48a",
         "atlasUuid": "",
         "pixelsToUnit": 100,
         "pivotX": 0.5,
@@ -128,7 +128,7 @@
   "userData": {
     "type": "sprite-frame",
     "hasAlpha": true,
-    "redirect": "34d4947f-8361-4302-b2d6-7376ba31b7f5@f9941",
+    "redirect": "8a92af39-4ac4-4d79-a547-6593f407db1d@f9941",
     "fixAlphaTransparencyArtifacts": false
   }
 }
