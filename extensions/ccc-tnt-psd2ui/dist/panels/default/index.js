@@ -12,8 +12,8 @@ const AssetDir = `${Editor.Project.path}/assets`;
 // Editor.Panel.define = Editor.Panel.define || function(options: any) { return options }
 module.exports = Editor.Panel.define({
     listeners: {
-        show() { console.log('show'); },
-        hide() { console.log('hide'); },
+        show() { },
+        hide() { },
     },
     template: (0, fs_extra_1.readFileSync)((0, path_1.join)(__dirname, '../../../static/template/default/index.html'), 'utf-8'),
     style: (0, fs_extra_1.readFileSync)((0, path_1.join)(__dirname, '../../../static/style/default/index.css'), 'utf-8'),
@@ -36,10 +36,8 @@ module.exports = Editor.Panel.define({
                     };
                 },
                 created() {
-                    console.log(`index-> created`);
                     let str = localStorage.getItem(`${Editor.Project.name}_psd2ui_output`);
                     if (str) {
-                        console.log(`index-> created  `, str);
                         this.outputPath = str;
                     }
                 },
@@ -51,9 +49,7 @@ module.exports = Editor.Panel.define({
                         if (this.isProcessing)
                             return;
                         this.isProcessing = true;
-                        console.log(`index-> onClickCache  `, this.isForceImg, this.isImgOnly);
                         await Editor.Message.request("ccc-tnt-psd2ui", "on-click-cache");
-                        console.log(`index-> onClickCache end`);
                         this.isProcessing = false;
                     },
                     onForceChanged(e) {
@@ -62,30 +58,53 @@ module.exports = Editor.Panel.define({
                     onImgOnlyChanged() {
                         this.isImgOnly = !this.isImgOnly;
                     },
+                    async onClickDropArea(event) {
+                        if (this.isProcessing) {
+                            Editor.Dialog.warn("当前有正在处理的文件，请等待完成。\n如果已完成，请关闭 DOS 窗口。");
+                            return;
+                        }
+                        let result = await Editor.Dialog.select({
+                            'multi': true,
+                            'type': "file",
+                            'filters': [
+                                {
+                                    'extensions': ["psd"],
+                                    'name': "请选择 PSD"
+                                }
+                            ]
+                        });
+                        let files = result.filePaths;
+                        this.processPsd(files);
+                    },
                     onDragEnter(event) {
                         event.stopPropagation();
                         event.preventDefault();
-                        console.log(`index->onDragEnter `, event);
                         // event.target.add("drag-hovering")
                     },
                     onDragLeave(event) {
                         event.stopPropagation();
                         event.preventDefault();
-                        console.log(`index->onDragEnter `);
                         // event.target.remove("drag-hovering")
                     },
                     async onDropFiles(event) {
-                        if (this.isProcessing) {
-                            return;
-                        }
                         let files = [];
                         [].forEach.call(event.dataTransfer.files, function (file) {
                             files.push(file.path);
                         }, false);
+                        this.processPsd(files);
+                    },
+                    async processPsd(files) {
+                        if (!files.length) {
+                            return;
+                        }
+                        if (this.isProcessing) {
+                            Editor.Dialog.warn("当前有正在处理的文件，请等待完成。\n如果已完成，请关闭 DOS 窗口。");
+                            return;
+                        }
                         this.isProcessing = true;
                         await Editor.Message.request("ccc-tnt-psd2ui", "on-drop-file", { output: this.outputPath, files, isForceImg: this.isForceImg, isImgOnly: this.isImgOnly });
                         this.isProcessing = false;
-                    },
+                    }
                 },
             });
             app.mount(this.$.app);

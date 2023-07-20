@@ -9,9 +9,12 @@
         <ui-input id="output" slot="content" v-model="outputPath" ></ui-input>
     </ui-prop>
     <hr />
-    <div class="layout">
-        <ui-drag-area id="drop-area" droppable="file" @drop="onDropFiles" @dragenter="onDragEnter" @dragleave="onDragLeave" multi>
-            psd文件/文件夹
+    <div class="layout" @click="onClickDropArea">
+        <ui-drag-area id="drop-area" droppable="file" @drop="onDropFiles" @dragenter="onDragEnter" @dragleave="onDragLeave" multi
+        style="text-align: center;">
+            拖入psd文件/文件夹<br />
+            或者<br />
+            点击我选择文件
         </ui-drag-area>
     </div>
 </div>

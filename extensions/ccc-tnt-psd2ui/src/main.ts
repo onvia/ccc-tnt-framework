@@ -12,6 +12,8 @@ const projectAssets = path.join(Editor.Project.path, "assets");
 const cacheFile = path.join(Editor.Project.path, "local", "psd-to-prefab-cache.json");
 const commandBat = path.join(Editor.Project.path, `extensions\\${packageJSON.name}\\libs\\psd2ui\\command.bat`);
 const configFile = path.join(Editor.Project.path, `extensions\\${packageJSON.name}\\config\\psd.config.json`);
+let uuid2md5: Map<string, string> = new Map();
+let cacheFileJson: Record<string, any> = {};
 /**
  * @en 
  * @zh 为扩展的主进程的注册方法
@@ -31,6 +33,7 @@ export const methods: { [key: string]: (...any: any) => any } = {
                 "project-assets": projectAssets,
                 "cache": cacheFile,
                 "init": true,
+                "engine-version": ENGINE_VER
             }
 
             Promise.all(_exec(options, [])).then(() => {
@@ -85,17 +88,16 @@ export const methods: { [key: string]: (...any: any) => any } = {
         }
 
         await Promise.all(tasks);
-        console.log("[psd2ui]  psd 导出完成");
+        genUUID2MD5Mapping();
+        console.log("[ccc-tnt-psd2ui]  psd 导出完成，输出位置为：", output ? output : "psd 同级目录");
     },
-
 };
 function _exec(options: Record<string, any>, tasks: Promise<void>[]) {
     let jsonContent = JSON.stringify(options);
 
-    console.log("批处理命令参数：" + jsonContent);
+    // console.log("[ccc-tnt-psd2ui] 批处理命令参数：" + jsonContent);
     let base64 = Buffer.from(jsonContent).toString("base64");
-
-    console.log('start ' + commandBat + ' ' + `--json ${base64}`);
+    // console.log('[ccc-tnt-psd2ui] start ' + commandBat + ' ' + `--json ${base64}`);
     tasks.push(new Promise<void>((rs) => {
         exec('start ' + commandBat + ' ' + `--json ${base64}`, { windowsHide: false }, (err, stdout, stderr) => {
             rs();
@@ -103,12 +105,45 @@ function _exec(options: Record<string, any>, tasks: Promise<void>[]) {
     }));
     return tasks;
 }
+
+/**
+ * 资源删除的监听
+ *
+ * @param {*} event
+ */
+function onAssetDeletedListener(event: any) {
+    if (uuid2md5.has(event)) {
+        let md5 = uuid2md5.get(event);
+        console.log(`[ccc-tnt-psd2ui] 删除资源 md5: ${md5}, uuid: ${event}`);
+        delete cacheFileJson[`${md5}`];
+        fs.writeFileSync(cacheFile,JSON.stringify(cacheFileJson,null,2));
+    }
+}
+
+/**
+ * 生成 uuid 转 MD5 的映射
+ *
+ */
+function genUUID2MD5Mapping() {
+    if (!fs.existsSync(cacheFile)) {
+        return;
+    }
+    let content = fs.readFileSync(cacheFile, 'utf-8');
+    let obj = JSON.parse(content);
+    cacheFileJson = obj;
+    for (const key in obj) {
+        const element = obj[key];
+        uuid2md5.set(element.textureUuid, key);
+    }
+}
+
 /**
  * @en Hooks triggered after extension loading is complete
  * @zh 扩展加载完成后触发的钩子
  */
 export const load = function () {
-
+    genUUID2MD5Mapping();
+    Editor.Message.addBroadcastListener("asset-db:asset-delete", onAssetDeletedListener);
 };
 
 /**
@@ -117,4 +152,5 @@ export const load = function () {
  */
 export const unload = function () {
 
+    Editor.Message.removeBroadcastListener("asset-db:asset-delete", onAssetDeletedListener);
 };

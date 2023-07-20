@@ -96,7 +96,7 @@ class Main {
             let psdPath = "./test/demo.psd";
             // // let psdPath = "E:\\YQ\\Meishu\\D_巅峰对决\\竞猜\\guild_PeakBetMainWindow.psd"
             // psdPath = "./test/对战动画-切.psd";
-            // psdPath = "./test/test.psd";
+            psdPath = "./test/活动icon.psd";
             this.parsePsd(psdPath, outDir);
             // let psdPath = "./test";
             // let psdPath = "E:\\YQ\\Meishu\\D_巅峰对决\\竞猜\\guild_PeakBetMainWindow.psd"
@@ -120,7 +120,7 @@ class Main {
                 console.log(`Main-> 配置 ${filepath} 不存在`);
                 return;
             }
-            console.log(`Main-> 读取配置 ${filepath}`);
+            // console.log(`Main-> 读取配置 ${filepath}`);
             let psdConfig = fs_extra_1.default.readFileSync(filepath, "utf-8");
             this.psdConfig = JSON.parse(psdConfig);
             // // 合并 文本偏移配置
@@ -142,7 +142,7 @@ class Main {
                     }
                 }
             }
-            // console.log(`Main-> `, JSON.stringify(config_1.config, null, 2));
+            // console.log(`Main-> `,JSON.stringify(config,null,2));
         });
     }
     exec(args) {
@@ -247,7 +247,7 @@ class Main {
     parsePsdDir(dir, outDir) {
         return __awaiter(this, void 0, void 0, function* () {
             // 清空目录
-            fs_extra_1.default.emptyDirSync(outDir);
+            // fs.emptyDirSync(outDir);
             let psds = FileUtils_1.fileUtils.filterFile(dir, (fileName) => {
                 let extname = path_1.default.extname(fileName);
                 if (extname == ".psd") {
@@ -275,7 +275,7 @@ class Main {
             let prefabDir = path_1.default.join(outDir, psdName);
             let textureDir = path_1.default.join(prefabDir, "textures");
             fs_extra_1.default.mkdirsSync(prefabDir); // 创建预制体根目录
-            fs_extra_1.default.emptyDirSync(prefabDir);
+            // fs.emptyDirSync(prefabDir);
             fs_extra_1.default.mkdirsSync(textureDir); //创建 图片目录
             yield this.saveImage(textureDir);
             yield this.buildPrefab(psdRoot);
@@ -442,7 +442,7 @@ class Main {
         if (!imageWarp) {
             imageWarp = _layer;
         }
-        // 2.4.9
+        // 2.4.9 =-> SPRITE_FRAME_UUID
         let meta = this.spriteFrameMetaContent.replace(/\$SPRITE_FRAME_UUID/g, imageWarp.uuid);
         meta = meta.replace(/\$TEXTURE_UUID/g, imageWarp.textureUuid);
         meta = meta.replace(/\$FILE_NAME/g, _layer.imgName);

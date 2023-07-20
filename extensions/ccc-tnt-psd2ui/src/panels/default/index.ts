@@ -1,7 +1,6 @@
 import { readFileSync } from 'fs-extra';
 import { extname, join, parse } from 'path';
 import { createApp, App } from 'vue';
-import { AssetInfo } from '../../../@types/packages/asset-db/@types/public';
 const weakMap = new WeakMap<any, App>();
 
 const AssetDir = `${Editor.Project.path}/assets`;
@@ -16,14 +15,14 @@ const AssetDir = `${Editor.Project.path}/assets`;
 // Editor.Panel.define = Editor.Panel.define || function(options: any) { return options }
 module.exports = Editor.Panel.define({
     listeners: {
-        show() { console.log('show'); },
-        hide() { console.log('hide'); },
+        show() {  },
+        hide() {  },
     },
     template: readFileSync(join(__dirname, '../../../static/template/default/index.html'), 'utf-8'),
     style: readFileSync(join(__dirname, '../../../static/style/default/index.css'), 'utf-8'),
     $: {
         app: '#app',
-        
+
     },
     methods: {
     },
@@ -41,65 +40,83 @@ module.exports = Editor.Panel.define({
                         outputPath: "",
                     };
                 },
-                created(){
-                        
-                    console.log(`index-> created`);
+                created() {
                     let str = localStorage.getItem(`${Editor.Project.name}_psd2ui_output`);
-                    if(str){
-                        console.log(`index-> created  `,str);
+                    if (str) {
                         this.outputPath = str;
                     }
                 },
-                beforeUnmount(){
-                    localStorage.setItem(`${Editor.Project.name}_psd2ui_output`,this.outputPath);
+                beforeUnmount() {
+                    localStorage.setItem(`${Editor.Project.name}_psd2ui_output`, this.outputPath);
                 },
-                
+
                 methods: {
-                    async onClickCache(){
+                    async onClickCache() {
                         if (this.isProcessing) return;
                         this.isProcessing = true;
-    
-                        console.log(`index-> onClickCache  `,this.isForceImg, this.isImgOnly);
-                        
-                        await Editor.Message.request("ccc-tnt-psd2ui","on-click-cache");
-                        console.log(`index-> onClickCache end`);
-                        
+
+                        await Editor.Message.request("ccc-tnt-psd2ui", "on-click-cache");
                         this.isProcessing = false;
                     },
                     onForceChanged(e: any) {
-                       this.isForceImg = !this.isForceImg;
+                        this.isForceImg = !this.isForceImg;
                     },
-                    onImgOnlyChanged(){
+                    onImgOnlyChanged() {
                         this.isImgOnly = !this.isImgOnly;
                     },
-                       
+
+                    async onClickDropArea(event: any) {
+                        if(this.isProcessing){
+                            Editor.Dialog.warn("当前有正在处理的文件，请等待完成。\n如果已完成，请关闭 DOS 窗口。")
+                            return;
+                        }
+                        let result = await Editor.Dialog.select({
+                            'multi': true,
+                            'type': "file",
+                            'filters': [
+                                {
+                                    'extensions': ["psd"],
+                                    'name': "请选择 PSD"
+                                }
+                            ]
+                        });
+
+                        let files = result.filePaths;
+                        this.processPsd(files);
+                    },
                     onDragEnter(event: any) {
                         event.stopPropagation()
                         event.preventDefault()
-                        console.log(`index->onDragEnter `,event);
                         // event.target.add("drag-hovering")
-                    }, 
+                    },
                     onDragLeave(event: any) {
                         event.stopPropagation()
                         event.preventDefault()
-                        console.log(`index->onDragEnter `);
                         // event.target.remove("drag-hovering")
                     },
-                    async onDropFiles(event: any){
-                        if(this.isProcessing){
-                            return;
-                        }
+                    async onDropFiles(event: any) {
+                      
                         let files: any[] = [];
                         [].forEach.call(event.dataTransfer.files, function (file: any) {
                             files.push(file.path);
                         }, false);
-
-                        this.isProcessing = true;
-                        await Editor.Message.request("ccc-tnt-psd2ui","on-drop-file",{output: this.outputPath,files,isForceImg: this.isForceImg,isImgOnly: this.isImgOnly});
-                        this.isProcessing = false;
+                        this.processPsd(files);
                     },
+
+                    async processPsd(files: any[]){
+                        if(!files.length){
+                            return;
+                        }
+                        if (this.isProcessing) {
+                            Editor.Dialog.warn("当前有正在处理的文件，请等待完成。\n如果已完成，请关闭 DOS 窗口。")
+                            return;
+                        }
+                        this.isProcessing = true;
+                        await Editor.Message.request("ccc-tnt-psd2ui", "on-drop-file", { output: this.outputPath, files, isForceImg: this.isForceImg, isImgOnly: this.isImgOnly });
+                        this.isProcessing = false;
+                    }
                 },
-                
+
             });
             app.mount(this.$.app);
             weakMap.set(this, app);

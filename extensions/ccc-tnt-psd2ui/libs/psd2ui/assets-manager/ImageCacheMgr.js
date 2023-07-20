@@ -99,6 +99,9 @@ class ImageCacheMgr {
             case EditorVersion_1.EditorVersion.v249:
                 imageWarp = this._loadImageMeta249(content, _path);
                 break;
+            case EditorVersion_1.EditorVersion.v342:
+                imageWarp = this._loadImageMeta34x(content, _path);
+                break;
             default:
                 console.log(`ImageCacheMgr-> 暂未实现 ${EditorVersion_1.EditorVersion[config_1.config.editorVersion]} 版本`);
                 break;
@@ -117,6 +120,23 @@ class ImageCacheMgr {
             path: fullpath,
             textureUuid: metaJson.subMetas[filename].uuid,
             uuid: metaJson.uuid,
+            isOutput: true,
+        };
+        return imageWarp;
+    }
+    _loadImageMeta34x(metaContent, _path) {
+        var _a;
+        let filename = path_1.default.basename(_path, ".png.meta");
+        let fullpath = path_1.default.join(path_1.default.dirname(_path), `${filename}.png`);
+        let metaJson = JSON.parse(metaContent);
+        if (!((_a = metaJson === null || metaJson === void 0 ? void 0 : metaJson.subMetas) === null || _a === void 0 ? void 0 : _a["6c48a"])) {
+            return null;
+        }
+        let uuid = metaJson.subMetas["6c48a"].uuid.replace("@6c48a", "");
+        let imageWarp = {
+            path: fullpath,
+            textureUuid: uuid,
+            uuid: uuid,
             isOutput: true,
         };
         return imageWarp;
