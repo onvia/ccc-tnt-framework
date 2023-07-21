@@ -67,6 +67,9 @@ export class RedPointData {
         tnt.timerMgr.startTimer(()=>{
             this.chatMsgCount ++;
             // 刷新红点
+            // 测试同一帧多次调用刷新
+            tnt.redPointMgr.refreshRedPoint(10030, false);
+            tnt.redPointMgr.refreshRedPoint(10030, true);
             tnt.redPointMgr.refreshRedPoint(10030, true);
         },this,2);
     }

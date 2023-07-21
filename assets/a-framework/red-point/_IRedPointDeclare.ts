@@ -11,9 +11,6 @@ declare global {
     interface IRedPountRequestUpdate {
         requestUpdate<Options = any>(parent: number, id: number, options?: Options): number;
     }
-
-
-
 }
 
 export { };

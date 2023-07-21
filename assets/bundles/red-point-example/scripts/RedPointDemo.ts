@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, JsonAsset } from 'cc';
+import { _decorator, Component, Node, JsonAsset, director, Director } from 'cc';
 import { RedPointCompProxy } from './RedPointCompProxy';
 import { redPointData } from './RedPointData';
 import { RedPointRequestUpdate } from './RedPointUpdateFuncMap';
@@ -56,7 +56,6 @@ export class RedPointDemo extends tnt.SceneBase {
             let redPointRoot = node.getChildByName("RedPoint");
             tnt.redPointMgr.setDisplayProxy(parseInt(key),redPointRoot, RedPointCompProxy);
         }
-
     }
 
 

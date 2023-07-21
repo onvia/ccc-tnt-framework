@@ -1,6 +1,6 @@
 
-import { _decorator, Node } from 'cc';
-const { ccclass, property } = _decorator;
+import { _decorator, Node, director, Director } from 'cc';
+const { ccclass } = _decorator;
 
 
 declare global {
@@ -9,6 +9,8 @@ declare global {
     }
 }
 
+// CHANGELOG: 
+// 1. 增加更新标记，在每帧后统一更新，处理一帧内多次调用相同红点更新
 
 @ccclass('RedPointMgr')
 class RedPointMgr extends tnt.EventMgr {
@@ -18,19 +20,23 @@ class RedPointMgr extends tnt.EventMgr {
     protected _redPountRequestUpdate: IRedPountRequestUpdate = null;
     protected _redPointDisplayMap: Map<number, tnt.RedPointComp> = null;
 
+    //存储一帧结束后要更新的红点
+    protected _preUpdateRedPointMap: Map<tnt.RedPoint, boolean> = null;
+
     constructor() {
         super();
         this._redPointMap = new Map();
         this._redPointDisplayMap = new Map();
+        this._preUpdateRedPointMap = new Map();
     }
 
     public initWithData(data: RedPointInfo[], rootId: number) {
         if (this._redPointMap.size > 0) {
-            console.log(`RedPointMgr-> 请不要重复调用红点初始化`);
+            console.warn(`RedPointMgr-> 请不要重复调用红点初始化`);
             return;
         }
         if (!data?.length) {
-            console.log(`RedPointMgr-> 红点初始化失败，数据不存在`);
+            console.warn(`RedPointMgr-> 红点初始化失败，数据不存在`);
             return;
         }
 
@@ -123,7 +129,9 @@ class RedPointMgr extends tnt.EventMgr {
     private _setRedPointParent(redPoint: tnt.RedPoint) {
         let parent = this._redPointMap.get(redPoint.redPointInfo.parent);
         if (!parent) {
-            console.error(`RedPointMgr-> ${redPoint.id} 没有父节点`);
+            if (redPoint.id !== this.root.id) {
+                console.error(`RedPointMgr-> ${redPoint.id} 没有父节点`);
+            }
             return;
         }
         if (redPoint.id === parent.id) {
@@ -160,12 +168,12 @@ class RedPointMgr extends tnt.EventMgr {
     public async setDisplayProxy<T extends tnt.RedPointComp>(id: number, pointRoot: Node, clazz: GConstructor<T> | string) {
 
         if (!pointRoot || !clazz) {
-            console.error(`RedPointMgr-> 红点节点错误`);
+            console.error(`RedPointMgr-> 红点宿主节点错误`);
             return;
         }
         let display = this._redPointDisplayMap.get(id);
         if (display && display.isValid && display.node.isValid) {
-            console.log(`RedPointMgr-> 当前 [${id}] 红点已存在红点显示组件`);
+            console.warn(`RedPointMgr-> 当前 [${id}] 红点已存在红点显示组件`);
             return;
         }
 
@@ -211,10 +219,37 @@ class RedPointMgr extends tnt.EventMgr {
     public setCount(id: number, count: number) {
         let redPoint = this._redPointMap.get(id);
         if (!redPoint) {
-            console.log(`RedPointMgr-> updateRedPoint 没有找到指定红点: ${id}`);
+            console.warn(`RedPointMgr-> setCount 没有找到指定红点: ${id}`);
             return;
         }
         redPoint.setCount(count);
+    }
+
+    // 执行更新红点
+    private _updateRedPoint() {
+        this._preUpdateRedPointMap.forEach((fullTree, redPoint) => {
+            this._refreshRedPoint(redPoint, fullTree);
+            redPoint._refreshParent();
+        });
+        this._preUpdateRedPointMap.clear();
+
+    }
+
+    // 添加预更新的红点
+    private _addPreUpdateRedPoint(redPoint: tnt.RedPoint, fullTree = false) {
+        if (this._preUpdateRedPointMap.has(redPoint)) {
+            let param = this._preUpdateRedPointMap.get(redPoint);
+            if (param != fullTree) {
+                this._preUpdateRedPointMap.set(redPoint, param || fullTree);
+            }
+            return;
+        }
+
+        if (this._preUpdateRedPointMap.size == 0) {
+            // 添加执行一次的 AFTER_UPDATE 事件监听
+            director.once(Director.EVENT_AFTER_UPDATE, this._updateRedPoint, this);
+        }
+        this._preUpdateRedPointMap.set(redPoint, fullTree);
     }
 
     /**
@@ -225,11 +260,15 @@ class RedPointMgr extends tnt.EventMgr {
      */
     public refreshAllRedPoint() {
         if (!this._redPountRequestUpdate) {
-            console.log(`RedPointMgr-> 没有设置红点更新方法`);
+            console.warn(`RedPointMgr-> 没有设置红点更新方法`);
             return;
         }
 
-        this._refreshRedPoint(this.root, true);
+        // 直接更新
+        // this._refreshRedPoint(this.root, true);
+
+        // 修改为 update 后更新
+        this._addPreUpdateRedPoint(this.root, true);
     }
 
     /**
@@ -242,20 +281,25 @@ class RedPointMgr extends tnt.EventMgr {
      */
     public refreshRedPoint(id: number, fullTree: boolean = false) {
         if (!this._redPountRequestUpdate) {
-            console.log(`RedPointMgr-> 没有设置红点更新方法`);
+            console.warn(`RedPointMgr-> 没有设置红点更新方法，无法更新红点 [${id}]`);
             return;
         }
         let redPoint = this._redPointMap.get(id);
         if (!redPoint) {
-            console.log(`RedPointMgr-> updateRedPoint 没有找到指定红点: ${id}`);
+            console.warn(`RedPointMgr-> 没有找到指定红点: ${id}`);
             return;
         }
         // 根节点 和 数字显示的红点 必须检测所有子节点
         if (redPoint.showType === tnt.RedPoint.ShowType.Number || id === this.root.id) {
             fullTree = true;
         }
-        this._refreshRedPoint(redPoint, fullTree);
-        redPoint._refreshParent();
+
+        // 直接更新
+        // this._refreshRedPoint(redPoint, fullTree);
+        // redPoint._refreshParent();
+
+        // 修改为 update 后更新
+        this._addPreUpdateRedPoint(redPoint, fullTree);
     }
 
     /**
@@ -307,8 +351,6 @@ class RedPointMgr extends tnt.EventMgr {
         this.removeDisplay(id);
     }
     private _onUpdateDisplay(id: number) {
-        console.log(`RedPointMgr-> 更新显示 ${id}`);
-
         let redPoint = this._redPointMap.get(id);
         let display = this._redPointDisplayMap.get(id);
         if (display) {

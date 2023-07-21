@@ -154,7 +154,6 @@ class RedPoint<Options = any> extends tnt.EventMgr {
      * 设置红点值
      *
      * @param {number} count
-     * @param {boolean} [batch=false] 是否处于批量更新阶段，如果处于批量更新阶段，则不会更新父节点值，需要在最后手动调用 `calculateCount`
      * @memberof RedPoint
      */
     public setCount(count: number) {
@@ -163,7 +162,7 @@ class RedPoint<Options = any> extends tnt.EventMgr {
             // 更新完数据之后 关闭标识
             this.isDirty = false;
         } else {
-            console.log(`RedPoint-> 当前红点[${this.id}]不是叶子节点，无法直接设置 红点计数`);
+            console.warn(`RedPoint-> 当前红点[${this.id}]不是叶子节点，无法直接设置 红点计数`);
         }
     }
 
