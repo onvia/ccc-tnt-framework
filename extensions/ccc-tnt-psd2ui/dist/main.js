@@ -8,13 +8,16 @@ exports.unload = exports.load = exports.methods = void 0;
 const package_json_1 = __importDefault(require("../package.json"));
 const fs_extra_1 = __importDefault(require("fs-extra"));
 const path_1 = __importDefault(require("path"));
+const os_1 = __importDefault(require("os"));
 const child_process_1 = __importDefault(require("child_process"));
 let exec = child_process_1.default.exec;
 const ENGINE_VER = "v342"; // 
+const packagePath = path_1.default.join(Editor.Project.path, "extensions", package_json_1.default.name);
 const projectAssets = path_1.default.join(Editor.Project.path, "assets");
 const cacheFile = path_1.default.join(Editor.Project.path, "local", "psd-to-prefab-cache.json");
-const commandBat = path_1.default.join(Editor.Project.path, `extensions\\${package_json_1.default.name}\\libs\\psd2ui\\command.bat`);
-const configFile = path_1.default.join(Editor.Project.path, `extensions\\${package_json_1.default.name}\\config\\psd.config.json`);
+const configFile = path_1.default.join(`${packagePath}/config/psd.config.json`);
+const nodejsFile = path_1.default.join(packagePath, "bin", `node${os_1.default.platform() == 'darwin' ? "" : ".exe"}`);
+const psd = path_1.default.join(packagePath, "libs", "psd2ui", "index.js");
 let uuid2md5 = new Map();
 let cacheFileJson = {};
 /**
@@ -86,11 +89,26 @@ exports.methods = {
 };
 function _exec(options, tasks) {
     let jsonContent = JSON.stringify(options);
-    // console.log("[ccc-tnt-psd2ui] 批处理命令参数：" + jsonContent);
+    if (!fs_extra_1.default.existsSync(nodejsFile)) {
+        console.log(`main-> 没有批处理文件`, nodejsFile);
+        return tasks;
+    }
+    // 处理权限问题
+    if (os_1.default.platform() === 'darwin') {
+        if (fs_extra_1.default.statSync(nodejsFile).mode != 33261) {
+            console.log(`[ccc-tnt-psd2ui] 设置权限`);
+            fs_extra_1.default.chmodSync(nodejsFile, 33261);
+        }
+    }
+    console.log("[ccc-tnt-psd2ui] 批处理命令参数：" + jsonContent);
     let base64 = Buffer.from(jsonContent).toString("base64");
-    // console.log('[ccc-tnt-psd2ui] start ' + commandBat + ' ' + `--json ${base64}`);
     tasks.push(new Promise((rs) => {
-        exec('start ' + commandBat + ' ' + `--json ${base64}`, { windowsHide: false }, (err, stdout, stderr) => {
+        // console.log(`main-> `, `${nodejsFile} ${psd}` + ' ' + `--json ${base64}`);
+        exec(`${nodejsFile} ${psd}` + ' ' + `--json ${base64}`, { windowsHide: false }, (err, stdout, stderr) => {
+            console.log("[ccc-tnt-psd2ui]:\n", stdout);
+            if (stderr) {
+                console.log(stderr);
+            }
             rs();
         });
     }));
