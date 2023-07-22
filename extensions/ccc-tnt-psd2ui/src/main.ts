@@ -2,16 +2,19 @@
 import packageJSON from '../package.json';
 import fs from 'fs-extra';
 import path from 'path';
+import Os from 'os';
 
 import child_process from "child_process";
 let exec = child_process.exec;
 
 
+
 const ENGINE_VER = "v342"; // 
 const projectAssets = path.join(Editor.Project.path, "assets");
 const cacheFile = path.join(Editor.Project.path, "local", "psd-to-prefab-cache.json");
-const commandBat = path.join(Editor.Project.path, `extensions\\${packageJSON.name}\\libs\\psd2ui\\command.bat`);
+const commandBat = path.join(Editor.Project.path, `extensions\\${packageJSON.name}\\libs\\psd2ui\\command.${Os.platform() === 'darwin' ? "sh" : "bat"}`);
 const configFile = path.join(Editor.Project.path, `extensions\\${packageJSON.name}\\config\\psd.config.json`);
+
 let uuid2md5: Map<string, string> = new Map();
 let cacheFileJson: Record<string, any> = {};
 /**
