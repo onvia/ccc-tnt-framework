@@ -46,7 +46,7 @@ export class BaseDemo extends tnt.SceneBase {
         });
 
         // Toggle
-        this.registeToggleClick("Toggle",(toggle)=>{
+        this.registerToggleClick("Toggle",(toggle)=>{
             this.setLabelText("labelToggleState1", "复选状态：" + toggle.isChecked);
         });
         
@@ -56,7 +56,7 @@ export class BaseDemo extends tnt.SceneBase {
             
         });
 
-        this.registeEditBoxDidEnd("EditBox",(editBox)=>{
+        this.registerEditBoxDidEnd("EditBox",(editBox)=>{
             this.setLabelText("labelEditBoxState",`输入：${editBox.string}`);
         });
     }

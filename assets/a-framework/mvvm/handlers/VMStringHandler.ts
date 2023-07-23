@@ -26,7 +26,7 @@ export class VMStringHandler extends VMCustomHandler {
 
         if (!this.attr.formatter && this.templateParamCount >= 1) {
             if (this.templateParamCount !== watchPathCount) {
-                let msg = `VMStringHandler-> [${this.node.name}] 模板参数与输入参数[${JSON.stringify(this.attr.watchPath)}]数量不一致，请实现 formator 方法`;
+                let msg = `VMStringHandler-> [${this.node.name}] 模板参数与输入参数[${JSON.stringify(this.attr.watchPath)}]数量不一致，请实现 formatter 方法`;
                 if (DEV) {
                     throw new Error(msg);
                 } else {
@@ -98,24 +98,24 @@ export class VMStringHandler extends VMCustomHandler {
 
     protected V2MBind(target: Node | Component): void {
         let _property = this.attr._targetPropertyKey;
-        let descr = js.getPropertyDescriptor(target, _property);
+        let desc = js.getPropertyDescriptor(target, _property);
         target[this._vmProperty] = target[_property];
 
         Object.defineProperty(target, this._vmProperty, {
-            get: descr.get,
-            set: descr.set
+            get: desc.get,
+            set: desc.set
         });
         if (Array.isArray(this.attr.watchPath)) {
             console.error(`VMStringHandler-> 多路径不进行 视图到数据 的绑定`);
             return;
         }
 
-        if (!!descr.set) {
+        if (!!desc.set) {
             Object.defineProperty(target, _property, {
-                get: descr.get,
+                get: desc.get,
                 set: (value) => {
                     value = `${value}`;
-                    descr.set.call(target, value);
+                    desc.set.call(target, value);
 
                     let newValue = null;
                     // 处理接收到的数据

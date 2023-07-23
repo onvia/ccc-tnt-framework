@@ -9,7 +9,7 @@ export class VMProgressHandler extends VMCustomHandler {
 
     onInitValue(): void {
         if (this._isProgress && !this.attr.formatter && isArray(this.attr.watchPath) && this.attr.watchPath.length > 2) {
-            let msg = `VMProgressHandler-> [${this.node.name}] 输入参数 (watchPath) 数量过多，请实现 formator 方法`;
+            let msg = `VMProgressHandler-> [${this.node.name}] 输入参数 (watchPath) 数量过多，请实现 formatter 方法`;
             if (DEV) {
                 throw new Error(msg);
             } else {

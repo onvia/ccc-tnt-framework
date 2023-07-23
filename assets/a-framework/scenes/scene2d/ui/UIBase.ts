@@ -341,12 +341,12 @@ class UIBase<Options = any> extends tnt.GComponent<Options> implements IUIAble {
      * @template T
      * @param {T} clazz
      * @param {string | Node} parentNode
-     * @param {Key_Golbal_UI_Item_Options<T>} [options]
-     * @return {*}  {Promise<Key_Golbal_UI_Item_Ctor<T>>}
+     * @param {Key_Global_UI_Item_Options<T>} [options]
+     * @return {*}  {Promise<Key_Global_UI_Item_Ctor<T>>}
      * @memberof UIBase
      */
-    public addUI<T extends Key_Golbal_UI_Type>(clazz: T, parentNode: string | Node, options?: Key_Golbal_UI_Item_Options<T>): Promise<Key_Golbal_UI_Item_Ctor<T>> {
-        return new Promise<Key_Golbal_UI_Item_Ctor<T>>((resolve, reject) => {
+    public addUI<T extends Key_Global_UI_Type>(clazz: T, parentNode: string | Node, options?: Key_Global_UI_Item_Options<T>): Promise<Key_Global_UI_Item_Ctor<T>> {
+        return new Promise<Key_Global_UI_Item_Ctor<T>>((resolve, reject) => {
             if (typeof parentNode == 'string') {
                 parentNode = this.find(parentNode);
             }
@@ -362,12 +362,12 @@ class UIBase<Options = any> extends tnt.GComponent<Options> implements IUIAble {
      *
      * @template T
      * @param {T} clazz
-     * @param {Key_Golbal_UI_Item_Options<T>} [options]
-     * @return {*}  {Promise<Key_Golbal_UI_Item_Ctor<T>>}
+     * @param {Key_Global_UI_Item_Options<T>} [options]
+     * @return {*}  {Promise<Key_Global_UI_Item_Ctor<T>>}
      * @memberof UIBase
      */
-    public loadUI<T extends Key_Golbal_UI_Type>(clazz: T, options?: Key_Golbal_UI_Item_Options<T>): Promise<Key_Golbal_UI_Item_Ctor<T>> {
-        return new Promise<Key_Golbal_UI_Item_Ctor<T>>((resolve, reject) => {
+    public loadUI<T extends Key_Global_UI_Type>(clazz: T, options?: Key_Global_UI_Item_Options<T>): Promise<Key_Global_UI_Item_Ctor<T>> {
+        return new Promise<Key_Global_UI_Item_Ctor<T>>((resolve, reject) => {
             tnt.resourcesMgr.loadPrefabNode(this, clazz, options).then((result) => {
                 tnt.btnCommonEventMgr.bind(result);
                 resolve(result);
