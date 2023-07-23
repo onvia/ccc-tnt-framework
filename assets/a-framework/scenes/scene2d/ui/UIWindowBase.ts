@@ -138,9 +138,16 @@ class UIWindowBase<Options = any> extends tnt.UIBase<Options> implements ILoader
         DEV && console.log(`${js.getClassName(this)}-> onCloseCallback`);
     }
 
-    _playShowAnimation(tag: number, callback: () => void) {
+    /**
+     * 播放显示动画，有需要可以重写此方法
+     *
+     * @param {number} tag
+     * @param {() => void} callback
+     * @memberof UIWindowBase
+     */
+    playShowAnimation(tag: number, callback: () => void) {
         let duration = 0.2;
-        this.node.scale = v3(0.2, 0.2, 0.2);
+        this.node.scale = v3(1, 1, 1);
         let uiOpacityComp = this.node.getComponent(UIOpacity);
         if (!uiOpacityComp) {
             uiOpacityComp = this.node.addComponent(UIOpacity);
@@ -150,12 +157,20 @@ class UIWindowBase<Options = any> extends tnt.UIBase<Options> implements ILoader
         Tween.stopAllByTag(tag, uiOpacityComp);
         Tween.stopAllByTag(tag, this.node);
 
-        tween(uiOpacityComp).to(duration, { opacity: 255 }).tag(tag).start();
-        tween(this.node).to(duration, { scale: v3(1, 1, 1) }, { easing: easing.backOut }).tag(tag).call(callback).start();
+        // 延迟一帧让 Widget 组件执行完成
+        tween(uiOpacityComp).delay(0).to(duration, { opacity: 255 }).tag(tag).start();
+        tween(this.node).delay(0).set({ scale: v3(0.2, 0.2, 0.2) }).to(duration, { scale: v3(1, 1, 1) }, { easing: easing.backOut }).tag(tag).call(callback).start();
         // callback?.();
     }
 
-    _playCloseAnimation(tag: number, callback: () => void) {
+    /**
+     * 播放关闭动画，有需要可以重写
+     *
+     * @param {number} tag
+     * @param {() => void} callback
+     * @memberof UIWindowBase
+     */
+    playCloseAnimation(tag: number, callback: () => void) {
         let duration = 0.2;
         let uiOpacityComp = this.node.getComponent(UIOpacity);
 
@@ -167,13 +182,33 @@ class UIWindowBase<Options = any> extends tnt.UIBase<Options> implements ILoader
         // callback?.();
 
     }
-    _playActiveAnimation(tag: number, callback: () => void) {
-        this._playShowAnimation(tag, callback);
+    /**
+     * 播放激活动画，有需要可以重写
+     *
+     * @param {number} tag
+     * @param {() => void} callback
+     * @memberof UIWindowBase
+     */
+    playActiveAnimation(tag: number, callback: () => void) {
+        this.playShowAnimation(tag, callback);
     }
-    _playFreezeAnimation(tag: number, callback: () => void) {
-        this._playCloseAnimation(tag, callback);
+    /**
+     * 播放冻结动画，有需要可以重写此方法
+     *
+     * @param {number} tag
+     * @param {() => void} callback
+     * @memberof UIWindowBase
+     */
+    playFreezeAnimation(tag: number, callback: () => void) {
+        this.playCloseAnimation(tag, callback);
     }
-    _playShowMask(duration = 0.1) {
+    /**
+     * 播放显示蒙版，有需要可以重写
+     *
+     * @param {number} [duration=0.1]
+     * @memberof UIWindowBase
+     */
+    playShowMask(duration = 0.1) {
         if (this.mask) {
             let maskOpacity = this.mask.getComponent(UIOpacity);
             tween(maskOpacity).to(duration, { opacity: this._maskOpacity }).start();
@@ -181,7 +216,13 @@ class UIWindowBase<Options = any> extends tnt.UIBase<Options> implements ILoader
 
         DEV && console.log(`${js.getClassName(this)}-> ${this.uuid}  _playMaskFadeIn  ${sys.now()}`);
     }
-    _playHideMask(duration = 0.2) {
+    /**
+     * 播放隐藏蒙版，有需要可以重写
+     *
+     * @param {number} [duration=0.2]
+     * @memberof UIWindowBase
+     */
+    playHideMask(duration = 0.2) {
         if (this.mask) {
             let maskOpacity = this.mask.getComponent(UIOpacity);
             tween(maskOpacity).to(duration, { opacity: 0 }).start();
@@ -288,7 +329,7 @@ class UIWindowBase<Options = any> extends tnt.UIBase<Options> implements ILoader
         } else {
             this._unregisterClickClose();
         }
-        
+
         if (this._clickAnyWhereCloseCallback) {
             this.removeCloseListener(this._clickAnyWhereCloseCallback);
         }

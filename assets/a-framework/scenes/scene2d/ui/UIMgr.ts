@@ -485,6 +485,7 @@ export class UIMgr extends tnt.EventMgr implements IPluginMgr {
                 _window.loaderKey = _window.name.substring(index, _window.name.length) + "" + _window.uuid;
             }
             _window.node.parent = _window.root;
+            updateFrameSize(_window.node);
             this._onPluginWindowCreated(_window, windowName);
             // view.onStart(); // 被 start 调用了
             // uiOpacity.opacity = view._maskOpacity;
@@ -573,7 +574,7 @@ export class UIMgr extends tnt.EventMgr implements IPluginMgr {
             let topWindow = this._stack[this._stack.length - 1];
             topWindow.onFreeze?.();
 
-            topWindow?._playHideMask();
+            topWindow?.playHideMask();
             if (window._isHideOtherWindows) {
                 this._playFreezeAnimation(topWindow);
             }
@@ -593,7 +594,7 @@ export class UIMgr extends tnt.EventMgr implements IPluginMgr {
                 topWindow = this._stack[this._stack.length - 1];
                 this._playActiveAnimation(topWindow);
             }
-            topWindow?._playShowMask();
+            topWindow?.playShowMask();
         }
         let _activeTopWindow: Runnable = null;
         if (param) {
@@ -691,8 +692,8 @@ export class UIMgr extends tnt.EventMgr implements IPluginMgr {
 
 
         window.onActive();
-        window._playShowMask();
-        window._playShowAnimation(ACTION_TAG, showEndFunc.bind(this));
+        window.playShowMask();
+        window.playShowAnimation(ACTION_TAG, showEndFunc.bind(this));
     }
 
     private _playCloseAnimation(view: tnt.UIWindowBase, callback?: Runnable, useAnimation = true) {
@@ -717,10 +718,10 @@ export class UIMgr extends tnt.EventMgr implements IPluginMgr {
             view = null;
         }
         if (useAnimation) {
-            view._playHideMask();
-            view._playCloseAnimation(ACTION_TAG, closeEndFunc.bind(this));
+            view.playHideMask();
+            view.playCloseAnimation(ACTION_TAG, closeEndFunc.bind(this));
         } else {
-            view._playHideMask(0);
+            view.playHideMask(0);
             closeEndFunc();
         }
     }
@@ -770,21 +771,21 @@ export class UIMgr extends tnt.EventMgr implements IPluginMgr {
             window.root.active = false;
         }
 
-        window._playFreezeAnimation(ACTION_TAG, closeEndFunc.bind(this));
+        window.playFreezeAnimation(ACTION_TAG, closeEndFunc.bind(this));
     }
     private _playActiveAnimation(window: tnt.UIWindowBase) {
         if (!window) {
             return;
         }
         window.onActive();
-        window._playShowMask();
+        window.playShowMask();
 
         let showEndFunc = () => {
             window.onActiveAfter();
         }
         if (!window.root.active) {
             window.root.active = true;
-            window._playActiveAnimation(ACTION_TAG, showEndFunc.bind(this));
+            window.playActiveAnimation(ACTION_TAG, showEndFunc.bind(this));
         } else {
             showEndFunc();
         }
