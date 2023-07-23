@@ -65,15 +65,15 @@ export default class DemoVMProgress extends tnt.SceneBase implements IMVVMObject
             this.MPController.slideEvents.push(handler);
         }
 
-        this.registeEditBoxDidEnd(this.HPEditBox,this.onHPEditBoxEnded);
-        this.registeEditBoxDidEnd(this.MPEditBox,this.onMPEditBoxEnded);
+        this.registerEditBoxDidEnd(this.HPEditBox,this.onHPEditBoxEnded);
+        this.registerEditBoxDidEnd(this.MPEditBox,this.onMPEditBoxEnded);
 
 
         tnt.vm.observe(this);
         tnt.vm.observe(userData, "userData");
         tnt.vm.label(this, this.HPLabel, ['*.hp', 'userData.maxHP']);
         tnt.vm.progressBar(this, this.HPProgress, ['*.hp', 'userData.maxHP']);
-        tnt.vm.silder(this, this.HPController, ['*.hp', 'userData.maxHP']);
+        tnt.vm.slider(this, this.HPController, ['*.hp', 'userData.maxHP']);
 
 
         tnt.vm.label(this, this.MPLabel, '*.mp');
@@ -82,10 +82,10 @@ export default class DemoVMProgress extends tnt.SceneBase implements IMVVMObject
         tnt.vm.progressBar(this, this.MPProgress, {
             progress: {
                 watchPath: '*.mp',
-                isBidirection: true,
+                isBidirectional: true,
             }
         });
-        tnt.vm.silder(this, this.MPController, '*.mp');
+        tnt.vm.slider(this, this.MPController, '*.mp');
     }
 
     onDisable() {

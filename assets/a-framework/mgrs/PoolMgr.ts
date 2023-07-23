@@ -46,7 +46,7 @@ class PoolMgr {
     }
 
     protected poolMap: Map<string, tnt.NodePool | tnt.Pool<any>> = new Map();
-    protected templeteMap: Map<string, Node | any> = new Map();
+    protected templateMap: Map<string, Node | any> = new Map();
     protected poolResMap: Map<string, { path: string, bundle?: string, type?: CCAssetType }> = new Map();
 
     protected _currentNodePool: tnt.NodePool = null;
@@ -71,7 +71,7 @@ class PoolMgr {
         }
 
         this.poolMap.set(name, pool);
-        this.templeteMap.set(name, node);
+        this.templateMap.set(name, node);
 
         return pool;
     }
@@ -129,12 +129,12 @@ class PoolMgr {
         // if(pool.count > 0){
         //     node = pool.get();
         // }else{
-        //     let param = this.templeteMap.get(name);
+        //     let param = this.templateMap.get(name);
         //     node = instantiate(param);
         // }
         node = pool.get();
         if (!node) {
-            let param = this.templeteMap.get(poolName);
+            let param = this.templateMap.get(poolName);
             node = instantiate(param);
         }
         return node;
@@ -286,12 +286,12 @@ class PoolMgr {
             this.poolMap.delete(poolName);
         }
 
-        if (this.templeteMap.has(poolName)) {
-            let node = this.templeteMap.get(poolName);
+        if (this.templateMap.has(poolName)) {
+            let node = this.templateMap.get(poolName);
             if (node instanceof Node || node instanceof Prefab) {
                 node.destroy();
             }
-            this.templeteMap.delete(poolName)
+            this.templateMap.delete(poolName)
         }
 
         if(releaseAsset){
@@ -312,12 +312,12 @@ class PoolMgr {
             }
         });
         this.poolMap.clear();
-        this.templeteMap.forEach((node) => {
+        this.templateMap.forEach((node) => {
             if (node instanceof Node || node instanceof Prefab) {
                 node.destroy();
             }
         });
-        this.templeteMap.clear();
+        this.templateMap.clear();
         this.poolResMap.clear();
         tnt.loaderMgr.releaseLoader(this.loader); // 一次性释放所有资源
         this._currentNodePoolName = null;

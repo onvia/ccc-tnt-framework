@@ -21,7 +21,7 @@ class VMTweenData {
 // 数字滚动
 export class GVMTween implements IVMTween {
 
-    datas: Record<string, VMTweenData> = null;
+    dataMap: Record<string, VMTweenData> = null;
     duration = 0.3;
     constructor(_duration?: number) {
         if (_duration != undefined) {
@@ -33,8 +33,8 @@ export class GVMTween implements IVMTween {
 
     }
     onDestroy() {
-        for (const key in this.datas) {
-            const data = this.datas[key];
+        for (const key in this.dataMap) {
+            const data = this.dataMap[key];
             Tween.stopAllByTarget(data);
         }
     }
@@ -51,14 +51,14 @@ export class GVMTween implements IVMTween {
             return;
         }
 
-        this.initDatas(newValue,oldValue,path);
+        this.initData(newValue,oldValue,path);
 
-        let data = this.datas[path];
+        let data = this.dataMap[path];
         if (data) {
             Tween.stopAllByTarget(data);
         } else {
             data = new VMTweenData();
-            this.datas[path] = data;
+            this.dataMap[path] = data;
         }
 
         data.newValue = oldValue;
@@ -102,15 +102,15 @@ export class GVMTween implements IVMTween {
             return;
         }
 
-        this.initDatas(newValue,oldValue,watchPaths);
+        this.initData(newValue,oldValue,watchPaths);
 
         let path = watchPaths[idx];
-        let data = this.datas[`${path}.${idx}`];
+        let data = this.dataMap[`${path}.${idx}`];
         if (data) {
             Tween.stopAllByTarget(data);
         } else {
             data = new VMTweenData();
-            this.datas[`${path}.${idx}`] = data;
+            this.dataMap[`${path}.${idx}`] = data;
         }
         data.newValue = oldValue[idx];
         data.oldValue = oldValue[idx];
@@ -139,11 +139,11 @@ export class GVMTween implements IVMTween {
         }).start();
     }
 
-    initDatas(newValue,oldValue,path: string | string[]){
-        if(this.datas !== null){
+    initData(newValue,oldValue,path: string | string[]){
+        if(this.dataMap !== null){
             return;
         }
-        this.datas = {};
+        this.dataMap = {};
         if(Array.isArray(path)){
             for (let i = 0; i < path.length; i++) {
                 const element = path[i];
@@ -154,7 +154,7 @@ export class GVMTween implements IVMTween {
                 data.value = oldValue[i];
                 data.targetValue = newValue[i];
                 
-                this.datas[`${element}.${i}`] = data;
+                this.dataMap[`${element}.${i}`] = data;
             }
             return;
         }
@@ -163,16 +163,16 @@ export class GVMTween implements IVMTween {
         data.oldValue = oldValue;
         data.value = oldValue;
         data.targetValue = newValue;
-        this.datas[path] = data;
+        this.dataMap[path] = data;
     }
     getValue4Array() {
         let newValue = [];
         let oldValue = [];
-        for (const key in this.datas) {
+        for (const key in this.dataMap) {
             let keyArr = key.split(".");
             let idx = parseInt(keyArr[keyArr.length - 1]);
-            newValue[idx] = this.datas[key].newValue;
-            oldValue[idx] = this.datas[key].oldValue;
+            newValue[idx] = this.dataMap[key].newValue;
+            oldValue[idx] = this.dataMap[key].oldValue;
         }
         return { newValue, oldValue };
     }

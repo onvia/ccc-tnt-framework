@@ -30,11 +30,11 @@ class StorageMgr {
         }
         this.save(this.prefix + ":" + key, value);
     }
-    loadWithPrefix(key: string, _defalut?: any) {
+    loadWithPrefix(key: string, _default?: any) {
         if (!this.prefix) {
             DEBUG && console.warn(`StorageMgr-> 本地存储前缀不存在`);
         }
-        return this.load(this.prefix + ":" + key, _defalut);
+        return this.load(this.prefix + ":" + key, _default);
     }
     save(key: string, value: any) {
         let str = null;

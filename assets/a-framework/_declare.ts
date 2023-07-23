@@ -107,7 +107,7 @@ declare global {
         uiPanelParentMap: Record<string, string>;
 
 
-        registeButtonClick(node: Node | Button | string, cb: () => void, target?: any);
+        registerButtonClick(node: Node | Button | string, cb: () => void, target?: any);
 
         find(path: string, parentOrRefresh?: Node | Scene | boolean, refresh?: boolean);
         findComponent<T extends Component>(path: string, type: __private._types_globals__Constructor<T>, parentOrRefresh?: Node | boolean, refresh?: boolean): T | null;
@@ -134,7 +134,7 @@ declare global {
 
         onWindowCreated?(view: tnt.UIWindowBase, name: string);
 
-        onWindowShowBefor?(view: tnt.UIWindowBase, name: string);
+        onWindowShowBefore?(view: tnt.UIWindowBase, name: string);
 
         onWindowShowAfter?(view: tnt.UIWindowBase, name: string);
 

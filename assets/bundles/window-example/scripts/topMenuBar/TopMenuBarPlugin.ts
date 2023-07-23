@@ -20,7 +20,7 @@ export default class TopMenuBarPlugin implements IUIMgrPlugin {
 
     onWindowCreated(view: tnt.UIWindowBase<any>, name: string) {
     }
-    onWindowShowBefor(view: tnt.UIWindowBase<any>, name: string) {
+    onWindowShowBefore(view: tnt.UIWindowBase<any>, name: string) {
 
         this.adapterTopMenuBar(view);
     }

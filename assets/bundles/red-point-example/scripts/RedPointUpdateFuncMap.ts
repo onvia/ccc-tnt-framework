@@ -54,7 +54,7 @@ const RedPointUpdateFuncMap: Record<number, RedPointUpdateAble1 | RedPointUpdate
 
 }
 
-export class RedPointRequestUpdate implements IRedPountRequestUpdate {
+export class RedPointRequestUpdate implements IRedPointRequestUpdate {
     requestUpdate<Options = any>(parent: number, id: number, options?: Options): number {
         let func1 = RedPointUpdateFuncMap[id] as RedPointUpdateAble1;
         if (func1) {

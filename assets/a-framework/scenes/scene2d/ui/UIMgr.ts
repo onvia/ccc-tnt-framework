@@ -5,24 +5,24 @@ import "../../../decorators/_decorator";
 const { ccclass } = _decorator;
 const { pluginMgr } = tnt._decorator;
 
-// type UIItemShowCallback<T extends KeyGolbalUIType> = (window: Key_Golbal_UI_Item_Ctor<T>)=> void;
-type WindowShownCallback<T extends Key_Golbal_Window_Type> = (window: Key_Golbal_UI_Window_Ctor<T>) => void;
+// type UIItemShowCallback<T extends KeyGlobalUIType> = (window: Key_Global_UI_Item_Ctor<T>)=> void;
+type WindowShownCallback<T extends Key_Global_Window_Type> = (window: Key_Global_UI_Window_Ctor<T>) => void;
 
 // type ShowPluginCallback<T extends tnt.UIPanel> = (ins: T,isInit: boolean)=> void;
-type UIQueueRemoveFilter<T extends Key_Golbal_Window_Type> = (opts: UIQueueOpts<T>, index: number, arr: Array<UIQueueOpts<T>>) => boolean;
+type UIQueueRemoveFilter<T extends Key_Global_Window_Type> = (opts: UIQueueOpts<T>, index: number, arr: Array<UIQueueOpts<T>>) => boolean;
 type AssetLoader = tnt.AssetLoader;
 declare global {
 
     type ShowPluginResult<T extends tnt.UIPanel> = { ins: T, isInit: boolean };
 
-    type Key_Golbal_UI_Type = keyof GlobalUIType;
-    type Key_Golbal_Window_Type = keyof GlobalWindowType;
+    type Key_Global_UI_Type = keyof GlobalUIType;
+    type Key_Global_Window_Type = keyof GlobalWindowType;
 
-    type Key_Golbal_UI_Item_Ctor<T extends Key_Golbal_UI_Type> = GlobalUIType[T]["ctor"];
-    type Key_Golbal_UI_Item_Options<T extends Key_Golbal_UI_Type> = GlobalUIType[T]["options"];
+    type Key_Global_UI_Item_Ctor<T extends Key_Global_UI_Type> = GlobalUIType[T]["ctor"];
+    type Key_Global_UI_Item_Options<T extends Key_Global_UI_Type> = GlobalUIType[T]["options"];
 
-    type Key_Golbal_UI_Window_Ctor<T extends Key_Golbal_Window_Type> = GlobalWindowType[T]["ctor"];
-    type Key_Golbal_UI_Window_Options<T extends Key_Golbal_Window_Type> = GlobalWindowType[T]["options"];
+    type Key_Global_UI_Window_Ctor<T extends Key_Global_Window_Type> = GlobalWindowType[T]["ctor"];
+    type Key_Global_UI_Window_Options<T extends Key_Global_Window_Type> = GlobalWindowType[T]["options"];
 
     interface ITNT {
         uiMgr: UIMgr;
@@ -32,15 +32,15 @@ declare global {
         UIMgr: IUIMgrPlugin;
     }
 
-    interface UIQueueOpts<T extends Key_Golbal_Window_Type> {
+    interface UIQueueOpts<T extends Key_Global_Window_Type> {
         /** 预制体路径参数 */
         ctor: T;
 
         // ui 参数
-        uiOptions?: Key_Golbal_UI_Window_Options<T>;
+        uiOptions?: Key_Global_UI_Window_Options<T>;
 
         /** ui 加载完成的回调 */
-        callback?: (uiview: Key_Golbal_UI_Window_Ctor<T>) => void;
+        callback?: (uiView: Key_Global_UI_Window_Ctor<T>) => void;
     }
 
 
@@ -292,11 +292,11 @@ export class UIMgr extends tnt.EventMgr implements IPluginMgr {
      * 依次显示的界面队列
      * @param opts 
      */
-    public addToQueue<T extends Key_Golbal_Window_Type>(ctor: T)
-    public addToQueue<T extends Key_Golbal_Window_Type>(ctor: T, uiOptions?: Key_Golbal_UI_Window_Options<T>)
-    public addToQueue<T extends Key_Golbal_Window_Type>(ctor: T, callback: WindowShownCallback<T>)
-    public addToQueue<T extends Key_Golbal_Window_Type>(ctor: T, uiOptions?: Key_Golbal_UI_Window_Options<T>, callback?: WindowShownCallback<T>)
-    public addToQueue<T extends Key_Golbal_Window_Type>(ctor: T, uiOptions?: Key_Golbal_UI_Window_Options<T> | WindowShownCallback<T>, callback?: WindowShownCallback<T>) {
+    public addToQueue<T extends Key_Global_Window_Type>(ctor: T)
+    public addToQueue<T extends Key_Global_Window_Type>(ctor: T, uiOptions?: Key_Global_UI_Window_Options<T>)
+    public addToQueue<T extends Key_Global_Window_Type>(ctor: T, callback: WindowShownCallback<T>)
+    public addToQueue<T extends Key_Global_Window_Type>(ctor: T, uiOptions?: Key_Global_UI_Window_Options<T>, callback?: WindowShownCallback<T>)
+    public addToQueue<T extends Key_Global_Window_Type>(ctor: T, uiOptions?: Key_Global_UI_Window_Options<T> | WindowShownCallback<T>, callback?: WindowShownCallback<T>) {
         if (!callback && typeof uiOptions !== "object") {
             callback = uiOptions;
             uiOptions = null;
@@ -316,11 +316,11 @@ export class UIMgr extends tnt.EventMgr implements IPluginMgr {
      * 插入到队列
      * @param opts 
      */
-    public insertToQueue<T extends Key_Golbal_Window_Type>(ctor: T)
-    public insertToQueue<T extends Key_Golbal_Window_Type>(ctor: T, uiOptions?: Key_Golbal_UI_Window_Options<T>)
-    public insertToQueue<T extends Key_Golbal_Window_Type>(ctor: T, callback: WindowShownCallback<T>)
-    public insertToQueue<T extends Key_Golbal_Window_Type>(ctor: T, uiOptions?: Key_Golbal_UI_Window_Options<T>, callback?: WindowShownCallback<T>)
-    public insertToQueue<T extends Key_Golbal_Window_Type>(ctor: T, uiOptions?: Key_Golbal_UI_Window_Options<T> | WindowShownCallback<T>, callback?: WindowShownCallback<T>) {
+    public insertToQueue<T extends Key_Global_Window_Type>(ctor: T)
+    public insertToQueue<T extends Key_Global_Window_Type>(ctor: T, uiOptions?: Key_Global_UI_Window_Options<T>)
+    public insertToQueue<T extends Key_Global_Window_Type>(ctor: T, callback: WindowShownCallback<T>)
+    public insertToQueue<T extends Key_Global_Window_Type>(ctor: T, uiOptions?: Key_Global_UI_Window_Options<T>, callback?: WindowShownCallback<T>)
+    public insertToQueue<T extends Key_Global_Window_Type>(ctor: T, uiOptions?: Key_Global_UI_Window_Options<T> | WindowShownCallback<T>, callback?: WindowShownCallback<T>) {
         if (!callback && typeof uiOptions !== "object") {
             callback = uiOptions;
             uiOptions = null;
@@ -339,9 +339,9 @@ export class UIMgr extends tnt.EventMgr implements IPluginMgr {
      * @template T
      * @param {(T | ((opts: UIQueueOpts<T>)=> boolean))} ctor
      */
-    public removeFromQueue<T extends Key_Golbal_Window_Type>(ctor: T)
-    public removeFromQueue<T extends Key_Golbal_Window_Type>(filter: UIQueueRemoveFilter<T>)
-    public removeFromQueue<T extends Key_Golbal_Window_Type>(ctor: T | UIQueueRemoveFilter<T>) {
+    public removeFromQueue<T extends Key_Global_Window_Type>(ctor: T)
+    public removeFromQueue<T extends Key_Global_Window_Type>(filter: UIQueueRemoveFilter<T>)
+    public removeFromQueue<T extends Key_Global_Window_Type>(ctor: T | UIQueueRemoveFilter<T>) {
         if (typeof ctor == 'function') {
             let array = this._uiQueue.filter(ctor);
             array.forEach((value) => {
@@ -400,12 +400,12 @@ export class UIMgr extends tnt.EventMgr implements IPluginMgr {
      *
      * @template T
      * @param {T} clazz
-     * @param {Key_Golbal_UI_Window_Options<T>} [options]
+     * @param {Key_Global_UI_Window_Options<T>} [options]
      * @param {WindowShownCallback<T>} [callback]
      * @return {*} 
      * @memberof UIMgr
      */
-    public showWindow<T extends Key_Golbal_Window_Type>(clazz: T, options?: Key_Golbal_UI_Window_Options<T>, callback?: WindowShownCallback<T>) {
+    public showWindow<T extends Key_Global_Window_Type>(clazz: T, options?: Key_Global_UI_Window_Options<T>, callback?: WindowShownCallback<T>) {
         let _clazz: GConstructor<tnt.UIWindowBase> = null;
 
         let name = "";
@@ -673,7 +673,7 @@ export class UIMgr extends tnt.EventMgr implements IPluginMgr {
     private _playShowAnimation(window: tnt.UIWindowBase) {
         let windowName = this._getClassName(window);
 
-        this._onPluginsWindowShowBefor(window, windowName);
+        this._onPluginsWindowShowBefore(window, windowName);
         this.emit(this.Event.WILL_SHOW_VIEW, windowName);
 
         let showEndFunc = () => {
@@ -846,17 +846,17 @@ export class UIMgr extends tnt.EventMgr implements IPluginMgr {
      * 原理：直接暂存 整个 弹窗栈， 在切换回场景的时候 恢复 整个弹窗栈
     */
     _stageState(currentScene: string, nextScene: string) {
-        let cahceStageWindow = this._stageWindows.find((stageData) => {
+        let cacheStageWindow = this._stageWindows.find((stageData) => {
             return stageData.newScene === nextScene && stageData.oldScene === currentScene;
         });
-        if (cahceStageWindow) {
+        if (cacheStageWindow) {
             // 如果有缓存，则销毁之前的弹窗
-            for (let i = 0; i < cahceStageWindow.stack.length; i++) {
-                const _window = cahceStageWindow.stack[i];
+            for (let i = 0; i < cacheStageWindow.stack.length; i++) {
+                const _window = cacheStageWindow.stack[i];
                 this.destroyUI(_window);
             }
 
-            js.array.remove(this._stageWindows, cahceStageWindow);
+            js.array.remove(this._stageWindows, cacheStageWindow);
         }
 
         if (!this._stack.length) {
@@ -1005,9 +1005,9 @@ export class UIMgr extends tnt.EventMgr implements IPluginMgr {
         });
     }
 
-    private _onPluginsWindowShowBefor(view: tnt.UIWindowBase, name: string) {
+    private _onPluginsWindowShowBefore(view: tnt.UIWindowBase, name: string) {
         UIMgr.___plugins.forEach((listener) => {
-            listener.onWindowShowBefor?.(view, name);
+            listener.onWindowShowBefore?.(view, name);
         });
     }
 

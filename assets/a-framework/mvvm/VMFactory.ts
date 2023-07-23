@@ -31,7 +31,7 @@ let producers = {
 
 function registerVMHandler<T extends VMBaseHandler<any>>(type: string, listenerClass: GConstructor<T>) {
     if (!type) {
-        throw new Error('VMFatory registerVMTrigger [type] is null');
+        throw new Error('VMFactory registerVMTrigger [type] is null');
     }
     producers[type] = listenerClass;
 }

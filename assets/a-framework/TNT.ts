@@ -86,7 +86,7 @@ tnt.startup = (options?: IStartupOptions) => {
     tnt.AssetLoader.defaultBundle = options.defaultBundle ?? tnt.AssetLoader.defaultBundle;
     options?.audioConfig && tnt.audioMgr.init(options?.audioConfig);
     options?.i18nConfig && tnt.i18n.init(options?.i18nConfig);
-    tnt._decorator._registePlugins();
+    tnt._decorator._registerPlugins();
     options.debug && profiler?.showStats();
 
 

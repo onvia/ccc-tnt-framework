@@ -17,7 +17,7 @@ class RedPointMgr extends tnt.EventMgr {
 
     public root: tnt.RedPoint = null;
     protected _redPointMap: Map<number, tnt.RedPoint> = null;
-    protected _redPountRequestUpdate: IRedPountRequestUpdate = null;
+    protected _redPointRequestUpdate: IRedPointRequestUpdate = null;
     protected _redPointDisplayMap: Map<number, tnt.RedPointComp> = null;
 
     //存储一帧结束后要更新的红点
@@ -56,7 +56,7 @@ class RedPointMgr extends tnt.EventMgr {
         });
 
         // 进行一次全部节点的更新
-        if (this._redPountRequestUpdate) {
+        if (this._redPointRequestUpdate) {
             this.refreshAllRedPoint();
         }
     }
@@ -198,12 +198,12 @@ class RedPointMgr extends tnt.EventMgr {
     /**
      * 设置请求更新接口
      *
-     * @param {IRedPountRequestUpdate} redPountRequestUpdate
+     * @param {IRedPointRequestUpdate} redPointRequestUpdate
      * @memberof RedPointMgr
      */
-    public setRedPountRequestUpdate(redPountRequestUpdate: IRedPountRequestUpdate) {
-        this._redPountRequestUpdate = redPountRequestUpdate;
-        if (redPountRequestUpdate && this._redPointMap.size > 0) {
+    public setRedPointRequestUpdate(redPointRequestUpdate: IRedPointRequestUpdate) {
+        this._redPointRequestUpdate = redPointRequestUpdate;
+        if (redPointRequestUpdate && this._redPointMap.size > 0) {
             this.refreshAllRedPoint();
         }
     }
@@ -259,7 +259,7 @@ class RedPointMgr extends tnt.EventMgr {
      * @memberof RedPointMgr
      */
     public refreshAllRedPoint() {
-        if (!this._redPountRequestUpdate) {
+        if (!this._redPointRequestUpdate) {
             console.warn(`RedPointMgr-> 没有设置红点更新方法`);
             return;
         }
@@ -280,7 +280,7 @@ class RedPointMgr extends tnt.EventMgr {
      * @memberof RedPointMgr
      */
     public refreshRedPoint(id: number, fullTree: boolean = false) {
-        if (!this._redPountRequestUpdate) {
+        if (!this._redPointRequestUpdate) {
             console.warn(`RedPointMgr-> 没有设置红点更新方法，无法更新红点 [${id}]`);
             return;
         }
@@ -317,7 +317,7 @@ class RedPointMgr extends tnt.EventMgr {
         }
         let refresh = false;
         if (redPoint.isLeaf()) {
-            let count = this._redPountRequestUpdate.requestUpdate(redPoint.redPointInfo.parent, redPoint.id, redPoint.options);
+            let count = this._redPointRequestUpdate.requestUpdate(redPoint.redPointInfo.parent, redPoint.id, redPoint.options);
             if (count >= 0) {
                 redPoint.setCount(count);
             }

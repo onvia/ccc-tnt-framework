@@ -32,7 +32,7 @@ export class DialogWindow extends tnt.UIPopup<DialogWindowOptions> {
     }
 
     onShowCallback() {
-        this.registeButtonClick("btnClose", () => {
+        this.registerButtonClick("btnClose", () => {
             this.close();
         })
     }

@@ -23,7 +23,7 @@ export class PauseWindow extends tnt.UIWindow<PauseWindowOptions> {
     }
 
     onStart(): void {
-        this.registeButtonClick("btnClose", () => {
+        this.registerButtonClick("btnClose", () => {
             this.close();
         })
 

@@ -12,24 +12,24 @@ export class WindowScene extends tnt.SceneBase {
 
     onEnterTransitionFinished(sceneName?: string): void {
 
-        this.registeButtonClick("btnPause", () => {
+        this.registerButtonClick("btnPause", () => {
             tnt.uiMgr.showWindow('PauseWindow', { pauseBgm: true });
         })
 
-        this.registeButtonClick("btnWindowEmbed", () => {
+        this.registerButtonClick("btnWindowEmbed", () => {
             
             tnt.uiMgr.showWindow('EmbedWindow');
         });
 
-        this.registeButtonClick("btnAutoCloseWindow", () => {
+        this.registerButtonClick("btnAutoCloseWindow", () => {
             tnt.uiMgr.showWindow("AutoCloseWindow");
         });
 
-        this.registeButtonClick("btnVictory", () => {
+        this.registerButtonClick("btnVictory", () => {
             tnt.uiMgr.showWindowByClass(VictoryWindow);
         });
 
-        this.registeButtonClick("btnMsg",()=>{
+        this.registerButtonClick("btnMsg",()=>{
             tnt.uiMgr.showWindow('DialogWindow',{'text': "通过按钮打开的信息弹窗"})
         });
 

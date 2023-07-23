@@ -22,7 +22,7 @@ abstract class AnimationBase extends tnt.GComponent {
     // 当前动画名字
     declare animationName: string;
 
-    declare fullpath;
+    declare fullPath;
 
 
     abstract play(name: string, loop?: boolean, timescale?: number);
@@ -39,9 +39,9 @@ abstract class AnimationBase extends tnt.GComponent {
 
     /**
      * 加载资源
-     * @param fullpath 
+     * @param fullPath 
      */
-    abstract loadResource(loaderKey: string, fullpath: string, bundle?: AssetManager.Bundle): Promise<AnimationBase>;
+    abstract loadResource(loaderKey: string, fullPath: string, bundle?: AssetManager.Bundle): Promise<AnimationBase>;
 
     /**
      * 获取当前正在播放的动画名称

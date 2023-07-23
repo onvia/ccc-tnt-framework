@@ -2,8 +2,8 @@ import { Component, Label, Node, Sprite, EditBox, ProgressBar, RichText, Slider,
 import { DEBUG } from "cc/env";
 import { GVMTween } from "./VMTween";
 import { isArray } from "./VMGeneral";
-import { VMBaseAttr, BaseAttrBind, WatchPath, Formator, ReturnValueType, VMForAttr, SpriteAttrBind, VMSpriteAttr, LabelAttrBind, BaseValueType, VMEventAttr, DataChanged } from "./_mv_declare";
-import * as VMFatory from "./VMFactory";
+import { VMBaseAttr, BaseAttrBind, WatchPath, Formatter, ReturnValueType, VMForAttr, SpriteAttrBind, VMSpriteAttr, LabelAttrBind, BaseValueType, VMEventAttr, DataChanged } from "./_mv_declare";
+import * as VMFactory from "./VMFactory";
 import { VMHandlerName } from "./VMFactory";
 import { handlerMap, IVMObserveAutoUnbind, proxyMap, Raw, rawDepsMap, rawMap, rawNameMap, targetMap, unbindMap } from "./reactivity/_internals";
 import { _reactive } from "./reactivity/_reactive";
@@ -39,10 +39,10 @@ _defaultKey.set(UITransform, "contentSize");
 _defaultKey.set(Button, "interactable");
 
 // 默认的格式化方法
-const _defaultFormator: WeakMap<Object, Record<string, Formator<any, any>>> = new WeakMap();
+const _defaultFormatter: WeakMap<Object, Record<string, Formatter<any, any>>> = new WeakMap();
 
 // 注册 Sprite 默认格式化 spriteFrame 的方法
-registerDefaultFormator(Sprite, "spriteFrame", async (options) => {
+registerDefaultFormatter(Sprite, "spriteFrame", async (options) => {
     let spriteFrame = await new Promise<SpriteFrame>((rs) => {
         tnt.resourcesMgr.load(options.attr.loaderKey, options.newValue, SpriteFrame, (err, spriteFrame) => {
             rs(err ? null : spriteFrame);
@@ -75,10 +75,10 @@ class VM {
      *
      * @memberof VM
      */
-    public registerDefaultFormator = registerDefaultFormator;
+    public registerDefaultFormatter = registerDefaultFormatter;
 
-    public get fatory() {
-        return VMFatory;
+    public get factory() {
+        return VMFactory;
     }
 
     public observe(target: IMVVMObject)
@@ -177,20 +177,20 @@ class VM {
      * @param {IMVVMObject} mvvmObject
      * @param {T} bindObject
      * @param {(BaseAttrBind<T> | WatchPath)} attr
-     * @param {Formator<ReturnValueType>} [formator]
+     * @param {Formatter<ReturnValueType>} [formatter]
      * @return {*} 
      * @memberof VM
      */
     public bind<T extends Component | Node, A extends BaseAttrBind<T>>(mvvmObject: IMVVMObject, bindObject: T, attr: A)
     public bind<T extends Component | Node, A extends BaseAttrBind<T>>(mvvmObject: IMVVMObject, bindObject: T, attr: WatchPath)
-    public bind<T extends Component | Node, A extends BaseAttrBind<T>>(mvvmObject: IMVVMObject, bindObject: T, attr: WatchPath, formator: Formator<ReturnValueType, unknown>)
-    public bind<T extends Component | Node, A extends BaseAttrBind<T>>(mvvmObject: IMVVMObject, bindObject: T, attr: A | WatchPath, formator: Formator<ReturnValueType, unknown>)
-    public bind<T extends Component | Node, A extends BaseAttrBind<T>>(mvvmObject: IMVVMObject, bindObject: T, attr: A | WatchPath, formator?: Formator<ReturnValueType, unknown>) {
+    public bind<T extends Component | Node, A extends BaseAttrBind<T>>(mvvmObject: IMVVMObject, bindObject: T, attr: WatchPath, formatter: Formatter<ReturnValueType, unknown>)
+    public bind<T extends Component | Node, A extends BaseAttrBind<T>>(mvvmObject: IMVVMObject, bindObject: T, attr: A | WatchPath, formatter: Formatter<ReturnValueType, unknown>)
+    public bind<T extends Component | Node, A extends BaseAttrBind<T>>(mvvmObject: IMVVMObject, bindObject: T, attr: A | WatchPath, formatter?: Formatter<ReturnValueType, unknown>) {
         if (!bindObject) {
             console.error(`_mvvm-> 绑定对象不存在`);
             return;
         }
-        let _attrs = _formatAttr(mvvmObject, bindObject, attr, formator);
+        let _attrs = _formatAttr(mvvmObject, bindObject, attr, formatter);
         for (const key in _attrs) {
             const opt = _attrs[key] as VMBaseAttr<any>;
             this._collect(mvvmObject, bindObject, opt);
@@ -211,8 +211,8 @@ class VM {
         if (handlerArray) {
             for (let i = handlerArray.length; i--;) {
                 const handler = handlerArray[i];
-                let reslut = filter ? filter(handler) : true;
-                if (reslut) {
+                let result = filter ? filter(handler) : true;
+                if (result) {
                     isUnbind = true;
                     handler.unbind();
                     handlerArray.splice(i, 1);
@@ -226,44 +226,44 @@ class VM {
         return isUnbind;
     }
     public label(mvvmObject: IMVVMObject, bindObject: Label | Node, attr: LabelAttrBind<Label>)
-    public label(mvvmObject: IMVVMObject, bindObject: Label | Node, attr: WatchPath, formator?: Formator<BaseValueType, unknown>)
-    public label(mvvmObject: IMVVMObject, bindObject: Label | Node, attr: LabelAttrBind<Label> | WatchPath, formator?: Formator<BaseValueType, unknown>) {
-        // 有 formator 的时候，一般使用默认属性， label.string 类型为 string
+    public label(mvvmObject: IMVVMObject, bindObject: Label | Node, attr: WatchPath, formatter?: Formatter<BaseValueType, unknown>)
+    public label(mvvmObject: IMVVMObject, bindObject: Label | Node, attr: LabelAttrBind<Label> | WatchPath, formatter?: Formatter<BaseValueType, unknown>) {
+        // 有 formatter 的时候，一般使用默认属性， label.string 类型为 string
 
         let _label: Label = _typeTransition(bindObject, Label);
-        this.bind(mvvmObject, _label, attr, formator);
+        this.bind(mvvmObject, _label, attr, formatter);
     }
 
     public richText(mvvmObject: IMVVMObject, bindObject: RichText | Node, attr: LabelAttrBind<RichText>)
-    public richText(mvvmObject: IMVVMObject, bindObject: RichText | Node, attr: WatchPath, formator?: Formator<BaseValueType, unknown>)
-    public richText(mvvmObject: IMVVMObject, bindObject: RichText | Node, attr: LabelAttrBind<RichText> | WatchPath, formator?: Formator<BaseValueType, unknown>) {
-        // 有 formator 的时候，一般使用默认属性， richText.string 类型为 string
+    public richText(mvvmObject: IMVVMObject, bindObject: RichText | Node, attr: WatchPath, formatter?: Formatter<BaseValueType, unknown>)
+    public richText(mvvmObject: IMVVMObject, bindObject: RichText | Node, attr: LabelAttrBind<RichText> | WatchPath, formatter?: Formatter<BaseValueType, unknown>) {
+        // 有 formatter 的时候，一般使用默认属性， richText.string 类型为 string
         let _label: RichText = _typeTransition(bindObject, RichText);
-        this.bind(mvvmObject, _label, attr, formator);
+        this.bind(mvvmObject, _label, attr, formatter);
     }
 
 
     public node(mvvmObject: IMVVMObject, node: Node, attr: BaseAttrBind<Node>)
-    public node(mvvmObject: IMVVMObject, node: Node, attr: WatchPath, formator?: Formator<boolean, unknown>)
-    public node(mvvmObject: IMVVMObject, node: Node, attr: BaseAttrBind<Node> | WatchPath, formator?: Formator<boolean, unknown>) {
-        // 有 formator 的时候，一般使用默认属性， Node 为 node.active 类型为 boolean
-        this.bind(mvvmObject, node, attr, formator);
+    public node(mvvmObject: IMVVMObject, node: Node, attr: WatchPath, formatter?: Formatter<boolean, unknown>)
+    public node(mvvmObject: IMVVMObject, node: Node, attr: BaseAttrBind<Node> | WatchPath, formatter?: Formatter<boolean, unknown>) {
+        // 有 formatter 的时候，一般使用默认属性， Node 为 node.active 类型为 boolean
+        this.bind(mvvmObject, node, attr, formatter);
     }
 
-    public chilidren<T extends Component | Node>(mvvmObject: IMVVMObject, parent: Node, component: Component | Node, attr: BaseAttrBind<T> | WatchPath, formator?: Formator<boolean, unknown>) {
+    public children<T extends Component | Node>(mvvmObject: IMVVMObject, parent: Node, component: Component | Node, attr: BaseAttrBind<T> | WatchPath, formatter?: Formatter<boolean, unknown>) {
 
     }
 
     public sprite(mvvmObject: IMVVMObject, bindObject: Sprite | Node, attr: SpriteAttrBind<Sprite>)
-    public sprite(mvvmObject: IMVVMObject, bindObject: Sprite | Node, attr: WatchPath, formator?: Formator<SpriteFrame, { bundle?: string, loaderKey: string }>)
-    public sprite(mvvmObject: IMVVMObject, bindObject: Sprite | Node, attr: SpriteAttrBind<Sprite> | WatchPath, formator?: Formator<SpriteFrame, { bundle?: string, loaderKey: string }>) {
+    public sprite(mvvmObject: IMVVMObject, bindObject: Sprite | Node, attr: WatchPath, formatter?: Formatter<SpriteFrame, { bundle?: string, loaderKey: string }>)
+    public sprite(mvvmObject: IMVVMObject, bindObject: Sprite | Node, attr: SpriteAttrBind<Sprite> | WatchPath, formatter?: Formatter<SpriteFrame, { bundle?: string, loaderKey: string }>) {
 
         if (!bindObject) {
             console.error(`_mvvm-> 绑定对象不存在`);
             return;
         }
         let _comp: Sprite = _typeTransition(bindObject, Sprite);
-        let _attrs = _formatAttr(mvvmObject, _comp, attr, formator);
+        let _attrs = _formatAttr(mvvmObject, _comp, attr, formatter);
         for (const key in _attrs) {
             const opt = _attrs[key] as VMSpriteAttr<any>;
             opt.loaderKey = opt.loaderKey || mvvmObject.loaderKey;
@@ -272,16 +272,16 @@ class VM {
         }
     }
 
-    public progressBar(mvvmObject: IMVVMObject, bindObject: ProgressBar | Node, attr: BaseAttrBind<ProgressBar> | WatchPath, formator?: Formator<number, unknown>) {
-        // 有 formator 的时候，一般使用默认属性， ProgressBar，Slider 为 comp.progress 类型为 number
+    public progressBar(mvvmObject: IMVVMObject, bindObject: ProgressBar | Node, attr: BaseAttrBind<ProgressBar> | WatchPath, formatter?: Formatter<number, unknown>) {
+        // 有 formatter 的时候，一般使用默认属性， ProgressBar，Slider 为 comp.progress 类型为 number
         let _comp = _typeTransition(bindObject, ProgressBar);
-        this.bind(mvvmObject, _comp, attr, formator);
+        this.bind(mvvmObject, _comp, attr, formatter);
     }
 
-    public silder(mvvmObject: IMVVMObject, bindObject: Slider | Node, attr: BaseAttrBind<Slider> | WatchPath, formator?: Formator<number, unknown>) {
-        // 有 formator 的时候，一般使用默认属性， ProgressBar，Slider 为 comp.progress 类型为 number
+    public slider(mvvmObject: IMVVMObject, bindObject: Slider | Node, attr: BaseAttrBind<Slider> | WatchPath, formatter?: Formatter<number, unknown>) {
+        // 有 formatter 的时候，一般使用默认属性， ProgressBar，Slider 为 comp.progress 类型为 number
         let _comp = _typeTransition(bindObject, Slider);
-        this.bind(mvvmObject, _comp, attr, formator);
+        this.bind(mvvmObject, _comp, attr, formatter);
     }
 
 
@@ -305,13 +305,13 @@ class VM {
      * 
      * @param {IMVVMObject} mvvmObject
      * @param {WatchPath} watchPath
-     * @param {*} formator
+     * @param {*} formatter
      * @memberof VM
      */
-    public event(mvvmObject: IMVVMObject,watchPath: WatchPath,formator: DataChanged) {
+    public event(mvvmObject: IMVVMObject,watchPath: WatchPath,formatter: DataChanged) {
         let attr: VMEventAttr = {
             _handler: VMHandlerName.Event,
-            onChange: formator,
+            onChange: formatter,
             watchPath
         }
         
@@ -333,7 +333,7 @@ class VM {
         if (!attr._handler) {
             // 首先判断是否有 属性 对应的处理方法
             // 没有就直接用通用的方法
-            attr._handler = this.fatory.hasVMHandler(attr._targetPropertyKey) ? attr._targetPropertyKey : VMHandlerName.Common;
+            attr._handler = this.factory.hasVMHandler(attr._targetPropertyKey) ? attr._targetPropertyKey : VMHandlerName.Common;
         }
 
         if (isArray(attr.watchPath)) {
@@ -345,7 +345,7 @@ class VM {
             this._collectTarget(bindObject, attr.watchPath);
         }
 
-        let _VMHandler = this.fatory.getVMHandler(attr._handler);
+        let _VMHandler = this.factory.getVMHandler(attr._handler);
         if (!_VMHandler) {
             console.error(`_mvvm-> [${bindObject.name}] [${attr._targetPropertyKey}] [${attr.watchPath}] 错误`);
 
@@ -483,28 +483,28 @@ function _getDefaultKey(component: Object) {
  *
  * @template T
  * @param {GConstructor<T>} clazz
- * @param {Formator<any, any>} formator
+ * @param {Formatter<any, any>} formatter
  * @return {*} 
  */
-function registerDefaultFormator<T>(clazz: GConstructor<T>, property: string, formator: Formator<any, any>) {
-    if (!clazz || !formator) {
+function registerDefaultFormatter<T>(clazz: GConstructor<T>, property: string, formatter: Formatter<any, any>) {
+    if (!clazz || !formatter) {
         return;
     }
-    let obj = _defaultFormator.get(clazz);
+    let obj = _defaultFormatter.get(clazz);
     if (!obj) {
         obj = {};
     }
-    obj[property] = formator;
-    _defaultFormator.set(clazz, obj);
+    obj[property] = formatter;
+    _defaultFormatter.set(clazz, obj);
 }
-function _getDefaultFormator(component: Object, property: string) {
-    let defFormator = null;
+function _getDefaultFormatter(component: Object, property: string) {
+    let defFormatter = null;
     let clazz = js.getClassByName(js.getClassName(component));
-    if (_defaultFormator.has(clazz)) {
-        let defFormatorMap = _defaultFormator.get(clazz);
-        defFormator = defFormatorMap?.[property];
+    if (_defaultFormatter.has(clazz)) {
+        let defFormatterMap = _defaultFormatter.get(clazz);
+        defFormatter = defFormatterMap?.[property];
     }
-    return defFormator;
+    return defFormatter;
 }
 function _typeTransition<T extends Component>(comp: T | Node, clazz: GConstructor<T>) {
     if (comp instanceof Node) {
@@ -547,7 +547,7 @@ function _parseObserveArgs(mvvmObjectOrData: IMVVMObject | object, data?: object
     return { target, data: data as object, tag }
 }
 
-function _formatAttr<T>(mvvmObject: IMVVMObject, component: T, attr: BaseAttrBind<T> | WatchPath, formator?: Formator<ReturnValueType, unknown>) {
+function _formatAttr<T>(mvvmObject: IMVVMObject, component: T, attr: BaseAttrBind<T> | WatchPath, formatter?: Formatter<ReturnValueType, unknown>) {
     let _attr: BaseAttrBind<any> = null;
     if (typeof attr === 'string' || isArray(attr)) {
         let defKey = _getDefaultKey(component);
@@ -555,7 +555,7 @@ function _formatAttr<T>(mvvmObject: IMVVMObject, component: T, attr: BaseAttrBin
             [defKey]: {
                 _targetPropertyKey: defKey,
                 watchPath: _parseWatchPath(attr, mvvmObject._vmTag),
-                formator: formator || _getDefaultFormator(component, defKey)
+                formatter: formatter || _getDefaultFormatter(component, defKey)
             }
         }
     } else {
@@ -564,15 +564,15 @@ function _formatAttr<T>(mvvmObject: IMVVMObject, component: T, attr: BaseAttrBin
             if (typeof element === 'string' || isArray(element)) {
                 let observeAttr: VMBaseAttr<any> = {
                     watchPath: _parseWatchPath(element as string, mvvmObject._vmTag),
-                    formator: _getDefaultFormator(component, key),
+                    formatter: _getDefaultFormatter(component, key),
                     _targetPropertyKey: key,
                 }
                 attr[key] = observeAttr;
             } else {
                 element.watchPath = _parseWatchPath(element.watchPath, mvvmObject._vmTag);
                 element._targetPropertyKey = key;
-                if (!element.formator) {
-                    element.formator = _getDefaultFormator(component, key)
+                if (!element.formatter) {
+                    element.formatter = _getDefaultFormatter(component, key)
                 }
             }
         }

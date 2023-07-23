@@ -18,7 +18,7 @@ export class TopMenuBar extends tnt.UIBase<ITopMenuBarOptions>{
 
     
     public onStart(): void {
-        this.registeButtonClick("btnClose", this.onClickClose, this);
+        this.registerButtonClick("btnClose", this.onClickClose, this);
     }
 
     updateTopMenuBar(options: ITopMenuBarOptions) {

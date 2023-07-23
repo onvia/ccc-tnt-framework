@@ -11,7 +11,7 @@ declare module 'cc' {
         __$50BtnClickFn: Runnable,
         __$50BtnClickTarget: Object,
 
-        // EidtBox 输入完成
+        // EditBox 输入完成
         __$50EditingDidEndedFn: Runnable,
         __$50EditingDidEndedTarget: Object,
 
@@ -47,17 +47,17 @@ class ComponentUtils {
 
     public findNode(name: string, _root: Node | Scene, parent?: Node | Scene): Node {
         let root = _root as Node;
-        let isInited = false;
+        let isInitd = false;
         if (!root.__$nodes) {
             root.__$nodes = {};
         } else {
-            isInited = true;
+            isInitd = true;
         }
         let res = this._checkout(name, root, parent);
         if (res) {
             return res;
         }
-        if (isInited) {
+        if (isInitd) {
             return null;
         }
         let _parent = root;
@@ -112,11 +112,11 @@ class ComponentUtils {
     }
 
     public findNodes(locators: string[], root: Node | Scene, parent?: Node) {
-        let fnarray = [];
+        let fnArray = [];
         locators.forEach((value) => {
-            fnarray.push((this.findNode(value, root, parent)));
+            fnArray.push((this.findNode(value, root, parent)));
         })
-        return fnarray;
+        return fnArray;
     }
     /** 获取节点完整路径 */
     public getNodeFullPath(node) {
@@ -254,7 +254,7 @@ class ComponentUtils {
      * @return {*} 
      * @memberof ComponentUtils
      */
-    public registeEditBoxDidEnd(name: NodeNoun<EditBox>, callback: Runnable1<EditBox>, target: any, root: Node, parent?: Node) {
+    public registerEditBoxDidEnd(name: NodeNoun<EditBox>, callback: Runnable1<EditBox>, target: any, root: Node, parent?: Node) {
         let node = this._convertToNode(name, root, parent);
         if (!node) {
             return;

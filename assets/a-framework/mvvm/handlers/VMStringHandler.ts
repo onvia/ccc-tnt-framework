@@ -24,7 +24,7 @@ export class VMStringHandler extends VMCustomHandler {
             watchPathCount = this.attr.watchPath.length;
         }
 
-        if (!this.attr.formator && this.templateParamCount >= 1) {
+        if (!this.attr.formatter && this.templateParamCount >= 1) {
             if (this.templateParamCount !== watchPathCount) {
                 let msg = `VMStringHandler-> [${this.node.name}] 模板参数与输入参数[${JSON.stringify(this.attr.watchPath)}]数量不一致，请实现 formator 方法`;
                 if (DEV) {

@@ -428,11 +428,11 @@ export default class AnimationSkeleton extends tnt.AnimationBase {
         console.log(`AnimationSkeleton-> current animation ${animation}`);
 
         let skeletonData = this.skeleton.skeletonData;
-        const spdata = skeletonData;//sp.Skeleton组件
+        const spData = skeletonData;//sp.Skeleton组件
         let copy = new sp.SkeletonData()//拷贝一份纹理，避免重复纹理缓存
         js.mixin(copy, skeletonData);
         // @ts-ignore
-        copy._uuid = spdata._uuid + "_copy" + "_" + copy_uid;
+        copy._uuid = spData._uuid + "_copy" + "_" + copy_uid;
         var old = copy.name;
         var newName = copy.name + '_copy'
         copy.name = newName;
@@ -539,26 +539,26 @@ export default class AnimationSkeleton extends tnt.AnimationBase {
     }
 
 
-    loadResource(loaderKey: string, fullpath: string, bundle?: AssetManager.Bundle | string): Promise<AnimationSkeleton> {
-        if (!fullpath) {
-            console.error(`AnimationSkeleton-> fullpath undefined`);
+    loadResource(loaderKey: string, fullPath: string, bundle?: AssetManager.Bundle | string): Promise<AnimationSkeleton> {
+        if (!fullPath) {
+            console.error(`AnimationSkeleton-> fullPath undefined`);
             return;
         }
 
         this._lazyInit();
-        if (this.fullpath == fullpath) {
+        if (this.fullPath == fullPath) {
             log(`AnimationSkeleton-> 加载的资源和当前资源相同，跳过加载！`);
             return Promise.resolve(this);
         }
         let _skeleton = this.skeleton;
         return new Promise((resolve, reject) => {
             let loader = tnt.loaderMgr.get(loaderKey);
-            loader.load(fullpath, sp.SkeletonData, (err, skeletonData) => {
+            loader.load(fullPath, sp.SkeletonData, (err, skeletonData) => {
                 if (err) {
                     resolve(null);
                     return;
                 }
-                this.fullpath = fullpath;
+                this.fullPath = fullPath;
                 _skeleton.skeletonData = skeletonData;
                 _skeleton.invalidAnimationCache();
                 resolve(this);

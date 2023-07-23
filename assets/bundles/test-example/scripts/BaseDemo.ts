@@ -8,7 +8,7 @@ export class BaseDemo extends tnt.SceneBase {
     onEnterTransitionFinished(sceneName?: string): void {
         let btnCount = 0;
         // 按钮
-        this.registeButtonClick("button", () => {
+        this.registerButtonClick("button", () => {
             this.setLabelText("labelBtnState", "按钮点击: " + btnCount++);
         });
         // ToggleGroup

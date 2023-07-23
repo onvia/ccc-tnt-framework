@@ -269,7 +269,7 @@
     "_priority": 1073741824,
     "_fov": 45,
     "_fovAxis": 0,
-    "_orthoHeight": 429.7230181470869,
+    "_orthoHeight": 518.6357435197817,
     "_near": 1,
     "_far": 2000,
     "_color": {
@@ -908,7 +908,7 @@
   },
   {
     "__type__": "cc.Node",
-    "_name": "btnTemplete",
+    "_name": "btnTemplate",
     "_objFlags": 0,
     "_parent": {
       "__id__": 24

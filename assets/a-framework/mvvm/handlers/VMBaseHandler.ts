@@ -3,7 +3,7 @@ import { DEV } from "cc/env";
 import { TriggerOpTypes } from "../reactivity/_internals";
 import { isArray } from "../VMGeneral";
 import { GVMTween } from "../VMTween";
-import { FormatorOpts, VMBaseAttr, WatchPath } from "../_mv_declare";
+import { FormatterOpts, VMBaseAttr, WatchPath } from "../_mv_declare";
 
 export abstract class VMBaseHandler<T extends object = any>{
 
@@ -92,8 +92,8 @@ export abstract class VMBaseHandler<T extends object = any>{
     }
 
     protected async formatValue(newValue: any, oldValue: any, node: Node, nodeIdx: number, watchPath: WatchPath) {
-        if (this.attr.formator) {
-            let options: FormatorOpts = {
+        if (this.attr.formatter) {
+            let options: FormatterOpts = {
                 handler: this,
                 newValue,
                 oldValue,
@@ -102,7 +102,7 @@ export abstract class VMBaseHandler<T extends object = any>{
                 watchPath,
                 attr: this.attr
             };
-            return await this.attr.formator.call(this.userControllerComponent, options);
+            return await this.attr.formatter.call(this.userControllerComponent, options);
         }
         return newValue;
     }
@@ -171,7 +171,7 @@ export abstract class VMBaseHandler<T extends object = any>{
     }
 
     protected onV2MBind() {
-        if (this.attr.isBidirection) {
+        if (this.attr.isBidirectional) {
             this.V2MBind(this.target as Component | Node);
         }
     }

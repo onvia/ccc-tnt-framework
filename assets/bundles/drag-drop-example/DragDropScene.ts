@@ -41,7 +41,7 @@ export class DragDropScene extends tnt.SceneBase implements IDragDropListener {
         // 添加容器节点（放置点）
         tnt.dragDropMgr.addContainer(container);
 
-        this.registeButtonClick("Button", () => {
+        this.registerButtonClick("Button", () => {
             console.log(`DragDropScene-> click Button`);
         });
 

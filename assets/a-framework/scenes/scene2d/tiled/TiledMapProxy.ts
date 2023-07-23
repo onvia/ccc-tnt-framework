@@ -142,13 +142,13 @@ export class TiledMapProxy implements IOrientation {
             anchor = y;
             y = undefined;
         }
-        let positon = this.orientationAdapter.tileToPixelCoords(xOrPos, y);
+        let position = this.orientationAdapter.tileToPixelCoords(xOrPos, y);
 
         if (anchor) {
-            positon.x += anchor.x * this.tileSize.width;
-            positon.y += anchor.y * this.tileSize.height;
+            position.x += anchor.x * this.tileSize.width;
+            position.y += anchor.y * this.tileSize.height;
         }
-        return positon;
+        return position;
     }
 
     tileToWorldCoords(position: Vec2): Vec2
@@ -161,13 +161,13 @@ export class TiledMapProxy implements IOrientation {
             anchor = y;
             y = undefined;
         }
-        let positon = this.orientationAdapter.tileToWorldCoords(xOrPos, y);
+        let position = this.orientationAdapter.tileToWorldCoords(xOrPos, y);
 
         if (anchor) {
-            positon.x += anchor.x * this.tileSize.width;
-            positon.y += anchor.y * this.tileSize.height;
+            position.x += anchor.x * this.tileSize.width;
+            position.y += anchor.y * this.tileSize.height;
         }
-        return positon;
+        return position;
     }
 
     hitTest(worldPos: Vec2): boolean {

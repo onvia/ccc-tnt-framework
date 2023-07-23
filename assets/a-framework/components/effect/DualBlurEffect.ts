@@ -102,7 +102,7 @@ export class DualBlurEffect extends Component {
 
         // // 记录升降纹理时纹理尺寸
         let pyramid: [number, number][] = [], tw: number = lastRT.width, th: number = lastRT.height;
-        //Downsample
+        //Down Sample
         for (let i = 0; i < iteration; i++) {
             pyramid.push([tw, th]);
             [lastRT, srcRT] = [srcRT, lastRT];
@@ -111,7 +111,7 @@ export class DualBlurEffect extends Component {
             tw = Math.max(tw * scale, 1), th = Math.max(th * scale, 1);
             this.renderWithMaterial(srcRT, lastRT, this.materialDown, size(tw, th));
         }
-        // Upsample
+        // Up Sample
         for (let i = iteration - 1; i >= 0; i--) {
             [lastRT, srcRT] = [srcRT, lastRT];
             this.renderWithMaterial(srcRT, lastRT, this.materialUp, size(pyramid[i][0], pyramid[i][1]));

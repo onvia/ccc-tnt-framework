@@ -24,11 +24,11 @@ export class DanfangPopup extends tnt.UIPopup {
             tnt.redPointMgr.setDisplayProxy(parseInt(id),redPointRoot, RedPointCompProxy);
         }
 
-        this.registeButtonClick("btnLevelup", () => {
+        this.registerButtonClick("btnLevelup", () => {
             tnt.game.redPointData.simulationLevelupDanfang();
         });
 
-        this.registeButtonClick("btnCompound", () => {
+        this.registerButtonClick("btnCompound", () => {
 
             tnt.game.redPointData.simulationCompoundupDanfang();
         });

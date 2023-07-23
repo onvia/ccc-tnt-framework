@@ -87,7 +87,7 @@ export default class AnimationFrame extends tnt.AnimationBase {
         }
 
         if (DEV) {
-            this.logAnims();
+            this.logAnimas();
         }
     }
 
@@ -282,9 +282,9 @@ export default class AnimationFrame extends tnt.AnimationBase {
         let iAnimation = new IAnimation(data.name, 0, data.textureFileName);
         this.animations[data.name] = iAnimation;
         //动作
-        let anims = data.clips;
-        for (let i = 0; i < anims.length; i++) {
-            const anim = anims[i];
+        let clips = data.clips;
+        for (let i = 0; i < clips.length; i++) {
+            const anim = clips[i];
 
             let clip = [];
             //动作的每一帧
@@ -345,7 +345,7 @@ export default class AnimationFrame extends tnt.AnimationBase {
         return node;
     }
 
-    logAnims() {
+    logAnimas() {
         let names = [];
         this.animation.clips.forEach((clip) => {
             names.push(clip.name);

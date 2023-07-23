@@ -62,7 +62,7 @@ class UIBase<Options = any> extends tnt.GComponent<Options> implements IUIAble {
      * @param {Node} [parent]
      * @memberof UIBase
      */
-    public registeButtonClick(node: NodeNoun<Button>, callback: Runnable1<Button>, target?: any, parent?: Node) {
+    public registerButtonClick(node: NodeNoun<Button>, callback: Runnable1<Button>, target?: any, parent?: Node) {
         tnt.componentUtils.registerButtonClick(node, callback, target || this, this.node, parent);
     }
 
@@ -89,8 +89,8 @@ class UIBase<Options = any> extends tnt.GComponent<Options> implements IUIAble {
      * @param {Node} [parent]
      * @memberof UIBase
      */
-    public registeEditBoxDidEnd(node: NodeNoun<EditBox>, callback: Runnable1<EditBox>, target?: any, parent?: Node) {
-        tnt.componentUtils.registeEditBoxDidEnd(node, callback, target || this, this.node, parent);
+    public registerEditBoxDidEnd(node: NodeNoun<EditBox>, callback: Runnable1<EditBox>, target?: any, parent?: Node) {
+        tnt.componentUtils.registerEditBoxDidEnd(node, callback, target || this, this.node, parent);
     }
 
     /**
@@ -102,7 +102,7 @@ class UIBase<Options = any> extends tnt.GComponent<Options> implements IUIAble {
      * @param {Node} [parent]
      * @memberof UIBase
      */
-    public registeToggleClick(node: NodeNoun<Toggle>, callback: Runnable1<Toggle>, target?: any, parent?: Node) {
+    public registerToggleClick(node: NodeNoun<Toggle>, callback: Runnable1<Toggle>, target?: any, parent?: Node) {
         tnt.componentUtils.registerToggleClick(node, callback, target || this, this.node, parent);
     }
 
@@ -161,7 +161,7 @@ class UIBase<Options = any> extends tnt.GComponent<Options> implements IUIAble {
         return this.findComponent(name, ProgressBar, parent);
     }
 
-    public getSilderByName(name: string, parent?: Node): Slider {
+    public getSliderByName(name: string, parent?: Node): Slider {
         return this.findComponent(name, Slider, parent);
     }
 
@@ -327,10 +327,10 @@ class UIBase<Options = any> extends tnt.GComponent<Options> implements IUIAble {
     }
 
 
-    private _createPanel<T extends tnt.UIPanel>(uiable: IUIAble, pack: UIPanelPack<T>, callback: Runnable1<T>) {
+    private _createPanel<T extends tnt.UIPanel>(uiAble: IUIAble, pack: UIPanelPack<T>, callback: Runnable1<T>) {
         let clazz = pack.ctor;
 
-        tnt.resourcesMgr.addPrefabNode(uiable, clazz, pack.container, pack.param).then((uiPanel) => {
+        tnt.resourcesMgr.addPrefabNode(uiAble, clazz, pack.container, pack.param).then((uiPanel) => {
             pack.instance = uiPanel;
             callback?.(uiPanel);
         });

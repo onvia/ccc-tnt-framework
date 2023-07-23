@@ -6,7 +6,7 @@ declare global {
     }
 }
 export class KeyboardMgr {
-    private keyBordHandler: IKeyboard[] = [];
+    private keyBoardHandler: IKeyboard[] = [];
     private _downKeyList = [];
     private static _keyboard: KeyboardMgr = null;
     private _ctrlKeys = [
@@ -30,45 +30,45 @@ export class KeyboardMgr {
     }
 
     public on(target: IKeyboard) {
-        this._KeyBordEvent(true);
+        this._KeyBoardEvent(true);
 
         // 防止重复注册同一事件
-        let findPlugin = this.keyBordHandler.find(item => item === target);
+        let findPlugin = this.keyBoardHandler.find(item => item === target);
         if (findPlugin) {
             return;
         }
-        this.keyBordHandler.push(target);
+        this.keyBoardHandler.push(target);
     }
     public off(target: IKeyboard) {
 
-        var index = this.keyBordHandler.indexOf(target);
+        var index = this.keyBoardHandler.indexOf(target);
         if (index > -1) {
-            this.keyBordHandler.splice(index, 1);
+            this.keyBoardHandler.splice(index, 1);
         }
-        this._KeyBordEvent(false);
+        this._KeyBoardEvent(false);
     }
-    private _KeyBordEvent(on) {
+    private _KeyBoardEvent(on) {
         const eventTypes = [
             Input.EventType.KEY_DOWN,
             Input.EventType.KEY_UP,
             Input.EventType.KEY_PRESSING,
         ];
 
-        const eventfuncs = [
+        const eventFuncs = [
             this._onKeyDown,
             this._onKeyUp,
             this._onKeyPressing,
         ];
 
-        if (this.keyBordHandler.length === 0 && on) { //只注册一次事件
-            eventfuncs.forEach((eventfunc, index) => {
-                input.on(eventTypes[index], eventfunc, this);
+        if (this.keyBoardHandler.length === 0 && on) { //只注册一次事件
+            eventFuncs.forEach((eventFunc, index) => {
+                input.on(eventTypes[index], eventFunc, this);
             });
         }
 
-        if (this.keyBordHandler.length === 0 && !on) { //反注册
-            eventfuncs.forEach((eventfunc, index) => {
-                input.off(eventTypes[index], eventfunc, this);
+        if (this.keyBoardHandler.length === 0 && !on) { //反注册
+            eventFuncs.forEach((eventFunc, index) => {
+                input.off(eventTypes[index], eventFunc, this);
             });
         }
 
@@ -89,7 +89,7 @@ export class KeyboardMgr {
                 if (this._downKeyList.indexOf(ctrlKey) !== -1) {
 
 
-                    this.keyBordHandler.forEach((target, index) => {
+                    this.keyBoardHandler.forEach((target, index) => {
                         target.onKeyCombination?.call(target, ctrlKey, event.keyCode);
                     });
                     return;
@@ -97,7 +97,7 @@ export class KeyboardMgr {
             }
         }
 
-        this.keyBordHandler.forEach((target, index) => {
+        this.keyBoardHandler.forEach((target, index) => {
             target.onKeyDown?.call(target, event);
             if (event.keyCode === KeyCode.ESCAPE || event.keyCode === KeyCode.MOBILE_BACK) {
                 target.onKeyBack?.call(target, event);
@@ -112,7 +112,7 @@ export class KeyboardMgr {
                 this._downKeyList.splice(index, 1);
             }
         }
-        this.keyBordHandler.forEach((target, index) => {
+        this.keyBoardHandler.forEach((target, index) => {
             target.onKeyUp?.call(target, event);
         });
     };
@@ -128,7 +128,7 @@ export class KeyboardMgr {
                 }
                 // 有摁下的 控制键  组合键长摁
                 if (this._downKeyList.indexOf(ctrlKey) !== -1) {
-                    this.keyBordHandler.forEach((target, index) => {
+                    this.keyBoardHandler.forEach((target, index) => {
                         target.onKeyCombinationPressing?.call(target, ctrlKey, event.keyCode);
                     });
                     return;
@@ -136,7 +136,7 @@ export class KeyboardMgr {
             }
         }
 
-        this.keyBordHandler.forEach((target, index) => {
+        this.keyBoardHandler.forEach((target, index) => {
             target.onKeyPressing?.call(target, event);
         });
     }

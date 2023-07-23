@@ -13,7 +13,7 @@ export class UIDebugToastPlugin implements IUIMgrPlugin {
     onWindowCreated?(view: tnt.UIWindowBase<any>, name: string) {
         tnt.uiMgr.showDebugToast(`创建 ${name} `);
     }
-    onWindowShowBefor?(view: tnt.UIWindowBase<any>, name: string) {
+    onWindowShowBefore?(view: tnt.UIWindowBase<any>, name: string) {
         
     }
     onWindowShowAfter?(view: tnt.UIWindowBase<any>, name: string) {

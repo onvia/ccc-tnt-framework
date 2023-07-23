@@ -36,7 +36,7 @@ interface IStickyEvent {
 @ccclass("EventMgr")
 class EventMgr<T = any> implements IEventified {
 
-    private _unuseHandlers: IHandler<T>[] = [];
+    private _unusedHandlers: IHandler<T>[] = [];
     private _handlerMap: Record<string, IHandler<T>[]> = {};
     private _stickyEventMap: Record<string, IStickyEvent[]> = {};
 
@@ -218,7 +218,7 @@ class EventMgr<T = any> implements IEventified {
         }
     }
     protected _recoverHandler(handler: IHandler<T>) {
-        if (this._unuseHandlers.length >= 128) {
+        if (this._unusedHandlers.length >= 128) {
             return;
         }
         handler.args = undefined;
@@ -227,7 +227,7 @@ class EventMgr<T = any> implements IEventified {
         handler.key = undefined;
         handler.priority = undefined;
         handler.once = undefined;
-        this._unuseHandlers.push(handler);
+        this._unusedHandlers.push(handler);
     }
     protected _runHandlerWithData(handler: IHandler<T>, ...data) {
         if (!handler.listener) {
@@ -247,10 +247,10 @@ class EventMgr<T = any> implements IEventified {
     }
 
     protected _getHandler(key: K2V<T>, listener: any, target: any, once: boolean, priority: number, ...args) {
-        const unuseHandlers = this._unuseHandlers;
+        const unusedHandlers = this._unusedHandlers;
         let handler: IHandler<T>;
-        if (unuseHandlers.length) {
-            handler = unuseHandlers.pop();
+        if (unusedHandlers.length) {
+            handler = unusedHandlers.pop();
         } else {
             handler = {} as any;
         }

@@ -36,7 +36,7 @@ export class CameraShakeDemo extends tnt.SceneBase {
         return this._bombShake;
     }
     onEnter(): void {
-        this.registeButtonClick("btnBoom", () => {
+        this.registerButtonClick("btnBoom", () => {
             CameraShake.shake(this.bombShake);
         });
 

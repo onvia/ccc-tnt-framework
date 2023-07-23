@@ -23,15 +23,15 @@ export class DemoVMBindUnBind extends tnt.SceneBase implements IMVVMObject {
     userData: typeof userData;
     onEnable() {
         // 注册按钮事件
-        this.registeButtonClick('btnRemoveStartAll', this.onClickRemoveStartAll);
-        this.registeButtonClick('btnAddStartScale', this.onClickAddStartScale);
-        this.registeButtonClick('btnAddStartAngle', this.onClickAddStartAngle);
-        this.registeButtonClick('btnRemoveStartScale', this.onClickRemoveStartScale);
-        this.registeButtonClick('btnRemoveStartAngle', this.onClickRemoveStartAngle);
-        this.registeButtonClick("btnAddLevel", () => {
+        this.registerButtonClick('btnRemoveStartAll', this.onClickRemoveStartAll);
+        this.registerButtonClick('btnAddStartScale', this.onClickAddStartScale);
+        this.registerButtonClick('btnAddStartAngle', this.onClickAddStartAngle);
+        this.registerButtonClick('btnRemoveStartScale', this.onClickRemoveStartScale);
+        this.registerButtonClick('btnRemoveStartAngle', this.onClickRemoveStartAngle);
+        this.registerButtonClick("btnAddLevel", () => {
             this.userData.level = Math.max(0, this.userData.level + 1);
         });
-        this.registeButtonClick("btnMulLevel", () => {
+        this.registerButtonClick("btnMulLevel", () => {
             this.userData.level = Math.max(0, this.userData.level - 1);
         });
 
@@ -55,7 +55,7 @@ export class DemoVMBindUnBind extends tnt.SceneBase implements IMVVMObject {
         tnt.vm.bind(this, this.logo.sprite, {
             color: {
                 watchPath: "userData.level",
-                formator: (opts) => {
+                formatter: (opts) => {
                     return opts.newValue > 3 ? Color.RED : Color.BLUE;
                 }
             }
@@ -92,7 +92,7 @@ export class DemoVMBindUnBind extends tnt.SceneBase implements IMVVMObject {
             tnt.vm.node(this, child, {
                 angle: {
                     watchPath: "userData.level",
-                    formator: (opts) => {
+                    formatter: (opts) => {
                         return opts.newValue > i ? 30 : 0;
                     }
                 }
@@ -125,7 +125,7 @@ export class DemoVMBindUnBind extends tnt.SceneBase implements IMVVMObject {
             tnt.vm.node(this, child, {
                 scale: {
                     watchPath: "userData.level",
-                    formator: (opts) => {
+                    formatter: (opts) => {
                         return opts.newValue > i ? v3(1, 1, 1) : v3(0.5, 0.5, 0.5);
                     }
                 }

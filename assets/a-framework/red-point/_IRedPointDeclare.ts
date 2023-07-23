@@ -8,7 +8,7 @@ declare global {
         parent: number;
         showType: tnt.RedPoint.ShowType;
     }
-    interface IRedPountRequestUpdate {
+    interface IRedPointRequestUpdate {
         requestUpdate<Options = any>(parent: number, id: number, options?: Options): number;
     }
 }

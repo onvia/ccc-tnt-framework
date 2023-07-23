@@ -6,8 +6,8 @@ export type WatchPath = string | string[];
 export type BaseValueType = string[] | string | number | number[];
 export type ReturnValueType = BaseValueType | boolean | CCObject | ValueType | object;
 
-export type FormatorOpts = { handler: VMBaseHandler, newValue: any, oldValue?: any, node?: Node, /*nodeIdx?: number,*/ watchPath?: WatchPath, readonly attr?: VMBaseAttr };
-export type Formator<T, E> = (options: FormatorOpts & E) => T | Promise<T> | T[] | Promise<T[]>;
+export type FormatterOpts = { handler: VMBaseHandler, newValue: any, oldValue?: any, node?: Node, /*nodeIdx?: number,*/ watchPath?: WatchPath, readonly attr?: VMBaseAttr };
+export type Formatter<T, E> = (options: FormatterOpts & E) => T | Promise<T> | T[] | Promise<T[]>;
 export type DataChanged = (options: { handler: VMBaseHandler, newValue: any, oldValue?: any, watchPath?: WatchPath, readonly attr?: VMBaseAttr }) => void;
 export interface IVMItem {
     updateItem(data, index, ...args);
@@ -33,10 +33,10 @@ export interface VMBaseAttr<R = any> {
      * @type {boolean}
      * @memberof VMBaseAttr
      */
-    isBidirection?: boolean;
+    isBidirectional?: boolean;
     watchPath: WatchPath;
     tween?: IVMTween | boolean | number;
-    formator?: Formator<R, unknown>;
+    formatter?: Formatter<R, unknown>;
 }
 
 export interface VMCustomAttr<R> extends VMBaseAttr<R> {
@@ -51,7 +51,7 @@ export interface VMForAttr extends VMBaseAttr {
     tween?: null;
 
     /** @deprecated 在 VMForAttr 中不要使用这个属性 */
-    formator?: null;
+    formatter?: null;
 
     /** 数据发生改变 */
     onChange: (operate: ForOpType) => void;
@@ -66,7 +66,7 @@ export interface VMSpriteAttr<R> extends VMCustomAttr<R> {
     /** @deprecated 在 VMSpriteAttr 中不要使用这个属性*/
     tween?: null;
 
-    formator?: Formator<R, { bundle?: string, loaderKey?: string }>;
+    formatter?: Formatter<R, { bundle?: string, loaderKey?: string }>;
 }
 
 export interface VMLabelAttr<R> extends VMCustomAttr<R> {
@@ -82,7 +82,7 @@ export interface VMEventAttr extends VMBaseAttr {
     tween?: null;
 
     /** @deprecated 在 VMEventAttr 中不要使用这个属性 */
-    formator?: null;
+    formatter?: null;
 
     /** 数据发生改变 */
     onChange: DataChanged;

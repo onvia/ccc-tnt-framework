@@ -13,7 +13,7 @@ export class EmbedWindow extends tnt.UIWindow {
 
 
     onStart(): void {
-        this.registeButtonClick("btnClose", () => this.close());
+        this.registerButtonClick("btnClose", () => this.close());
 
         // 面板 0
         this.addPanel("container0", "UIEmbedPanel1", "01");
@@ -38,27 +38,27 @@ export class EmbedWindow extends tnt.UIWindow {
         // this.addUI("UIEmbedItem","itemRoot");
 
 
-        this.registeButtonClick('btnTab01', () => {
+        this.registerButtonClick('btnTab01', () => {
             this.showPanel("01");
         })
 
-        this.registeButtonClick('btnTab02', () => {
+        this.registerButtonClick('btnTab02', () => {
             this.showPanel("02");
         })
 
-        this.registeButtonClick('btnTab03', () => {
+        this.registerButtonClick('btnTab03', () => {
             this.showPanel("03");
         })
 
-        this.registeButtonClick('btnTab11', () => {
+        this.registerButtonClick('btnTab11', () => {
             this.showPanel("11");
         })
 
-        this.registeButtonClick('btnTab12', () => {
+        this.registerButtonClick('btnTab12', () => {
             this.showPanel("12");
         })
 
-        this.registeButtonClick('btnTab13', () => {
+        this.registerButtonClick('btnTab13', () => {
             this.showPanel("13");
         })
     }

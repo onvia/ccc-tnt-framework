@@ -8,7 +8,7 @@ export class VMProgressHandler extends VMCustomHandler {
 
 
     onInitValue(): void {
-        if (this._isProgress && !this.attr.formator && isArray(this.attr.watchPath) && this.attr.watchPath.length > 2) {
+        if (this._isProgress && !this.attr.formatter && isArray(this.attr.watchPath) && this.attr.watchPath.length > 2) {
             let msg = `VMProgressHandler-> [${this.node.name}] 输入参数 (watchPath) 数量过多，请实现 formator 方法`;
             if (DEV) {
                 throw new Error(msg);
@@ -28,7 +28,7 @@ export class VMProgressHandler extends VMCustomHandler {
     }
 
     protected async formatValue(newValue: any, oldValue: any, node: Node, nodeIdx: number, watchPath: WatchPath) {
-        if (this.attr.formator) {
+        if (this.attr.formatter) {
             return await super.formatValue(newValue, oldValue, node, nodeIdx, watchPath);
         }
         if (this._isProgress) {

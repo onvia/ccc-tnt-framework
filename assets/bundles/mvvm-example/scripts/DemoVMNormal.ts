@@ -90,7 +90,7 @@ export class DemoVMNormal extends tnt.SceneBase implements IMVVMObject {
         // 双向绑定
         tnt.vm.label(this, label3, {
             string: {
-                isBidirection: true,
+                isBidirectional: true,
                 watchPath: "*.diamond"
             }
         });
@@ -98,7 +98,7 @@ export class DemoVMNormal extends tnt.SceneBase implements IMVVMObject {
         // 同时绑定多个属性
         tnt.vm.label(this, label2, {
             "string": {
-                isBidirection: true,
+                isBidirectional: true,
                 watchPath: ["*.gold", "*.maxGold"],
                 tween: tnt.vm.VMTween(4),
             },
@@ -110,7 +110,7 @@ export class DemoVMNormal extends tnt.SceneBase implements IMVVMObject {
             "string": {
                 watchPath: ["*.array.0.age", "*.gold", "*.maxGold"],
                 tween: 3,
-                formator: (opts) => {
+                formatter: (opts) => {
                     // 定制数据格式化，模板只能接收 2 个参数，这里将 3 个参数格式化成 2 个参数
                     return [Math.floor(opts.newValue[0]), Math.floor(opts.newValue[1]) / Math.floor(opts.newValue[2])];
                 },
@@ -144,11 +144,11 @@ export class DemoVMNormal extends tnt.SceneBase implements IMVVMObject {
         let scrollView = this.findComponent("ScrollView", ScrollView);
         let vmForContent = this.getNodeByName("vmForContent");
 
-        this.registeButtonClick("btnAddItem", () => {
+        this.registerButtonClick("btnAddItem", () => {
             this.data.array.push(this.data2.array.random());
         });
 
-        this.registeButtonClick("btnDelItem", () => {
+        this.registerButtonClick("btnDelItem", () => {
             if (this.data.array.length) {
                 this.data.array.removeOne(this.data.array.random());
             }

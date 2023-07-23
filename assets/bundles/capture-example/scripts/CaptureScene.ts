@@ -7,9 +7,9 @@ export class CaptureScene extends tnt.SceneBase {
     content: Node = null;
     onEnter(): void {
         this.content = this.getNodeByName("content");
-        this.registeButtonClick("btnFullscreen", this.onClickFullscreen);
-        this.registeButtonClick("btnNode", this.onClickNode);
-        this.registeButtonClick("btnClear", this.onClickClear);
+        this.registerButtonClick("btnFullscreen", this.onClickFullscreen);
+        this.registerButtonClick("btnNode", this.onClickNode);
+        this.registerButtonClick("btnClear", this.onClickClear);
     }
 
     onClickFullscreen() {

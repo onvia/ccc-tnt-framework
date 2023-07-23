@@ -48,7 +48,7 @@ function _component_sound(name?: string, type?: GConstructor<Component>, parent?
  * @param {string} pluginName
  * @return {*} 
  */
-function __registePlugins(pluginName: string) {
+function __registerPlugins(pluginName: string) {
     if (!__isRegistedPlugin) {
         return;
     }
@@ -76,7 +76,7 @@ function __registePlugins(pluginName: string) {
  *
  * @return {*} 
  */
-function _registePlugins() {
+function _registerPlugins() {
     if (__isRegistedPlugin) {
         return;
     }
@@ -170,7 +170,7 @@ let __decorator = {
             __pluginMgrMap.set(name, target);
 
             // 检查是否有可以注册的插件
-            __registePlugins(name);
+            __registerPlugins(name);
         }
     },
 
@@ -201,10 +201,10 @@ let __decorator = {
             console.log(`_decorator-> ${name} 增加插件 ${js.getClassName(target)}`);
 
             // 检查是否可以注册插件
-            __registePlugins(name);
+            __registerPlugins(name);
         }
     },
-    _registePlugins: _registePlugins,
+    _registerPlugins: _registerPlugins,
 
     /**
      * UI 的预制体路径

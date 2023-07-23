@@ -9,10 +9,11 @@ const { ccclass, property } = _decorator;
 @ccclass('RedPointDemo')
 export class RedPointDemo extends tnt.SceneBase {
 
+    
     onEnterTransitionStart(sceneName?: string): void {
 
         redPointData.init();
-        tnt.redPointMgr.setRedPountRequestUpdate(new RedPointRequestUpdate());
+        tnt.redPointMgr.setRedPointRequestUpdate(new RedPointRequestUpdate());
 
         this.loader.load("red-point-example#data/red_point_info", JsonAsset, (err, jsonAsset) => {
             tnt.tblMgr.init([jsonAsset]);
@@ -22,15 +23,15 @@ export class RedPointDemo extends tnt.SceneBase {
     }
 
     onEnter(): void {
-        this.registeButtonClick("btnMail", () => {
+        this.registerButtonClick("btnMail", () => {
             tnt.uiMgr.showWindow("MailPopup");
         });
-        this.registeButtonClick("btnAlchemy", () => {
+        this.registerButtonClick("btnAlchemy", () => {
             tnt.uiMgr.showWindow("AlchemyPopup");
         });
 
         let LayoutRandom = this.getNodeByName("LayoutRandom");
-        this.registeButtonClick("btnMailRandom", () => {
+        this.registerButtonClick("btnMailRandom", () => {
             tnt.game.redPointData.randomMailData();
         }, this, LayoutRandom);
     }

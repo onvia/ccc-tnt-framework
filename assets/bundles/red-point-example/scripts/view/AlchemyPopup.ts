@@ -25,15 +25,15 @@ export class AlchemyPopup extends tnt.UIPopup {
             tnt.redPointMgr.setDisplayProxy(parseInt(id), redPointRoot, RedPointCompProxy);
         }
 
-        this.registeButtonClick("btnLiandan", () => {
+        this.registerButtonClick("btnLiandan", () => {
             redPointData.simulationAlchemy();
         });
 
-        this.registeButtonClick("btnLevelupDanlu", () => {
+        this.registerButtonClick("btnLevelupDanlu", () => {
 
             redPointData.simulationLevelDanlu();
         });
-        this.registeButtonClick("btnDanfang", () => {
+        this.registerButtonClick("btnDanfang", () => {
             tnt.uiMgr.showWindow("DanfangPopup");
 
         });

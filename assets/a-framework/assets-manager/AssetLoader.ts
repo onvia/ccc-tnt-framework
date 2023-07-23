@@ -1082,7 +1082,6 @@ class AssetLoader implements IPluginMgr {
                 let dataStr = data.toString();
                 let json = JSON.parse(dataStr);
                 if (type === SpriteFrame || type === Texture2D) {
-                    let filearr = filepath.split("/");
                     for (const key in json.subMetas) {
                         const subMeta = json.subMetas[key];
                         if (type === SpriteFrame && subMeta.name === "spriteFrame") {

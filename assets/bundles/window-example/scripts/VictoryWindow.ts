@@ -24,7 +24,7 @@ export class VictoryWindow extends tnt.UIWindow {
     
     onStart(): void {
         console.log(`VictoryWindow-> onInit`);
-        this.registeButtonClick("btnClose",()=>{
+        this.registerButtonClick("btnClose",()=>{
             this.close();
         });
     }

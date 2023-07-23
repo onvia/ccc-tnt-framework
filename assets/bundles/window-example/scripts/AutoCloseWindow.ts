@@ -32,7 +32,7 @@ export class AutoCloseWindow extends tnt.UIPopup {
         this.setUniqueness(false);
         this.setAutoClose(duration);
         
-        this.registeButtonClick("btnClose", () => {
+        this.registerButtonClick("btnClose", () => {
             this.close();
         })
 

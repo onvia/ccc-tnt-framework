@@ -110,7 +110,7 @@ declare global {
         onDropAgent(container: Node, dragAgent: Node, sourceData: SourceData);
     }
 }
-const NAME_AGENTICON = "AgentIcon";
+const NAME_AGENT_ICON = "AgentIcon";
 let tmp_v3_1 = new Vec3();
 @ccclass('DragDropMgr')
 export class DragDropMgr<SourceData = any> {
@@ -127,7 +127,7 @@ export class DragDropMgr<SourceData = any> {
     // 点击面板
     private touchTestPanel: Node = null;
     private touchTransform: UITransform = null;
-    private touchStartPositon: Vec3 = null;
+    private touchStartPosition: Vec3 = null;
     private isTouching = false;
     private delayShowDragAgent: Runnable = null;
 
@@ -245,7 +245,7 @@ export class DragDropMgr<SourceData = any> {
      *
      * @memberof DragDropMgr
      */
-    public remoeAllDragNode() {
+    public removeAllDragNode() {
         this.dragNodes.length = 0;
     }
     /**
@@ -254,7 +254,7 @@ export class DragDropMgr<SourceData = any> {
      * @memberof DragDropMgr
      */
     public clear() {
-        this.remoeAllDragNode();
+        this.removeAllDragNode();
         this.removeAllContainer();
         this.clearTimer();
         if (this.dragAgent?.parent != null) {
@@ -319,11 +319,11 @@ export class DragDropMgr<SourceData = any> {
             dragIco.spriteFrame = null;
             if (icon && icon instanceof Node) {
                 icon.parent = this.dragAgent;
-                icon.name = NAME_AGENTICON;
+                icon.name = NAME_AGENT_ICON;
                 icon.position = new Vec3();
             }
         }
-        this.dragAgent.position = new Vec3(this.touchStartPositon.x, this.touchStartPositon.y, this.dragAgent.position.z);
+        this.dragAgent.position = new Vec3(this.touchStartPosition.x, this.touchStartPosition.y, this.dragAgent.position.z);
         this.dragAgent.parent = this.touchTestPanel;
         this.dragAgent.startDrag();
 
@@ -418,7 +418,7 @@ export class DragDropMgr<SourceData = any> {
     }
 
     public removeDragAgent() {
-        let icon = this.dragAgent.getChildByName(NAME_AGENTICON);
+        let icon = this.dragAgent.getChildByName(NAME_AGENT_ICON);
         if (icon) {
             icon.destroy();
         }
@@ -429,7 +429,7 @@ export class DragDropMgr<SourceData = any> {
         this.dragDropListener?.onTouchTestPanelStart?.(event);
         let pos = event.getUILocation();
         tmp_v3_1.set(pos.x, pos.y);
-        this.touchStartPositon = this.touchTransform.convertToNodeSpaceAR(tmp_v3_1, this.touchStartPositon);
+        this.touchStartPosition = this.touchTransform.convertToNodeSpaceAR(tmp_v3_1, this.touchStartPosition);
         let node = this.findTouchedNode(event);
         if (!node) {
             return;

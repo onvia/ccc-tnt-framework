@@ -41,7 +41,7 @@ export default class DemoVMSprite extends tnt.SceneBase implements IMVVMObject {
                 spriteFrame: "*.icon",
                 grayscale: {
                     watchPath: "*.iconIdx",
-                    formator: (opts) => {
+                    formatter: (opts) => {
                         // 当索引为 0 的时候 节点设置为灰态
                         return opts.newValue == 0;
                     }
@@ -52,7 +52,7 @@ export default class DemoVMSprite extends tnt.SceneBase implements IMVVMObject {
             tnt.vm.node(this, child, {
                 active: {
                     watchPath: "*.count",
-                    formator: (opts) => {
+                    formatter: (opts) => {
                         let x = opts.newValue % this.starGroup.children.length;
                         return x >= i;
                     }
@@ -60,7 +60,7 @@ export default class DemoVMSprite extends tnt.SceneBase implements IMVVMObject {
             });
         }
 
-        this.registeButtonClick("btnChanage", () => {
+        this.registerButtonClick("btnChanage", () => {
             this.data.iconIdx++;
             this.data.icon = this.icons[this.data.iconIdx % this.icons.length];
 
