@@ -15,9 +15,17 @@ declare global {
 export class DialogWindow extends tnt.UIPopup<DialogWindowOptions> {
 
 
+    public onCreate(): void {
+        console.log(`DialogWindow-> onCreate`);
+        
+    }
+    protected onLoad(): void {
+        console.log(`DialogWindow-> onLoad`);
+        
+    }
     onStart(): void {
         super.onStart();
-        console.log(`DialogWindow-> onInit`);
+        console.log(`DialogWindow-> onStart`);
         this.setUniqueness(false);
         this.setClickAnyWhereClose();
 
@@ -25,5 +33,6 @@ export class DialogWindow extends tnt.UIPopup<DialogWindowOptions> {
         this.registerButtonClick("btnClose", () => this.close());
     }
 
+    
 
 }

@@ -167,7 +167,7 @@ class SceneMgr extends tnt.EventMgr implements ISceneMgrPlugin, IPluginMgr {
             }
             // 重新获取 弹窗根节点
             tnt.uiMgr._initialize();
-            let nextScene = root.addComponent(clazz as GConstructor<T>);
+            let nextScene = root.getComponent(clazz as GConstructor<T>) || root.addComponent(clazz as GConstructor<T>);
             (clazz as GConstructor<T>).prototype.prefabUrl = enterSceneName;
             (clazz as GConstructor<T>).prototype.bundle = options?.bundle || "main";
 

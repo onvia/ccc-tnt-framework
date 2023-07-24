@@ -327,7 +327,7 @@ class ResourcesMgr {
                     return;
                 }
                 let node = instantiate(assets);
-                let component = node.addComponent(cls);
+                let component = node.getComponent(cls) || node.addComponent(cls);
                 if (!component.loaderKey) {
                     component.loaderKey = loader.key;
                 }
