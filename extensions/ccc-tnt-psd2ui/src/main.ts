@@ -92,15 +92,19 @@ export const methods: { [key: string]: (...any: any) => any } = {
             _exec(args, tasks)
         }
 
-        await Promise.all(tasks);
-        genUUID2MD5Mapping();
-        console.log("[ccc-tnt-psd2ui]  psd 导出完成，输出位置为：", output ? output : "psd 同级目录");
+        Promise.all(tasks).then(() => {
+            genUUID2MD5Mapping();
+            console.log("[ccc-tnt-psd2ui]  psd 导出完成，输出位置为：", output ? output : "psd 同级目录");
+        }).catch((reason) => {
+            console.log("[ccc-tnt-psd2ui]  导出失败", reason);
+        }).finally(() => {
+        });
     },
 };
 function _exec(options: any, tasks: any) {
     let jsonContent = JSON.stringify(options);
     if (!fs.existsSync(nodejsFile)) {
-        console.log(`main-> 没有批处理文件`, nodejsFile);
+        console.log(`[ccc-tnt-psd2ui] 没有内置 nodejs`, nodejsFile);
 
         return tasks;
     }
@@ -112,12 +116,14 @@ function _exec(options: any, tasks: any) {
         }
     }
 
-    console.log("[ccc-tnt-psd2ui] 批处理命令参数：" + jsonContent);
+    console.log("[ccc-tnt-psd2ui] 命令参数：" + jsonContent);
+    console.log("[ccc-tnt-psd2ui] 命令执行中");
+
     let base64 = Buffer.from(jsonContent).toString("base64");
     tasks.push(new Promise<void>((rs) => {
-        // console.log(`main-> `, `${nodejsFile} ${psd}` + ' ' + `--json ${base64}`);
+        // console.log(`[ccc-tnt-psd2ui] `, `${nodejsFile} ${psd}` + ' ' + `--json ${base64}`);
         exec(`${nodejsFile} ${psd}` + ' ' + `--json ${base64}`, { windowsHide: false }, (err, stdout, stderr) => {
-            console.log("[ccc-tnt-psd2ui]:\n",stdout);
+            console.log("[ccc-tnt-psd2ui]:\n", stdout);
             if (stderr) {
                 console.log(stderr);
             }

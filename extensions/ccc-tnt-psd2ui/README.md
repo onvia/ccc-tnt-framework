@@ -28,6 +28,10 @@
 不建议将输出目录设置为 项目的 `assets` 文件夹下，可能由于编辑器的权限导致不可预期的错误。
 
 
+### Mac 用户请注意！！！！
+Mac 下首次使用需要先执行根目录下的 `install_depends.sh` 安装 `canvas` 所需要的依赖，如果安装错误 请根据 `https://github.com/Automattic/node-canvas` 手动安装
+
+
 #### 界面说明
 
 ![img1](./readme-img/img1.png)
