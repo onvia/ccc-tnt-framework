@@ -22,22 +22,8 @@ export class DialogWindow extends tnt.UIPopup<DialogWindowOptions> {
         this.setClickAnyWhereClose();
 
         this.setLabelText("labelCustom", this.options.text)
+        this.registerButtonClick("btnClose", () => this.close());
     }
 
-    onActive(): void {
-        console.log(`DialogWindow-> onActive`);
-    }
-    onFreeze(): void {
-        console.log(`DialogWindow-> onFreeze`);
-    }
-
-    onShowCallback() {
-        this.registerButtonClick("btnClose", () => {
-            this.close();
-        })
-    }
-    onCloseCallback() {
-        console.log(`DialogWindow-> onCloseCallback`);
-    }
 
 }

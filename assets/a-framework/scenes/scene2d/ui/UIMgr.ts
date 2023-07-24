@@ -179,6 +179,12 @@ let maskNodePool = new tnt.NodePool(maskNodePoolOptions);
 
 const ACTION_TAG = 10000;
 
+/** 弹窗冻结的计数，归零时取消冻结 */
+const windowFrozenCount: WeakMap<tnt.UIWindowBase, number> = new WeakMap();
+/** 弹窗是被哪个弹窗冻结的 */
+const windowFrozenMap: WeakMap<tnt.UIWindowBase, tnt.UIWindowBase> = new WeakMap();
+/** 保存弹窗【是否关闭其他窗口】原始值 */
+const windowIsHideOtherWindows: WeakMap<tnt.UIWindowBase, boolean> = new WeakMap();
 
 @pluginMgr("UIMgr")
 @ccclass("UIMgr")
@@ -503,12 +509,13 @@ export class UIMgr extends tnt.EventMgr implements IPluginMgr {
             let topName: string = this._getClassName(top);
             if (topName === name) {
                 if (!isTop) {
-                    this._playActiveAnimation(top);
+                    this._playActiveAnimation(top, true);
                 }
                 break;
             }
             isTop = false;
             this._stack.pop();
+            this._activeTop(top); // TODO 可以优化
             top._unregisterClickClose();
             this._playCloseAnimation(top, null, false);
             this._removeCurUI(top);
@@ -570,33 +577,110 @@ export class UIMgr extends tnt.EventMgr implements IPluginMgr {
     }
 
     private _pushUI(window: tnt.UIWindowBase) {
+        let hideArray: tnt.UIWindowBase[] = [];
+        windowIsHideOtherWindows.set(window, window._isHideOtherWindows);
         if (this._stack.length > 0) {
             let topWindow = this._stack[this._stack.length - 1];
             topWindow.onFreeze?.();
+            topWindow?.playHideMask(0);
 
-            topWindow?.playHideMask();
-            if (window._isHideOtherWindows) {
-                this._playFreezeAnimation(topWindow);
+            /**
+             * 1. UIWindow 为界限，如果新显示的 window 为 UIWindow，则向上查找隐藏掉这中间的所有 window 
+             * 2. 如果新显示的 window 为其他，则判断变量【_isHideOtherWindows】，如果为 true，则其他所有弹窗执行冻结动画，
+             * 
+             **/
+
+            for (let i = this._stack.length; i--;) {
+                let _window = this._stack[i];
+                let needHide = false;
+                // 收集需要隐藏的弹窗
+                if (window instanceof tnt.UIWindow || window._isHideOtherWindows) {
+                    if (window instanceof tnt.UIPopup && _window instanceof tnt.UIWindow) {
+                    } else {
+                        hideArray.push(_window);
+                        needHide = true;
+                    }
+                }
+
+                if (needHide) {
+                    let count = windowFrozenCount.get(_window) || 0;
+                    if (count === 0) {
+                        windowFrozenMap.set(_window, window);
+                    }
+                    count++;
+                    windowFrozenCount.set(_window, count);
+                }
+
+                // 执行到上一个 UIWindow 停止执行
+                if (window instanceof tnt.UIWindow && _window instanceof tnt.UIWindow) {
+                    break;
+                }
             }
+
+            if (window._isHideOtherWindows) {
+                for (let j = 0; j < hideArray.length; j++) {
+                    const element = hideArray[j];
+                    // element?.playHideMask();
+                    this._playFreezeAnimation(element);
+                }
+                hideArray.length = 0;
+            }
+            // topWindow?.playHideMask();
+            // if (window._isHideOtherWindows) {
+            //     this._playFreezeAnimation(topWindow);
+            // }
         }
+
         let name = this._getClassName(window);
         this._pushCurUI(name, window);
         this._stack.push(window);
-        this._playShowAnimation(window);
+        this._playShowAnimation(window, () => {
+            for (let j = 0; j < hideArray.length; j++) {
+                const element = hideArray[j];
+                element.root.active = false;
+            }
+        });
     }
 
-    private _popUI<T extends tnt.UIWindowBase>(param: string | GConstructor<T> | T = null): tnt.UIWindowBase<any> {
-        let reWindow: tnt.UIWindowBase = null;
-        let topWindow: tnt.UIWindowBase = null;
-        // 激活顶部弹窗
-        let activeTop = () => {
-            if (this._stack.length) {
-                topWindow = this._stack[this._stack.length - 1];
-                this._playActiveAnimation(topWindow);
+    /** 激活顶部弹窗 */
+    private _activeTop(removedWindow: tnt.UIWindowBase) {
+        if (this._stack.length) {
+            for (let i = this._stack.length; i--;) {
+                let _window = this._stack[i];
+                let isTop = i == this._stack.length - 1;
+                let controlWindow = windowFrozenMap.get(_window);
+                if (controlWindow !== removedWindow) {
+                    if (isTop) {
+                        _window.playShowMask(0);
+                        this._playActiveAnimation(_window, true)
+                    }
+                    continue;
+                }
+                let isHideOtherWindows = windowIsHideOtherWindows.get(controlWindow) || false;
+                // console.log(`UIMgr-> ${_window.name} 被 ${controlWindow.name} 控制，属于 UIWindow: ${controlWindow instanceof tnt.UIWindow}，isHideOtherWindows: ${isHideOtherWindows}`);
+                if (controlWindow instanceof tnt.UIWindow || isHideOtherWindows) {
+                    if (windowFrozenCount.has(_window)) {
+                        let count = windowFrozenCount.get(_window);
+                        count--;
+                        // console.log(`UIMgr-> 冻结计数：${count}`);
+                        if (count == 0) {
+                            isTop && _window.playShowMask(0);
+                            // 播放显示动画或直接显示
+                            isHideOtherWindows ? this._playActiveAnimation(_window, isTop) : _window.root.active = true;
+                        }
+                        windowFrozenCount.set(_window, count);
+                    }
+                }
+
+                if (controlWindow instanceof tnt.UIWindow && _window instanceof tnt.UIWindow) {
+                    break;
+                }
             }
-            topWindow?.playShowMask();
         }
-        let _activeTopWindow: Runnable = null;
+    }
+    private _popUI<T extends tnt.UIWindowBase>(param: string | GConstructor<T> | T = null): tnt.UIWindowBase<any> {
+        let removedWindow: tnt.UIWindowBase = null;
+        let _activeTopWindow: Runnable1<tnt.UIWindowBase> = null;
         if (param) {
             let window: tnt.UIWindowBase = null;
             if (typeof param !== 'object') {
@@ -613,29 +697,29 @@ export class UIMgr extends tnt.EventMgr implements IPluginMgr {
                 console.warn(`UIMgr-> ${windowName} 不在当前显示列表`);
                 return null;
             }
-            reWindow = window;
+            removedWindow = window;
 
             var index = this._stack.indexOf(window);
             if (index === this._stack.length - 1) {
                 this._stack.splice(index, 1);
                 // activeTop();
-                _activeTopWindow = activeTop;
+                _activeTopWindow = this._activeTop.bind(this);
             } else {
                 this._stack.splice(index, 1);
                 // 因为删除的是中间弹窗，所以不用激活顶部弹窗
             }
         } else {
-            reWindow = this._stack.pop();
+            removedWindow = this._stack.pop();
             // activeTop();
-            _activeTopWindow = activeTop;
+            _activeTopWindow = this._activeTop.bind(this);
         }
 
 
-        _activeTopWindow?.();
-        this._playCloseAnimation(reWindow, () => {
+        _activeTopWindow?.(removedWindow);
+        this._playCloseAnimation(removedWindow, () => {
         });
-        this._removeCurUI(reWindow);
-        return reWindow;
+        this._removeCurUI(removedWindow);
+        return removedWindow;
     }
 
     private _pushCurUI(name: string, view: tnt.UIWindowBase) {
@@ -671,8 +755,9 @@ export class UIMgr extends tnt.EventMgr implements IPluginMgr {
     }
 
 
-    private _playShowAnimation(window: tnt.UIWindowBase) {
+    private _playShowAnimation(window: tnt.UIWindowBase, callback: Runnable) {
         let windowName = this._getClassName(window);
+        window.playShowMask(0);
 
         this._onPluginsWindowShowBefore(window, windowName);
         this.emit(this.Event.WILL_SHOW_VIEW, windowName);
@@ -686,13 +771,12 @@ export class UIMgr extends tnt.EventMgr implements IPluginMgr {
             window._registerClickClose();
             this._onPluginsWindowShowAfter(window, windowName);
             this.emit(this.Event.SHOWN_VIEW, windowName);
-
+            callback?.();
             this.closeBlockInput();
         }
 
 
         window.onActive();
-        window.playShowMask();
         window.playShowAnimation(ACTION_TAG, showEndFunc.bind(this));
     }
 
@@ -718,7 +802,7 @@ export class UIMgr extends tnt.EventMgr implements IPluginMgr {
             view = null;
         }
         if (useAnimation) {
-            view.playHideMask();
+            view.playHideMask(0);
             view.playCloseAnimation(ACTION_TAG, closeEndFunc.bind(this));
         } else {
             view.playHideMask(0);
@@ -773,15 +857,19 @@ export class UIMgr extends tnt.EventMgr implements IPluginMgr {
 
         window.playFreezeAnimation(ACTION_TAG, closeEndFunc.bind(this));
     }
-    private _playActiveAnimation(window: tnt.UIWindowBase) {
+    private _playActiveAnimation(window: tnt.UIWindowBase, isReal = false) {
         if (!window) {
             return;
         }
-        window.onActive();
-        window.playShowMask();
+        if (isReal) {
+            window.onActive();
+            window.playShowMask(0);
+        }
 
         let showEndFunc = () => {
-            window.onActiveAfter();
+            if (isReal) {
+                window.onActiveAfter();
+            }
         }
         if (!window.root.active) {
             window.root.active = true;

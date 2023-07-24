@@ -22,7 +22,7 @@ export default class TopMenuBarPlugin implements IUIMgrPlugin {
     }
     onWindowShowBefore(view: tnt.UIWindowBase<any>, name: string) {
 
-        this.adapterTopMenuBar(view);
+        this.adapterTopMenuBar(view, 0);
     }
 
     onWindowShowAfter(view: tnt.UIWindowBase<any>, name: string) {
@@ -30,7 +30,7 @@ export default class TopMenuBarPlugin implements IUIMgrPlugin {
 
     onWindowClose(view: tnt.UIWindowBase<any>, name: string) {
         let topWindow = tnt.uiMgr.getTopWindow();
-        this.adapterTopMenuBar(topWindow);
+        this.adapterTopMenuBar(topWindow, 1);
     }
 
     // 所有弹窗关闭
@@ -38,7 +38,7 @@ export default class TopMenuBarPlugin implements IUIMgrPlugin {
         tnt.topMenuBarMgr.hideTopMenuBar();
     }
 
-    adapterTopMenuBar(view: tnt.UIWindowBase) {
+    adapterTopMenuBar(view: tnt.UIWindowBase, offset: number) {
         let topBarNode = tnt.topMenuBarMgr.topMenuBar?.node;
         if (!topBarNode) {
             return;
@@ -52,8 +52,8 @@ export default class TopMenuBarPlugin implements IUIMgrPlugin {
             }
         } else if (view instanceof tnt.UIPopup) {
             if (topBarNode.parent) {
-                let index = topBarNode.parent.children.indexOf(view.node);
-                topBarNode.setSiblingIndex(index - 1);
+                let index = topBarNode.parent.children.indexOf(view.root);
+                topBarNode.setSiblingIndex(index - 1 + offset);
             }
         } else {
 

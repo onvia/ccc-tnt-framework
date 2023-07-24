@@ -211,10 +211,14 @@ class UIWindowBase<Options = any> extends tnt.UIBase<Options> implements ILoader
     playShowMask(duration = 0.1) {
         if (this.mask) {
             let maskOpacity = this.mask.getComponent(UIOpacity);
-            tween(maskOpacity).to(duration, { opacity: this._maskOpacity }).start();
+            if(duration == 0){
+                maskOpacity.opacity = this._maskOpacity;
+            }else{
+                tween(maskOpacity).to(duration, { opacity: this._maskOpacity }).start();
+            }
         }
 
-        DEV && console.log(`${js.getClassName(this)}-> ${this.uuid}  _playMaskFadeIn  ${sys.now()}`);
+        // DEV && console.log(`${js.getClassName(this)}-> ${this.uuid}  _playMaskFadeIn  ${sys.now()}`);
     }
     /**
      * 播放隐藏蒙版，有需要可以重写
@@ -225,10 +229,14 @@ class UIWindowBase<Options = any> extends tnt.UIBase<Options> implements ILoader
     playHideMask(duration = 0.2) {
         if (this.mask) {
             let maskOpacity = this.mask.getComponent(UIOpacity);
-            tween(maskOpacity).to(duration, { opacity: 0 }).start();
+            if(duration == 0){
+                maskOpacity.opacity = 0;
+            }else{
+                tween(maskOpacity).to(duration, { opacity: 0 }).start();
+            }
         }
 
-        DEV && console.log(`${js.getClassName(this)}-> ${this.uuid}  _playMaskFadeOut  ${sys.now()}`);
+        // DEV && console.log(`${js.getClassName(this)}-> ${this.uuid}  _playMaskFadeOut  ${sys.now()}`);
     }
 
     /**

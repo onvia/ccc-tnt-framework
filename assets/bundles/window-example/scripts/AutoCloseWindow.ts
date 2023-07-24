@@ -11,12 +11,6 @@ let { prefabUrl } = tnt._decorator;
 export class AutoCloseWindow extends tnt.UIPopup {
 
 
-    onActive(): void {
-        console.log(`AutoCloseWindow-> onActive`);
-    }
-    onFreeze(): void {
-        console.log(`AutoCloseWindow-> onFreeze`);
-    }
 
     protected onStart(): void {
 
@@ -28,19 +22,20 @@ export class AutoCloseWindow extends tnt.UIPopup {
     onShowCallback() {
         let duration = 3;
         console.log(`AutoCloseWindow-> onShowCallback`);
-        
+
         this.setUniqueness(false);
         this.setAutoClose(duration);
-        
+
         this.registerButtonClick("btnClose", () => {
             this.close();
         })
 
         this.setClickAnyWhereClose(true);
 
-        tnt.timerMgr.startTimer(()=>{
+
+        this.schedule(() => {
             this.setLabelText("labelTimer", `${--duration}秒后自动关闭`);
-        },this,1,duration - 1);
+        }, 1, duration - 1);
     }
     onCloseCallback() {
         console.log(`AutoCloseWindow-> onCloseCallback`);

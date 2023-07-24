@@ -32,19 +32,4 @@ export class PauseWindow extends tnt.UIWindow<PauseWindowOptions> {
     }
 
 
-    onActive(): void {
-        console.log(`PauseWindow-> onActive`);
-    }
-    onFreeze(): void {
-        console.log(`PauseWindow-> onFreeze`);
-    }
-
-    onShowCallback() {
-        console.log(`PauseWindow-> onShowCallback`);
-
-    }
-    onCloseCallback() {
-        console.log(`PauseWindow-> onCloseCallback`);
-
-    }
 }

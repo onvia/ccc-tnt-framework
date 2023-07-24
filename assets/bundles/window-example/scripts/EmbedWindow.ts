@@ -1,4 +1,4 @@
-import { _decorator } from "cc";
+import { Color, _decorator } from "cc";
 import { UIEmbedItem } from "./embeds/UIEmbedItem";
 import { UIEmbedPanel1 } from "./embeds/UIEmbedPanel1";
 import { UIEmbedPanel2 } from "./embeds/UIEmbedPanel2";
@@ -11,6 +11,10 @@ let { prefabUrl } = tnt._decorator;
 @ccclass('EmbedWindow')
 export class EmbedWindow extends tnt.UIWindow {
 
+
+    public onCreate(): void {
+        this.setTopMenuBar({ color: Color.RED });
+    }
 
     onStart(): void {
         this.registerButtonClick("btnClose", () => this.close());
@@ -33,7 +37,7 @@ export class EmbedWindow extends tnt.UIWindow {
 
 
         // 添加角标预制体
-        this.addUIWithCtor(UIEmbedItem,"itemRoot");
+        this.addUIWithCtor(UIEmbedItem, "itemRoot");
         // 或者
         // this.addUI("UIEmbedItem","itemRoot");
 
