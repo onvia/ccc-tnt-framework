@@ -5,6 +5,12 @@
   /* Add your custom configuration here. */
   "compilerOptions": {
     "strict": false,
+    "module": "ES2022",
+    "lib": [
+      "es6",
+      "es2022",
+      "dom"
+    ],
     "types": [
       "./temp/declarations/jsb",
       "./temp/declarations/cc.custom-macro",

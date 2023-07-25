@@ -34,7 +34,7 @@ class UIBase<Options = any> extends tnt.GComponent<Options> implements IUIAble {
      * @param {*} args
      * @memberof UIBase
      */
-    public updateOptions(arg, ...args) {
+    public updateOptions(arg: any, ...args: any) {
         this.options = arg as any;
     }
 
@@ -178,7 +178,6 @@ class UIBase<Options = any> extends tnt.GComponent<Options> implements IUIAble {
             console.error(`UIBase-> 无法找到 label ${name}`);
         }
     }
-
 
     /**
      * 更新节点 SpriteFrame

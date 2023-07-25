@@ -4,21 +4,24 @@ import { _decorator, js, v3, UIOpacity, Tween, tween, easing, sys, BlockInputEve
 import { DEV } from "cc/env";
 const { ccclass } = _decorator;
 
-
+// 全局声明
 declare global {
-
+    // 定义一个全局接口，此接口扩展了原有的 ITNT 接口，添加了 UIWindowBase 类型
     interface ITNT {
         UIWindowBase: typeof UIWindowBase;
     }
 
+    // 在 tnt 命名空间下定义 UIWindowBase 类型，此类型为 UIWindowBase 类的实例类型
     namespace tnt {
         type UIWindowBase<Options = any> = InstanceType<typeof UIWindowBase<Options>>;
     }
 }
 @ccclass("UIWindowBase")
 class UIWindowBase<Options = any> extends tnt.UIBase<Options> implements ILoaderKeyAble {
-
+    /** 根节点 */
     public root: Node = null;
+
+    /** 遮罩节点 */
     public mask: Node = null;
 
     /** 弹窗 参数 */
@@ -50,6 +53,7 @@ class UIWindowBase<Options = any> extends tnt.UIBase<Options> implements ILoader
     useAtlas = true;
 
     protected _loader: tnt.AssetLoader = null;
+    /** 获取 AssetLoader 实例 */
     public get loader() {
         if (!this._loader) {
             this._loader = tnt.loaderMgr.get(this.loaderKey);
@@ -58,27 +62,29 @@ class UIWindowBase<Options = any> extends tnt.UIBase<Options> implements ILoader
         return this._loader;
     }
 
+    /** 显示监听函数数组 */
     protected _showListeners: Runnable[] = [];
+    /** 关闭监听函数数组 */
     protected _closeListeners: Runnable[] = [];
+    /** 将要关闭监听函数数组 */
     protected _willCloseListeners: Runnable[] = [];
 
-
-
-
-    //监听显示
+    /** 监听显示 */
     public addShowListener(func: Runnable) {
         this._showListeners.push(func);
     }
 
-    //监听关闭
+    /** 监听关闭 */
     public addCloseListener(func: Runnable) {
         this._closeListeners.push(func);
     }
 
+    /** 添加将要关闭监听 */
     public addWillCloseListener(func: Runnable) {
         this._willCloseListeners.push(func);
     }
 
+    /** 移除显示监听 */
     public removeShowListener(func: Runnable) {
         var index = this._showListeners.indexOf(func);
         if (index > -1) {
@@ -86,6 +92,7 @@ class UIWindowBase<Options = any> extends tnt.UIBase<Options> implements ILoader
         }
     }
 
+    /** 移除关闭监听 */
     public removeCloseListener(func: Runnable) {
         var index = this._closeListeners.indexOf(func);
         if (index > -1) {
@@ -93,6 +100,7 @@ class UIWindowBase<Options = any> extends tnt.UIBase<Options> implements ILoader
         }
     }
 
+    /** 移除将要关闭监听 */
     public removeWillCloseListener(func: Runnable) {
         var index = this._willCloseListeners.indexOf(func);
         if (index > -1) {
@@ -100,6 +108,7 @@ class UIWindowBase<Options = any> extends tnt.UIBase<Options> implements ILoader
         }
     }
 
+    /** 执行显示监听函数 */
     _exeShowListeners() {
         for (let i = 0; i < this._showListeners.length; i++) {
             const func = this._showListeners[i];
@@ -107,12 +116,15 @@ class UIWindowBase<Options = any> extends tnt.UIBase<Options> implements ILoader
         }
     }
 
+    /** 执行将要关闭监听函数 */
     _exeWillCloseListeners() {
         for (let i = 0; i < this._willCloseListeners.length; i++) {
             const func = this._willCloseListeners[i];
             func();
         }
     }
+
+    /** 执行关闭监听函数 */
     _exeCloseListeners() {
         for (let i = 0; i < this._closeListeners.length; i++) {
             const func = this._closeListeners[i];
@@ -126,9 +138,9 @@ class UIWindowBase<Options = any> extends tnt.UIBase<Options> implements ILoader
      * @memberof UIWindowBase
      */
     onShowCallback() {
-
         DEV && console.log(`${js.getClassName(this)}-> onShowCallback`);
     }
+
     /**
      * 界面完全关闭的回调
      *
@@ -211,9 +223,9 @@ class UIWindowBase<Options = any> extends tnt.UIBase<Options> implements ILoader
     playShowMask(duration = 0.1) {
         if (this.mask) {
             let maskOpacity = this.mask.getComponent(UIOpacity);
-            if(duration == 0){
+            if (duration == 0) {
                 maskOpacity.opacity = this._maskOpacity;
-            }else{
+            } else {
                 tween(maskOpacity).to(duration, { opacity: this._maskOpacity }).start();
             }
         }
@@ -229,9 +241,9 @@ class UIWindowBase<Options = any> extends tnt.UIBase<Options> implements ILoader
     playHideMask(duration = 0.2) {
         if (this.mask) {
             let maskOpacity = this.mask.getComponent(UIOpacity);
-            if(duration == 0){
+            if (duration == 0) {
                 maskOpacity.opacity = 0;
-            }else{
+            } else {
                 tween(maskOpacity).to(duration, { opacity: 0 }).start();
             }
         }
@@ -253,7 +265,6 @@ class UIWindowBase<Options = any> extends tnt.UIBase<Options> implements ILoader
             this.close();
         }, this._autoCloseDelay);
     }
-
 
     /**
      * 注册点击关闭
@@ -281,11 +292,15 @@ class UIWindowBase<Options = any> extends tnt.UIBase<Options> implements ILoader
             }
         }
     }
+
+    /** 注销点击关闭 */
     _unregisterClickClose() {
         if (this._isClickAnyWhereClose) {
-            let button = this.mask.getComponent(Button);
-            button?.destroy();
-            this.mask.off("click", this.close, this);
+            if (this.mask) {
+                let button = this.mask.getComponent(Button);
+                button?.destroy();
+                this.mask.off("click", this.close, this);
+            }
         }
     }
 
@@ -338,6 +353,7 @@ class UIWindowBase<Options = any> extends tnt.UIBase<Options> implements ILoader
             this._unregisterClickClose();
         }
 
+
         if (this._clickAnyWhereCloseCallback) {
             this.removeCloseListener(this._clickAnyWhereCloseCallback);
         }
@@ -377,6 +393,7 @@ class UIWindowBase<Options = any> extends tnt.UIBase<Options> implements ILoader
         this._isPenetrate = enable;
     }
 
+    /** 关闭窗口 */
     public close(callback?: Runnable) {
         if (callback && typeof callback === 'function') {
             this.addCloseListener(callback);
@@ -392,6 +409,7 @@ class UIWindowBase<Options = any> extends tnt.UIBase<Options> implements ILoader
 
     }
 
+    /** 在激活后调用 */
     onActiveAfter() {
 
     }
@@ -412,6 +430,7 @@ class UIWindowBase<Options = any> extends tnt.UIBase<Options> implements ILoader
 
 }
 
+// 将 UIWindowBase 类添加到 tnt 命名空间下
 tnt.UIWindowBase = UIWindowBase;
 
 export { };

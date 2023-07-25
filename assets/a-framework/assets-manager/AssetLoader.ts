@@ -189,7 +189,7 @@ class AssetLoader implements IPluginMgr {
         this.bundleVersions.set(bundleName, version.toString());
     }
 
-    //删除bundle
+    /** 删除bundle */
     public static removeBundle(nameOrUrl: string) {
         let bundleWrap = this.loadedBundles.get(nameOrUrl);
         if (bundleWrap) {
@@ -200,9 +200,9 @@ class AssetLoader implements IPluginMgr {
     }
 
     /**
-    * 加载 bundle
-    * @param bundleName 
-    */
+     * 加载 bundle
+     * @param bundleName 
+     */
     public static loadBundle(bundleName: string | Bundle, onComplete: LoadBundleCompleteFunc) {
         this.loadBundleWrap(bundleName, (err: Error | null, bundleWrap: BundleWrap | null) => {
             if (err == null) {
@@ -212,10 +212,11 @@ class AssetLoader implements IPluginMgr {
             }
         });
     }
+
     /**
-    * 加载 包装 Bundle
-    * @param bundleName 
-    */
+     * 加载 包装 Bundle
+     * @param bundleName 
+     */
     protected static loadBundleWrap(bundleName: string | Bundle, onComplete: LoadBundleAssetCompleteFunc) {
 
         if (!bundleName) {
@@ -266,10 +267,12 @@ class AssetLoader implements IPluginMgr {
         let bundleWrap = this.loadedBundles.get(name);
         return bundleWrap;
     }
+
     public static getBundle(name: string) {
         let bundleWrap = this.loadedBundles.get(name);
         return bundleWrap?.bundle;
     }
+
     public removeBundle(nameOrUrl: string) {
         return AssetLoader.removeBundle(nameOrUrl);
     }
@@ -290,9 +293,11 @@ class AssetLoader implements IPluginMgr {
     protected _addCount() {
         this._loadCount++;
     }
+
     protected _decCount() {
         this._loadCount--;
     }
+
     /**
      * 升维  
      * 正在加载的资源不会执行 onProgress & onComplete 回调  
@@ -432,7 +437,7 @@ class AssetLoader implements IPluginMgr {
         }
     }
 
-    // 释放目录
+    /** 释放目录 */
     public releaseDir<T extends Asset>(dir: string, type: CCAssetType<T>, bundle?: Bundle | string) {
         let bundleWrap = this.getBundleAsset(bundle);
         let releaseArr: AssetWrap[] = [];
@@ -457,9 +462,7 @@ class AssetLoader implements IPluginMgr {
         }
     }
 
-    /**
-     * 直接释放引用资源，不对包装层做判断
-     */
+    /** 直接释放引用资源，不对包装层做判断 */
     public releaseAll() {
         this._cache?.forEach((assetWrap: AssetWrap) => {
             // asset.asset.decRef();
@@ -469,12 +472,12 @@ class AssetLoader implements IPluginMgr {
         this._cache?.clear();
     }
 
-    // 是否已经加载
+    /** 是否已经加载 */
     public hasAsset(path: string, type: CCAssetType, bundle?: Bundle | string) {
         return !!this.getAsset(path, type, bundle);
     }
 
-    // 获取已加载的资源
+    /** 获取已加载的资源 */
     public getAsset(path: string, type: CCAssetType, bundle?: Bundle | string) {
         let bundleWrap = this.getBundleAsset(bundle);
         let u_path = this.jointKey(bundleWrap.name, path);
@@ -482,7 +485,7 @@ class AssetLoader implements IPluginMgr {
         return asset;
     }
 
-    // 
+    /** 获取 Bundle 包装对象 */
     private getBundleAsset(bundle?: Bundle | string) {
         if (!bundle) {
             bundle = resources.name;
@@ -547,12 +550,10 @@ class AssetLoader implements IPluginMgr {
 
     }
 
-
     public loadArray<T extends Asset>(paths: string[], type: CCAssetType<T>, _bundle?: Bundle | string)
     public loadArray<T extends Asset>(paths: string[], type: CCAssetType<T>, _onComplete?: CCCompleteCallbackWithData<T[]>, _bundle?: Bundle | string)
     public loadArray<T extends Asset>(paths: string[], type: CCAssetType<T>, _onProgress?: CCProgressCallback, _onComplete?: CCCompleteCallbackWithData<T[]>, _bundle?: Bundle | string)
     public loadArray<T extends Asset>(paths: string[], type: CCAssetType<T>, _onProgress?: CCProgressCallback | CCCompleteCallbackWithData<T[]> | Bundle | string, _onComplete?: CCCompleteCallbackWithData<T[]> | Bundle | string, _bundle?: Bundle | string) {
-
         this._addCount();
 
         let { onProgress, onComplete, bundle } = this.parsingLoadArgs(_onProgress, _onComplete, _bundle);
@@ -634,8 +635,6 @@ class AssetLoader implements IPluginMgr {
     public load<T extends Asset>(path: string, type: CCAssetType<T>, _onComplete?: CCCompleteCallbackWithData<T>, _bundle?: Bundle | string)
     public load<T extends Asset>(path: string, type: CCAssetType<T>, _onProgress?: CCProgressCallback, _onComplete?: CCCompleteCallbackWithData<T>, _bundle?: Bundle | string)
     public load<T extends Asset>(path: string, type: CCAssetType<T>, _onProgress?: CCProgressCallback | CCCompleteCallbackWithData<T> | Bundle | string, _onComplete?: CCCompleteCallbackWithData<T> | Bundle | string, _bundle?: Bundle | string) {
-
-
         this._addCount();
         let _level = this._level;
         let pathObj = this.parsePath(path);
@@ -710,8 +709,7 @@ class AssetLoader implements IPluginMgr {
     public preloadDir(dir: string, type: CCAssetType | null, _bundle?: Bundle | string)
     public preloadDir(dir: string, type: CCAssetType | null, _onProgress: CCProgressCallback | null, _onComplete: CCCompleteCallbackWithData<RequestItem[]> | null, _bundle?: Bundle | string)
     public preloadDir(dir: string, type: CCAssetType | null, _onComplete?: CCCompleteCallbackWithData<RequestItem[]> | null, _bundle?: Bundle | string)
-    public preloadDir(dir: string, type?: CCAssetType, _onProgress?: CCProgressCallback | CCCompleteCallbackWithData<RequestItem[]> | null | Bundle | string, _onComplete?: CCCompleteCallbackWithData<RequestItem[]> | null | Bundle | string, _bundle?: Bundle | string
-    ) {
+    public preloadDir(dir: string, type?: CCAssetType, _onProgress?: CCProgressCallback | CCCompleteCallbackWithData<RequestItem[]> | null | Bundle | string, _onComplete?: CCCompleteCallbackWithData<RequestItem[]> | null | Bundle | string, _bundle?: Bundle | string) {
         let pathObj = this.parsePath(dir);
         let path = pathObj.path;
         let { onProgress, onComplete, bundle } = this.parsingLoadArgs(_onProgress, _onComplete, _bundle);
@@ -740,8 +738,6 @@ class AssetLoader implements IPluginMgr {
     public loadDir<T extends Asset>(dir: string, type: CCAssetType<T>, _onComplete?: CCCompleteCallbackWithData<T[]>, _bundle?: Bundle | string)
     public loadDir<T extends Asset>(dir: string, type: CCAssetType<T>, _onProgress?: CCProgressCallback, _onComplete?: CCCompleteCallbackWithData<T[]>, _bundle?: Bundle | string)
     public loadDir<T extends Asset>(dir: string, type: CCAssetType<T>, _onProgress?: CCProgressCallback | CCCompleteCallbackWithData<T[]> | Bundle | string, _onComplete?: CCCompleteCallbackWithData<T[]> | Bundle | string, _bundle?: Bundle | string) {
-
-
         this._addCount();
         let _level = this._level;
         let pathObj = this.parsePath(dir);
@@ -814,8 +810,6 @@ class AssetLoader implements IPluginMgr {
         });
     }
 
-
-
     public loadScene(sceneName: string, _bundle?: AssetManager.Bundle | string)
     public loadScene(sceneName: string, _onComplete?: CCCompleteCallbackWithData, _bundle?: AssetManager.Bundle | string)
     public loadScene(sceneName: string, _onProgress: CCProgressCallback, _onComplete?: CCCompleteCallbackWithData, _bundle?: AssetManager.Bundle | string)
@@ -853,7 +847,6 @@ class AssetLoader implements IPluginMgr {
         });
     }
 
-
     public preloadScene(sceneName: string, bundle?: AssetManager.Bundle | string)
     public preloadScene(sceneName: string, onComplete?: CCCompleteCallbackNoData, bundle?: AssetManager.Bundle | string)
     public preloadScene(sceneName: string, options?: CCIAssetOptions | null, bundle?: AssetManager.Bundle | string)
@@ -888,49 +881,65 @@ class AssetLoader implements IPluginMgr {
         });
     }
 
-
-    protected jointKey(bundle: string, path) {
-        let u_path = `${bundle}#${path}`;
-        return u_path;
+    /** 拼接 bundle 和 路径作为 key */
+    protected jointKey(bundle: string, path: string) {
+        return `${bundle}#${path}`;
     }
 
-    public parsingLoadArgs(...args) {
+    /**
+     * 解析并处理load方法的参数。根据传入参数的类型和数量，调整onProgress（进度回调）、onComplete（完成回调）和 bundle 的值。
+     * 这样处理使得函数可以灵活接收不同的参数类型和数量。
+     *
+     * @param {any[]} args - 传入的参数数组，可以包含回调函数和/或一个bundle
+     * @return 返回一个包含 onProgress, onComplete 和 bundle 的对象
+     */
+    public parsingLoadArgs(...args: any) {
+        // 定义进度回调、完成回调以及bundle变量
         let onProgress: CCProgressCallback, onComplete: CCCompleteCallbackWithData, bundle: string | Bundle;
+
+        // 获取输入参数
         let _onProgress = args[0];
         let _onComplete = args[1];
         let _bundle = args[2];
 
+        // 如果所有参数都存在
         if (_onProgress && _onComplete && _bundle) {
             onProgress = _onProgress;
             onComplete = _onComplete;
             bundle = _bundle;
-        } else {
-            if (typeof _onProgress === 'function') {
-                if (typeof _onComplete === 'function') {
+        } else { // 否则，进行相应处理
+            if (typeof _onProgress === 'function') { // 如果第一个参数是函数
+                if (typeof _onComplete === 'function') { // 如果第二个参数也是函数
                     onProgress = _onProgress;
                     onComplete = _onComplete;
-                } else if (typeof _onComplete === 'undefined') {
+                } else if (typeof _onComplete === 'undefined') { // 如果第二个参数未定义
                     onComplete = _onProgress;
-                } else {
+                } else { // 如果第二个参数既不是函数也不是未定义
                     onComplete = _onProgress;
                     bundle = _onComplete;
                 }
-            } else {
+            } else { // 如果第一个参数不是函数
                 bundle = _onProgress;
             }
         }
-        let obj = { onProgress, onComplete, bundle };
-        return obj;
+
+        // 返回一个包含三个成员的对象：onProgress、onComplete、bundle
+        return { onProgress, onComplete, bundle };
     }
 
-    public parseParameters(options, onProgress, onComplete, bundle) {
-
+    /**
+     * 解析并处理参数。
+     * 这个方法根据传入参数的类型和数量，调整 options、onProgress（进度回调）、onComplete（完成回调）和 bundle 的值。
+     */
+    public parseParameters(options: any, onProgress: any, onComplete: any, bundle: AssetManager.Bundle | string) {
         if (typeof onComplete === 'function') {
         } else if (typeof onComplete === 'string' || onComplete instanceof AssetManager.Bundle) {
+            // 如果 onComplete 是字符串或者AssetManager.Bundle实例，调整参数位置
             bundle = onComplete;
             onComplete = onProgress;
             onProgress = null
         } else if (!onComplete) {
+            // 如果 onComplete 不存在，根据 onProgress 的类型调整参数
             if (typeof onProgress === 'function') {
                 onComplete = onProgress;
                 onProgress = null
@@ -938,6 +947,7 @@ class AssetLoader implements IPluginMgr {
                 bundle = onProgress;
                 onProgress = null;
             } else if (!onProgress) {
+                // 如果 onProgress 不存在，根据 options 的类型调整参数
                 if (typeof options === 'function') {
                     onComplete = options;
                     options = null;
@@ -947,31 +957,50 @@ class AssetLoader implements IPluginMgr {
                 }
             }
         }
-
+        // 如果 options 不存在，创建一个新的对象
         options = options || Object.create(null);
         return { options, onProgress, onComplete, bundle };
     }
 
-    isNull(object) {
+    /**
+     * 检查传入对象是否为 null 或者 undefined。
+     *
+     * @param {any} object - 任何类型的对象
+     * @return {boolean} 如果对象是 null 或者 undefined，返回 true，否则返回 false
+     */
+    isNull(object: any): boolean {
         return object === null || object === undefined;
     }
 
-    isObject(object) {
+    /**
+     * 检查传入对象是否为 Object 类型（非 null、非数组、非函数等）。
+     *
+     * @param {any} object - 任何类型的对象
+     * @return {boolean} 如果对象是 Object 类型，返回 true，否则返回 false
+     */
+    isObject(object: any): boolean {
         return Object.prototype.toString.call(object) === '[object Object]'
     }
 
-    formatPath<T extends Asset>(path: string, type: CCAssetType<T>) {
-
+    /**
+      * 格式化路径，去除扩展名，并根据类型添加特定的后缀。
+      *
+      * @param {string} path - 资源路径
+      * @param {CCAssetType<T>} type - 资源类型
+      * @return {string} 返回格式化后的路径
+      * @template T
+      */
+    formatPath<T extends Asset>(path: string, type: CCAssetType<T>): string {
         if (!path) {
             console.log(`AssetLoader-> `);
-
         }
-        // 如果有扩展名，则删除
+        // 如果路径中包含扩展名，则删除
         let index = path.lastIndexOf('.');
         if (index !== -1) {
             path = path.substring(0, index);
         }
 
+        // 根据资源类型在路径后加上特定的后缀
         if (js.getClassName(type) === js.getClassName(SpriteFrame)) {
             path += "/spriteFrame";
         } else if (js.getClassName(type) === js.getClassName(Texture2D)) {
@@ -981,15 +1010,26 @@ class AssetLoader implements IPluginMgr {
         return path;
     }
 
-    parsePath(path: string) {
+    /**
+     * 解析路径，提取出bundle和具体路径。
+     * 路径格式应为 "bundle#path" 或 "path"
+     *
+     * @param {string} path - 资源路径
+     * @return {Object} 返回包含解析后的路径和bundle的对象
+     */
+    parsePath(path: string): { path: string, bundle: string } {
         let bundle = null;
+        // 以 '#' 为分隔符，分割路径字符串
         let arr = path.split("#");
         if (arr.length === 2) {
+            // 如果路径包含 '#'，则把 '#' 前面的部分作为 bundle，后面的部分作为路径
             bundle = arr[0];
             path = arr[1];
         } else if (arr.length === 1) {
+            // 如果路径中没有 '#'，则整个字符串就是路径
             path = arr[0];
         } else {
+            // 如果 '#' 的数量不是预期中的个数则抛出错误
             throw new Error(`path  [${path}]  error`);
         }
         return { path, bundle };
@@ -1034,6 +1074,7 @@ class AssetLoader implements IPluginMgr {
         assetManager.downloader.register(ext, customDownloaderHandler);
         assetManager.parser.register(ext, customParserHandler);
     }
+
     /**
      * 在编辑器中加载资源
      */
@@ -1047,9 +1088,7 @@ class AssetLoader implements IPluginMgr {
         }
     }
 
-    /*
-   编辑器获取读取meta文件获取 uuid
-   */
+    /* 编辑器获取读取meta文件获取 uuid */
     static getUUIDFromMeta(filepath, type, callback, bundle = "resources") {
         if (EDITOR) {
             // @ts-ignore
@@ -1102,9 +1141,6 @@ class AssetLoader implements IPluginMgr {
             });
         }
     }
-
-
-
 
     private static _instance: AssetLoader = null
     public static getInstance(): AssetLoader {

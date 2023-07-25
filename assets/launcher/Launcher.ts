@@ -59,9 +59,9 @@ export class Launcher extends Component {
         tnt.keyboard.on(KeyBoardListener.getInstance());
 
 
-        let isSucc = await this.parseUrl();
+        let isSuccess = await this.parseUrl();
 
-        if(isSucc){            
+        if (isSuccess) {
             return;
         }
         // 显示开始按钮
@@ -81,18 +81,18 @@ export class Launcher extends Component {
 
         // 场景参数
         let scene = res["demo"];
-        if(!scene){
+        if (!scene) {
             return false;
         }
-        let element = SceneConfig.find((element)=>{
+        let element = SceneConfig.find((element) => {
             return element.scene == scene
         });
 
-        if(!element){
+        if (!element) {
             console.error(`Launcher-> 没有 [${scene}] demo`);
             return false;
         }
-        let result = await tnt.sceneMgr.to(element.scene as any,{bundle: element.bundle});
+        let result = await tnt.sceneMgr.to(element.scene as any, { bundle: element.bundle });
 
         return result;
     }

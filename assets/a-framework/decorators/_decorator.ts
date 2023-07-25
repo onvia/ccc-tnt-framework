@@ -1,32 +1,60 @@
 import { Component, js, Label, Button, Layout, ProgressBar, EditBox, Sprite, Graphics, RichText, Toggle, _decorator, Widget, Slider } from "cc";
 import { DEV, EDITOR } from "cc/env";
 
+/**
+ * 装饰器相关功能，用于添加组件、插件等装饰器。
+ */
 
 // type PolymorphismOptions = {
 //     types: Array<[new () => { constructor: Function; }, string]>;
 //     displayName?: string;
 // };
 
+/**
+ * 按钮属性选项
+ */
 type ButtonPropertyOptions = {
     soundName?: string;
 }
 
+/**
+ * 插件管理器接口，用于注册插件
+ */
 interface IPluginMgr<T> {
     registerPluginAuto(plugin: T);
 }
 
+/**
+ * 全局声明扩展接口，用于定义插件类型
+ */
 declare global {
     interface IPluginType {
         // [mgrName: string]: any;
     }
-
 }
 
+/**
+ * 插件管理器映射表，用于存储插件管理器
+ */
 let __pluginMgrMap: Map<string, IPluginMgr<any>> = new Map();
+
+/**
+ * 插件映射表，用于存储插件类的数组
+ */
 let __pluginMap: Map<string, any[]> = new Map();
+
+/**
+ * 是否已经注册插件的标志
+ */
 let __isRegistedPlugin = false;
 
-
+/**
+ * 组件装饰器，用于添加声音属性到组件中
+ * @param name 声音属性名
+ * @param type 组件类型
+ * @param parent 父节点名或按钮属性选项
+ * @param options 按钮属性选项
+ */
 function _component_sound(name?: string, type?: GConstructor<Component>, parent?: string | ButtonPropertyOptions, options?: ButtonPropertyOptions) {
     return (target: any, propertyKey: string) => {
         if (!options && typeof parent == "object") {
@@ -44,9 +72,7 @@ function _component_sound(name?: string, type?: GConstructor<Component>, parent?
 
 /**
  * 补充注册插件
- *
- * @param {string} pluginName
- * @return {*} 
+ * @param pluginName 插件名称
  */
 function __registerPlugins(pluginName: string) {
     if (!__isRegistedPlugin) {
@@ -73,8 +99,6 @@ function __registerPlugins(pluginName: string) {
 
 /**
  * 统一注册插件
- *
- * @return {*} 
  */
 function _registerPlugins() {
     if (__isRegistedPlugin) {
@@ -103,15 +127,14 @@ function _registerPlugins() {
     });
 }
 
+/**
+ * 装饰器对象，包含各种组件和功能装饰器
+ */
 let __decorator = {
 
     /**
-     * 枚举值请实现 interface IPuginType{ }
-     *
-     * @export
-     * @template T
-     * @param {T} name
-     * @return {*} 
+     * 插件管理器装饰器
+     * @param name 插件管理器名称，枚举值需要实现 IPluginType 接口
      */
     pluginMgr<T extends string & keyof IPluginType>(name: T) {
         return (target: any) => {
@@ -174,17 +197,11 @@ let __decorator = {
         }
     },
 
-
     /**
-     * 枚举值 请实现 interface IPuginType{ }
-     *
-     * @export
-     * @template T
-     * @param {T} name
-     * @return {*} 
+     * 插件装饰器
+     * @param name 插件名称，枚举值需要实现 IPluginType 接口
      */
     plugin: function <T extends string & keyof IPluginType>(name: T) {
-
         return (target: any) => {
             if (EDITOR) {
                 return;
@@ -207,14 +224,12 @@ let __decorator = {
     _registerPlugins: _registerPlugins,
 
     /**
-     * UI 的预制体路径
-     * @param prefabUrl 可根据情况使用不同的资源路径 
-     * @param bundle 
-     * @returns 
+     * UI 的预制体路径装饰器
+     * @param prefabUrl 可根据情况使用不同的资源路径
+     * @param bundle
      */
     prefabUrl(prefabUrl: string | ((param?: any) => string), bundle?: string | ((param?: any) => string)) {
         return (target: Function) => {
-
             //@ts-ignore
             target.__$prefabUrl = prefabUrl;
             target.prototype.prefabUrl = prefabUrl;
@@ -225,56 +240,129 @@ let __decorator = {
         };
     },
 
+    /**
+     * 节点属性装饰器
+     * @param name 节点属性名
+     * @param parent 父节点名
+     */
     node(name?: string, parent?: string) {
         return (target: any, propertyKey: string) => {
-
             target.__$$50nodes__ = target.__$$50nodes__ || {};
             target.__$$50nodes__[propertyKey] = { name: name ?? propertyKey, parent, propertyKey };
         }
     },
 
+    // 其他组件的装饰器
+
+    /**
+     * slider 组件装饰器
+     * @param name 组件名
+     * @param parent 父节点名
+     */
     slider(name?: string, parent?: string) {
         return __decorator.component(name, Slider, parent)
     },
+
+    /**
+     * progressBar 组件装饰器
+     * @param name 组件名
+     * @param parent 父节点名
+     */
     progressBar(name?: string, parent?: string) {
         return __decorator.component(name, ProgressBar, parent)
     },
+
+    /**
+     * layout 组件装饰器
+     * @param name 组件名
+     * @param parent 父节点名
+     */
     layout(name?: string, parent?: string) {
         return __decorator.component(name, Layout, parent)
     },
+
+    /**
+     * editBox 组件装饰器
+     * @param name 组件名
+     * @param parent 父节点名
+     */
     editBox(name?: string, parent?: string) {
         return __decorator.component(name, EditBox, parent)
     },
+
+    /**
+     * label 组件装饰器
+     * @param name 组件名
+     * @param parent 父节点名
+     */
     label(name?: string, parent?: string) {
         return __decorator.component(name, Label, parent)
     },
+
+    /**
+     * sprite 组件装饰器
+     * @param name 组件名
+     * @param parent 父节点名
+     */
     sprite(name?: string, parent?: string) {
         return __decorator.component(name, Sprite, parent)
     },
+
+    /**
+     * graphics 组件装饰器
+     * @param name 组件名
+     * @param parent 父节点名
+     */
     graphics(name?: string, parent?: string) {
         return __decorator.component(name, Graphics, parent)
     },
+
+    /**
+     * richText 组件装饰器
+     * @param name 组件名
+     * @param parent 父节点名
+     */
     richText(name?: string, parent?: string) {
         return __decorator.component(name, RichText, parent)
     },
+
+    /**
+     * widget 组件装饰器
+     * @param name 组件名
+     * @param parent 父节点名
+     */
     widget(name?: string, parent?: string) {
         return __decorator.component(name, Widget, parent)
     },
 
-
+    /**
+     * toggle 组件装饰器
+     * @param name 组件名
+     * @param parent 父节点名或按钮属性选项
+     * @param options 按钮属性选项
+     */
     toggle(name?: string, parent?: string | ButtonPropertyOptions, options?: ButtonPropertyOptions,) {
         return _component_sound(name, Toggle, parent, options);
     },
 
+    /**
+     * button 组件装饰器
+     * @param name 组件名
+     * @param parent 父节点名或按钮属性选项
+     * @param options 按钮属性选项
+     */
     button(name?: string, parent?: string | ButtonPropertyOptions, options?: ButtonPropertyOptions) {
         return _component_sound(name, Button, parent, options);
     },
 
-    //  component(type: Constructor<Component>,parent?: string)
-    //  component(name: string,type: Constructor<Component>,parent?: string)
+    /**
+     * 组件装饰器，用于给组件添加属性
+     * @param name 属性名或组件名
+     * @param type 组件类型或属性类型
+     * @param parent 父节点名
+     */
     component(name: string | GConstructor<Component>, type?: GConstructor<Component> | string, parent?: string) {
         return (target: any, propertyKey: string) => {
-
             if (type && typeof type != "string") {
                 if (!name) {
                     name = propertyKey;
@@ -297,7 +385,9 @@ let __decorator = {
         }
     },
 
-    /** 禁止序列化 */
+    /**
+     * 非序列化装饰器，用于标记属性不会被序列化
+     */
     nonserialization() {
         return (target: any, propertyKey: string) => {
             if (!target.__unserialization) {
@@ -325,8 +415,10 @@ let __decorator = {
         }
     },
 
-
-    //方法装饰器 查看方法运行时间
+    /**
+     * 方法装饰器，用于查看方法运行时间
+     * @param tag 标记方法的运行时间
+     */
     time(tag: string) {
         return (target: any,
             propertyKey: string,
@@ -489,12 +581,16 @@ let __decorator = {
     // }
 }
 
-
-
+/**
+ * 全局声明扩展接口，添加 _decorator 对象
+ */
 declare global {
     interface ITNT {
         _decorator: typeof __decorator;
     }
 }
 
+/**
+ * 将 _decorator 对象添加到全局 ITNT 接口中
+ */
 tnt._decorator = __decorator;
