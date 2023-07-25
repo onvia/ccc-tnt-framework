@@ -21,7 +21,8 @@ class GenDeclare {
                 || value.className === "UIPopup"
                 || value.className === "UIWindow"
                 || value.className === "UIWindowBase"
-                || value.className === "SceneBase";
+                || value.className === "SceneBase"
+                || value.className === "RedPointComp";
         });
         let windowMappingTable = {};
         uiWindowScripts.forEach((_script) => {

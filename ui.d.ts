@@ -1,4 +1,3 @@
-import { RedPointComp } from "./assets/a-framework/red-point/RedPointComp"
 import { LoadingTips } from "./assets/bundles/common-bundle/scripts/prefabs/LoadingTips"
 import { VMItem } from "./assets/bundles/mvvm-example/scripts/VMItem"
 import { RedPointCompProxy } from "./assets/bundles/red-point-example/scripts/RedPointCompProxy"
@@ -17,7 +16,6 @@ import { TopMenuBar } from "./assets/bundles/window-example/scripts/topMenuBar/T
 import { VictoryWindow } from "./assets/bundles/window-example/scripts/VictoryWindow"
 
 declare global {
-	interface RedPointCompOptions{}
 	interface LoadingTipsOptions{}
 	interface VMItemOptions{}
 	interface RedPointCompProxyOptions{}
@@ -70,10 +68,6 @@ declare global {
 		}
 	}
 	interface GlobalUIType{
-		"RedPointComp": {
-			ctor: RedPointComp,
-			options: RedPointCompOptions,
-		}
 		"LoadingTips": {
 			ctor: LoadingTips,
 			options: LoadingTipsOptions,

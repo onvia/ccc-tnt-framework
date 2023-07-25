@@ -16,6 +16,7 @@ const framework = "a-framework";
 const tntAsset = "tnt.zip";
 class GenTemplate {
     async checkUpdate() {
+        // 自动检查更新
         console.log(`[TNT] 检查更新。`);
         let versionPath = path_1.default.join(Editor.Project.path, "assets", framework, "tnt-version.json");
         let tntPath = path_1.default.join(Editor.Project.path, "assets", framework, "TNT.ts");
@@ -174,10 +175,10 @@ class GenTemplate {
         }
     }
     digitization(tag) {
-        if (tag.toLocaleLowerCase() === 'beta') {
+        if (tag.toLowerCase().includes('beta')) {
             return 1;
         }
-        if (tag.toLocaleLowerCase() === 'release' || tag == '') {
+        if (tag.toLowerCase().includes('release') || tag == '') {
             return 2;
         }
         return 0;
