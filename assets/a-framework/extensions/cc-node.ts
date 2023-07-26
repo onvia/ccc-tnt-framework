@@ -66,7 +66,7 @@ if (!EDITOR) {
         });
 
         /** 获取、设置节点的宽度 */
-        Object.defineProperty(Node.prototype, "width", {
+        Object.defineProperty(Node.prototype, "w", {
             configurable: true,
             get: function () {
                 let self: Node = this;
