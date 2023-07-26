@@ -6,6 +6,11 @@ import { UIEmbedPanel3 } from "./embeds/UIEmbedPanel3";
 const { ccclass } = _decorator;
 let { prefabUrl } = tnt._decorator;
 
+declare global {
+
+    interface EmbedWindowOptions {
+    }
+}
 
 @prefabUrl("window-example#prefabs/EmbedWindow")
 @ccclass('EmbedWindow')

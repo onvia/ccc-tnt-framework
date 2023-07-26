@@ -13,34 +13,44 @@ export class WindowScene extends tnt.SceneBase {
     onEnterTransitionFinished(sceneName?: string): void {
 
         this.registerButtonClick("btnPause", () => {
-            tnt.uiMgr.showWindow('PauseWindow', { pauseBgm: true });
+            tnt.uiMgr.showWindow('PauseWindow');
         })
 
         this.registerButtonClick("btnWindowEmbed", () => {
-            
-            tnt.uiMgr.showWindow('EmbedWindow');
+
+            tnt.uiMgr.showWindow('EmbedWindow', (win) => {
+                console.log(`WindowScene->EmbedWindow `, win.name);
+
+            });
         });
 
         this.registerButtonClick("btnAutoCloseWindow", () => {
-            tnt.uiMgr.showWindow("AutoCloseWindow");
+            tnt.uiMgr.showWindow("AutoCloseWindow", null, {
+                isRequireMask: false,
+                callback: (param) => {
+                    console.log(`WindowScene->AutoCloseWindow `, param.name);
+
+                },
+            });
         });
 
         this.registerButtonClick("btnVictory", () => {
-            tnt.uiMgr.showWindowByClass(VictoryWindow);
+            tnt.uiMgr.showWindow("VictoryWindow", { 'awards': [1] }, (win) => {
+                console.log(`WindowScene->VictoryWindow `, win.name);
+            });
         });
 
-        this.registerButtonClick("btnMsg",()=>{
-            tnt.uiMgr.showWindow('DialogWindow',{'text': "通过按钮打开的信息弹窗"})
+        this.registerButtonClick("btnMsg", () => {
+            tnt.uiMgr.showWindow('DialogWindow', { 'text': "通过按钮打开的信息弹窗" })
         });
-
 
         // ------------  使用弹窗队列  -------------
         // 效果为  在进入 WindowScene 之后自动弹出 PauseWindow，关闭后显示 DialogWindow，最后显示 VictoryWindow
         //在队列后追加弹窗
-        tnt.uiMgr.addToQueue('PauseWindow', { 'pauseBgm': true }, () => {
+        tnt.uiMgr.addToQueue('PauseWindow', () => {
             // 插入到队列最前面，这里会在  PauseWindow  关闭之后显示 "DialogWindow"
-            tnt.uiMgr.insertToQueue('DialogWindow', {'text': "自动打开的信息弹窗"},(_window)=>{
-                console.log(`WindowScene->显示 `,_window.name);
+            tnt.uiMgr.insertToQueue('DialogWindow', { 'text': "自动打开的信息弹窗" }, (_window) => {
+                console.log(`WindowScene->显示 `, _window.name);
             });
         });
         //在队列后追加弹窗
@@ -52,11 +62,11 @@ export class WindowScene extends tnt.SceneBase {
         });
 
 
-        let timerId = tnt.timerMgr.startTimer(()=>{  },this);
+        let timerId = tnt.timerMgr.startTimer(() => { }, this);
 
         tnt.timerMgr.removeTimer(timerId);
 
-        
+
     }
 
     onExit(): void {

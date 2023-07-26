@@ -46,6 +46,9 @@ class UIWindowBase<Options = any> extends tnt.UIBase<Options> implements ILoader
     /** 能否穿透蒙版点击到下层 */
     protected _isPenetrate: boolean = false;
 
+    /** 是否需要遮罩层 */
+    public _isRequireMask: boolean = true;
+
     /** 释放弹窗预制体 */
     public _isReleaseWindowPrefab: boolean = true;
 
@@ -391,6 +394,16 @@ class UIWindowBase<Options = any> extends tnt.UIBase<Options> implements ILoader
      */
     public setPenetrate(enable: boolean = true) {
         this._isPenetrate = enable;
+    }
+
+    /**
+     * 是否需要遮罩层，如果需要则会通过遮罩控制器进行创建
+     *
+     * @param {boolean} [enable=true]
+     * @memberof UIWindowBase
+     */
+    public setRequireMask(enable: boolean = true) {
+        this._isRequireMask = enable;
     }
 
     /** 关闭窗口 */

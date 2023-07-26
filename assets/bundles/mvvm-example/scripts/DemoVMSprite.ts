@@ -3,7 +3,7 @@ const { ccclass, inspector, property } = _decorator;
 const { node, label, button } = tnt._decorator;
 
 @ccclass('DemoVMSprite')
-export default class DemoVMSprite extends tnt.SceneBase implements IMVVMObject {
+export class DemoVMSprite extends tnt.SceneBase implements IMVVMObject {
 
     @node()
     icon: Sprite = null;

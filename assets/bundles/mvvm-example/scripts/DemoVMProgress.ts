@@ -4,7 +4,7 @@ const { ccclass, inspector, property } = _decorator;
 const { node, label, button, slider, progressBar, editBox } = tnt._decorator;
 
 @ccclass('DemoVMProgress')
-export default class DemoVMProgress extends tnt.SceneBase implements IMVVMObject {
+export class DemoVMProgress extends tnt.SceneBase implements IMVVMObject {
 
 
     @label()

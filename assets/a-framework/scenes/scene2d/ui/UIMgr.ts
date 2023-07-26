@@ -6,7 +6,7 @@ const { ccclass } = _decorator;
 const { pluginMgr } = tnt._decorator;
 
 // type UIItemShowCallback<T extends KeyGlobalUIType> = (window: Key_Global_UI_Item_Ctor<T>)=> void;
-type WindowShownCallback<T extends Key_Global_Window_Type> = (window: Key_Global_UI_Window_Ctor<T>) => void;
+type WindowShownCallback<T extends Key_Global_Window_Type> = Runnable1<Key_Global_UI_Window_Ctor<T>>;
 
 // type ShowPluginCallback<T extends tnt.UIPanel> = (ins: T,isInit: boolean)=> void;
 type UIQueueRemoveFilter<T extends Key_Global_Window_Type> = (opts: UIQueueOpts<T>, index: number, arr: Array<UIQueueOpts<T>>) => boolean;
@@ -36,14 +36,9 @@ declare global {
         /** 预制体路径参数 */
         ctor: T;
 
-        // ui 参数
-        uiOptions?: Key_Global_UI_Window_Options<T>;
-
-        /** ui 加载完成的回调 */
-        callback?: (uiView: Key_Global_UI_Window_Ctor<T>) => void;
+        data?: Key_Global_UI_Window_Options<T>;
+        options?: UIOptions1<T>;
     }
-
-
 
     /** 背景层 */
     interface IMaskLayerController {
@@ -71,6 +66,17 @@ interface StageWindow {
     currentShowUI: Record<string, Array<tnt.UIWindowBase>>;
 }
 
+interface UIOptions1<T extends Key_Global_Window_Type> {
+    /** 是否使用遮罩 */
+    isRequireMask?: boolean;
+    callback?: WindowShownCallback<T>;
+}
+
+interface UIOptions2<T> {
+    /** 是否使用遮罩 */
+    isRequireMask?: boolean;
+    callback?: Runnable1<T>;
+}
 
 
 function updateFrameSize(node: Node) {
@@ -294,50 +300,59 @@ export class UIMgr extends tnt.EventMgr implements IPluginMgr {
         return node;
     }
 
-    /**
-     * 依次显示的界面队列
-     * @param opts 
-     */
-    public addToQueue<T extends Key_Global_Window_Type>(ctor: T)
-    public addToQueue<T extends Key_Global_Window_Type>(ctor: T, uiOptions?: Key_Global_UI_Window_Options<T>)
-    public addToQueue<T extends Key_Global_Window_Type>(ctor: T, callback: WindowShownCallback<T>)
-    public addToQueue<T extends Key_Global_Window_Type>(ctor: T, uiOptions?: Key_Global_UI_Window_Options<T>, callback?: WindowShownCallback<T>)
-    public addToQueue<T extends Key_Global_Window_Type>(ctor: T, uiOptions?: Key_Global_UI_Window_Options<T> | WindowShownCallback<T>, callback?: WindowShownCallback<T>) {
-        if (!callback && typeof uiOptions !== "object") {
-            callback = uiOptions;
-            uiOptions = null;
-        }
-        let opts: UIQueueOpts<T> = {
-            ctor,
-            uiOptions,
-            callback
-        };
+    /** 依次显示的界面队列 */
+    public addToQueue<T extends Key_Global_Window_Type>(ctor: T, data?: Key_Global_UI_Window_Options<T>)
+    public addToQueue<T extends Key_Global_Window_Type>(ctor: T, callback?: WindowShownCallback<T>)
+    public addToQueue<T extends Key_Global_Window_Type>(ctor: T, data?: Key_Global_UI_Window_Options<T>, options?: UIOptions1<T>)
+    public addToQueue<T extends Key_Global_Window_Type>(ctor: T, data?: Key_Global_UI_Window_Options<T>, callback?: WindowShownCallback<T>)
+    public addToQueue<T extends Key_Global_Window_Type>(ctor: T, data?: Key_Global_UI_Window_Options<T> | WindowShownCallback<T>, optionsOrCallback?: UIOptions1<T> | WindowShownCallback<T>) {
+
+        let opts = this._parseQueueArgs(ctor, data, optionsOrCallback);
+
         this._uiQueue.push(opts);
 
         // 预加载
-        this._preloadQueueWindow(opts.ctor, opts.uiOptions);
+        this._preloadQueueWindow(opts.ctor, opts.data);
+
     }
 
-    /**
-     * 插入到队列
-     * @param opts 
-     */
-    public insertToQueue<T extends Key_Global_Window_Type>(ctor: T)
-    public insertToQueue<T extends Key_Global_Window_Type>(ctor: T, uiOptions?: Key_Global_UI_Window_Options<T>)
-    public insertToQueue<T extends Key_Global_Window_Type>(ctor: T, callback: WindowShownCallback<T>)
-    public insertToQueue<T extends Key_Global_Window_Type>(ctor: T, uiOptions?: Key_Global_UI_Window_Options<T>, callback?: WindowShownCallback<T>)
-    public insertToQueue<T extends Key_Global_Window_Type>(ctor: T, uiOptions?: Key_Global_UI_Window_Options<T> | WindowShownCallback<T>, callback?: WindowShownCallback<T>) {
-        if (!callback && typeof uiOptions !== "object") {
-            callback = uiOptions;
-            uiOptions = null;
-        }
+    /** 插入到队列 */
+    public insertToQueue<T extends Key_Global_Window_Type>(ctor: T, data?: Key_Global_UI_Window_Options<T>)
+    public insertToQueue<T extends Key_Global_Window_Type>(ctor: T, callback?: WindowShownCallback<T>)
+    public insertToQueue<T extends Key_Global_Window_Type>(ctor: T, data?: Key_Global_UI_Window_Options<T>, options?: UIOptions1<T>)
+    public insertToQueue<T extends Key_Global_Window_Type>(ctor: T, data?: Key_Global_UI_Window_Options<T>, callback?: WindowShownCallback<T>)
+    public insertToQueue<T extends Key_Global_Window_Type>(ctor: T, data?: Key_Global_UI_Window_Options<T> | WindowShownCallback<T>, optionsOrCallback?: UIOptions1<T> | WindowShownCallback<T>) {
+        let opts = this._parseQueueArgs(ctor, data, optionsOrCallback);
+
+        this._uiQueue.unshift(opts);
+
+        // 预加载
+        this._preloadQueueWindow(opts.ctor, opts.data);
+    }
+
+    private _parseQueueArgs<T extends Key_Global_Window_Type>(ctor: T, data?: Key_Global_UI_Window_Options<T> | WindowShownCallback<T>, optionsOrCallback?: UIOptions1<T> | WindowShownCallback<T>) {
+
         let opts: UIQueueOpts<T> = {
             ctor,
-            uiOptions,
-            callback
+            options: Object.create(null)
         };
-        this._uiQueue.unshift(opts);
-        this._preloadQueueWindow(opts.ctor, opts.uiOptions);
+
+        if (optionsOrCallback) {
+            opts.data = data;
+            if (typeof optionsOrCallback == "function") {
+                opts.options.callback = optionsOrCallback;
+            } else {
+                opts.options = optionsOrCallback;
+            }
+        } else if (typeof data !== 'undefined') {
+            if (typeof data !== 'function') {
+                opts.data = data;
+            } else {
+                opts.options.callback = data as any
+            }
+        }
+
+        return opts;
     }
 
     /**
@@ -372,14 +387,16 @@ export class UIMgr extends tnt.EventMgr implements IPluginMgr {
             return;
         }
         let ui = this._uiQueue.shift();
-        this.showWindow(ui.ctor, ui.uiOptions, (view) => {
+        let _callback = ui.options.callback;
+        ui.options.callback = (view) => {
             if (view) {
-                ui.callback && ui.callback(view);
+                _callback?.(view);
                 view.addCloseListener(() => {
                     this.showQueue(callback);
                 });
             }
-        });
+        }
+        this.showWindow(ui.ctor, ui.data, ui.options);
     }
 
     /**
@@ -406,12 +423,14 @@ export class UIMgr extends tnt.EventMgr implements IPluginMgr {
      *
      * @template T
      * @param {T} clazz
-     * @param {Key_Global_UI_Window_Options<T>} [options]
-     * @param {WindowShownCallback<T>} [callback]
-     * @return {*} 
+     * @param {Key_Global_UI_Window_Options<T>} [data]
      * @memberof UIMgr
      */
-    public showWindow<T extends Key_Global_Window_Type>(clazz: T, options?: Key_Global_UI_Window_Options<T>, callback?: WindowShownCallback<T>) {
+    public showWindow<T extends Key_Global_Window_Type>(clazz: T, data?: Key_Global_UI_Window_Options<T>)
+    public showWindow<T extends Key_Global_Window_Type>(clazz: T, callback?: WindowShownCallback<T>)
+    public showWindow<T extends Key_Global_Window_Type>(clazz: T, data?: Key_Global_UI_Window_Options<T>, options?: UIOptions1<T>)
+    public showWindow<T extends Key_Global_Window_Type>(clazz: T, data?: Key_Global_UI_Window_Options<T>, callback?: WindowShownCallback<T>)
+    public showWindow<T extends Key_Global_Window_Type>(clazz: T, data?: Key_Global_UI_Window_Options<T> | WindowShownCallback<T>, optionsOrCallback?: UIOptions1<T> | WindowShownCallback<T>) {
         let _clazz: GConstructor<tnt.UIWindowBase> = null;
 
         let name = "";
@@ -431,34 +450,49 @@ export class UIMgr extends tnt.EventMgr implements IPluginMgr {
             }
         }
 
-        this.showWindowByClass(_clazz, options, callback);
+        this.showWindowByClass(_clazz, data, optionsOrCallback);
     }
 
-    /**
-     * 显示弹窗
-     *
-     * @template Options
-     * @template T
-     * @param {GConstructor<T>} clazz
-     * @param {Options} [options]
-     * @param {(window: T) => void} [callback]
-     * @return {*} 
-     * @memberof UIMgr
-     */
-    public showWindowByClass<Options, T extends tnt.UIWindowBase<Options> = any>(clazz: GConstructor<T>, options?: Options, callback?: (window: T) => void) {
-        let _clazz: GConstructor<tnt.UIWindowBase<Options>> = clazz;
+    public showWindowByClass<Data, T extends tnt.UIWindowBase<Data> = any>(clazz: GConstructor<T>, data?: Data)
+    public showWindowByClass<Data, T extends tnt.UIWindowBase<Data> = any>(clazz: GConstructor<T>, callback?: Runnable1<T>)
+    public showWindowByClass<Data, T extends tnt.UIWindowBase<Data> = any>(clazz: GConstructor<T>, data?: Data, options?: UIOptions2<T>)
+    public showWindowByClass<Data, T extends tnt.UIWindowBase<Data> = any>(clazz: GConstructor<T>, data?: Data, callback?: Runnable1<T>)
+    public showWindowByClass<Data, T extends tnt.UIWindowBase<Data> = any>(clazz: GConstructor<T>, data?: Data, optionsOrCallback?: UIOptions2<T> | Runnable1<T>)
+    public showWindowByClass<Data, T extends tnt.UIWindowBase<Data> = any>(clazz: GConstructor<T>, data?: Data, optionsOrCallback?: UIOptions2<T> | Runnable1<T>) {
+
+        let _data: Data = null;
+        let _options: UIOptions2<T> = Object.create(null);
+        if (optionsOrCallback) {
+            _data = data;
+            if (typeof optionsOrCallback == "function") {
+                _options = {
+                    callback: optionsOrCallback,
+                };
+            } else {
+                _options = optionsOrCallback;
+            }
+        } else if (typeof data !== 'undefined') {
+            if (typeof data !== 'function') {
+                _data = data;
+            } else {
+                _options = {
+                    callback: data as any,
+                }
+            }
+        }
+
+        let _clazz: GConstructor<tnt.UIWindowBase<Data>> = clazz;
         let name = js.getClassName(_clazz);
         if (!name) {
             console.error(`UIMgr-> `, _clazz, "没有设置 类名，请使用类装饰器 @ccclass('xxx') 注入类名");
             return;
         }
 
-
         if (this.isShowing(name)) {
             let _window = this.getWindow(name);
             if (_window._isUniqueness) {
                 this._removeOutWindow(name);
-                callback?.(_window as any);
+                _options?.callback?.(_window as any);
                 return;
             }
         }
@@ -471,11 +505,16 @@ export class UIMgr extends tnt.EventMgr implements IPluginMgr {
         let windowName = name;
         this.showBlockInput();
 
-        this.maskLayerController.onWindowCreateBefore(windowName);
+        let isRequireMask = _options.isRequireMask ?? true;
+        if (isRequireMask) {
+            this.maskLayerController.onWindowCreateBefore(windowName);
+        }
 
-        tnt.resourcesMgr.loadPrefabNode(this.loader, _clazz, options).then((_window) => {
+        tnt.resourcesMgr.loadPrefabNode(this.loader, _clazz, _data).then((_window) => {
             _window.root = rootNodePool.get();
-            _window.mask = this.maskLayerController.onWindowCreateAfter(_window);
+            if (isRequireMask && _window._isRequireMask) {
+                _window.mask = this.maskLayerController.onWindowCreateAfter(_window);
+            }
             // let uiOpacity = view.mask.getComponent(UIOpacity);
             // uiOpacity.opacity = 0; // 在动态加载阶段不显示蒙版
             if (_window.mask) {
@@ -496,10 +535,9 @@ export class UIMgr extends tnt.EventMgr implements IPluginMgr {
             // view.onStart(); // 被 start 调用了
             // uiOpacity.opacity = view._maskOpacity;
             this._addToMgr(_window);
-            callback?.(_window as any);
+            _options?.callback?.(_window as any);
         });
     }
-
 
     private _removeOutWindow<T extends tnt.UIWindowBase>(clazz: GConstructor<T> | string) {
         let name: string = this._getClassName(clazz);
@@ -1112,6 +1150,17 @@ export class UIMgr extends tnt.EventMgr implements IPluginMgr {
         return uiRoot;
     }
 
+    /** 获取超类 */
+    public getSuperWindow(clazz: GConstructor<tnt.UIWindowBase>): GConstructor {
+        let superClass = js.getSuper(clazz);
+        while (superClass != null) {
+            if (superClass == tnt.UIWindow || superClass == tnt.UIPopup) {
+                break;
+            }
+            superClass = js.getSuper(superClass);
+        }
+        return superClass;
+    }
     private _onUIMgrReInit() {
         UIMgr.___plugins.forEach((listener) => {
             listener.onUIMgrReInit();
@@ -1171,14 +1220,24 @@ class DefaultMaskLayerController implements IMaskLayerController {
 
     }
     onWindowCreateBefore(windowName: string) {
-
+        let clazz = js.getClassByName(windowName);
+        let superClass = tnt.uiMgr.getSuperWindow(clazz as any);
+        if (superClass instanceof tnt.UIWindow) {
+            return;
+        }
+        // ...
+        // ...
     }
     onWindowCreateAfter(view: tnt.UIWindowBase<any>): Node {
-
+        if (view instanceof tnt.UIWindow) {
+            return null;
+        }
         return maskNodePool.get();
     }
     onWindowDestroy(view: tnt.UIWindowBase<any>, mask: Node) {
-        maskNodePool.put(mask);
+        if (mask) {
+            maskNodePool.put(mask);
+        }
     }
 }
 
