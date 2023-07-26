@@ -1,5 +1,5 @@
 
-import { _decorator, Node, director, Director } from 'cc';
+import { _decorator, Node, director, Director, isValid } from 'cc';
 const { ccclass } = _decorator;
 
 
@@ -172,7 +172,7 @@ class RedPointMgr extends tnt.EventMgr {
             return;
         }
         let display = this._redPointDisplayMap.get(id);
-        if (display && display.isValid && display.node.isValid) {
+        if (display && isValid(display, true) && isValid(display.node, true)) {
             console.warn(`RedPointMgr-> 当前 [${id}] 红点已存在红点显示组件`);
             return;
         }
@@ -184,13 +184,15 @@ class RedPointMgr extends tnt.EventMgr {
         }
 
         display = await tnt.resourcesMgr.addPrefabNode(tnt.RedPoint.loaderKey, clazz, pointRoot);
-        if (pointRoot && pointRoot.isValid) {
-            this._redPointDisplayMap.set(id, display);
-            display.updateShowType(redPoint.showType);
-            this._updateDisplay(id, redPoint, display);
-        } else {
-            display.node.destroy();
-            display.destroy();
+        if (isValid(display, true)) {
+            if (pointRoot && isValid(pointRoot, true)) {
+                this._redPointDisplayMap.set(id, display);
+                display.updateShowType(redPoint.showType);
+                this._updateDisplay(id, redPoint, display);
+            } else {
+                display.node.destroy();
+                display.destroy();
+            }
         }
     }
 
@@ -363,14 +365,14 @@ class RedPointMgr extends tnt.EventMgr {
     }
     private _onChangeShowType(id: number) {
         let display = this._redPointDisplayMap.get(id);
-        if (display && display.isValid) {
+        if (display && isValid(display, true)) {
             let redPoint = this._redPointMap.get(id);
             redPoint && display.updateShowType(redPoint.showType);
         }
     }
 
     private _updateDisplay(id: number, redPoint: tnt.RedPoint, display: tnt.RedPointComp) {
-        if (display.isValid && display.node.isValid) {
+        if (isValid(display, true) && isValid(display.node, true)) {
             display.updateCount(redPoint.count);
             display.updateDisplay(redPoint.enabled && redPoint.count > 0); // 红点启用并且数量大于0
 
@@ -381,7 +383,7 @@ class RedPointMgr extends tnt.EventMgr {
 
     private _removeDisplay(id: number, display: tnt.RedPointComp) {
         if (display) {
-            if (display.isValid && display.node.isValid) {
+            if (isValid(display, true) && isValid(display.node, true)) {
                 display.node.removeFromParent();
                 display.node.destroy();
                 display.destroy();
