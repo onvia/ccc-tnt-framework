@@ -2,126 +2,139 @@ import { Node, js, Toggle, Animation, Button, Canvas, EditBox, Graphics, Label, 
 import { EDITOR } from "cc/env";
 
 if (!EDITOR) {
-    var componentMap = {
-        "graphics": Graphics,
-        "label": Label,
-        "richText": RichText,
-        "sprite": Sprite,
-        "button": Button,
-        "canvas": Canvas,
-        "editBox": EditBox,
-        "layout": Layout,
-        "pageView": PageView,
-        "progressBar": ProgressBar,
-        "scrollView": ScrollView,
-        "slider": Slider,
-        "toggle": Toggle,
-        "animation": Animation,
-        "skeleton": Skeleton,
-        "widget": Widget,
-        "uiOpacity": UIOpacity,
-        "uiTransform": UITransform,
-    };
+    if (!Node.prototype["__$cc-extension$__"]) {
+        Node.prototype["__$cc-extension$__"] = true;
 
-    Object.defineProperty(Node.prototype, "__nodeCaches__", {
-        get: function () {
-            if (!this.__nodeCache) {
-                this.__nodeCache = {
-                    componentMap: new Map(),
-                };
-            }
-            return this.__nodeCache;
-        },
-    });
+        var componentMap = {
+            "graphics": Graphics,
+            "label": Label,
+            "richText": RichText,
+            "sprite": Sprite,
+            "button": Button,
+            "canvas": Canvas,
+            "editBox": EditBox,
+            "layout": Layout,
+            "pageView": PageView,
+            "progressBar": ProgressBar,
+            "scrollView": ScrollView,
+            "slider": Slider,
+            "toggle": Toggle,
+            "animation": Animation,
+            "skeleton": Skeleton,
+            "widget": Widget,
+            "uiOpacity": UIOpacity,
+            "uiTransform": UITransform,
+        };
 
-    for (const key in componentMap) {
-        Object.defineProperty(Node.prototype, key, {
+        Object.defineProperty(Node.prototype, "__nodeCaches__", {
             get: function () {
-                let tmp = this.__nodeCaches__.componentMap.get(key);
-                if (!tmp) {
-                    tmp = this.getComponent(componentMap[key]);
-                    this.__nodeCaches__.componentMap.set(key, tmp);
+                if (!this.__nodeCache) {
+                    this.__nodeCache = {
+                        componentMap: new Map(),
+                    };
                 }
-                return tmp;
-            },
-            set: function (value) {
-                if (value) {
-                    this.__nodeCaches__.componentMap.set(key, value);
-                } else {
-                    this.__nodeCaches__.componentMap.delete(key);
-                }
+                return this.__nodeCache;
             },
         });
-    }
 
-    
-    Object.defineProperty(UITransform.prototype, 'priority', {
-        get: function () {
-            return this.__priority || 0;
-        },
-        set: function (value: number) {
-            if (!this.isValid) {
-                return;
-            }
-            this.__priority = value;
-            if (!this.node.parent) {
-                return;
-            }
-            this.node.parent._$50priorityDirty = true;
+        for (const key in componentMap) {
+            Object.defineProperty(Node.prototype, key, {
+                get: function () {
+                    let tmp = this.__nodeCaches__.componentMap.get(key);
+                    if (!tmp) {
+                        tmp = this.getComponent(componentMap[key]);
+                        this.__nodeCaches__.componentMap.set(key, tmp);
+                    }
+                    return tmp;
+                },
+                set: function (value) {
+                    if (value) {
+                        this.__nodeCaches__.componentMap.set(key, value);
+                    } else {
+                        this.__nodeCaches__.componentMap.delete(key);
+                    }
+                },
+            });
         }
-    });
 
-    Object.defineProperty(Node.prototype, '_$50priorityDirty', {
-        set(v: boolean) {
-            if (this.__$50priorityDirty) {
-                return;
-            }
-            this.__$50priorityDirty = true;
 
-            this._$50_event_before_commit_priority_callback = () => {
-                let priorityAs = [...this.children].sort((a: Node, b: Node) => a.uiTransform.priority - b.uiTransform.priority);
-                priorityAs.forEach((value, index) => {
-                    value.setSiblingIndex(index);
-                });
-                this.__$50priorityDirty = false;
-                this._$50_event_before_commit_priority_callback = null;
+        Object.defineProperty(UITransform.prototype, 'priority', {
+            get: function () {
+                return this.__priority || 0;
+            },
+            set: function (value: number) {
+                if (!this.isValid) {
+                    return;
+                }
+                this.__priority = value;
+                if (!this.node.parent) {
+                    return;
+                }
+                this.node.parent._$50priorityDirty = true;
             }
-            
-            director.once(Director.EVENT_BEFORE_COMMIT, this._$50_event_before_commit_priority_callback, this);
-        },
-        enumerable: false,
-        configurable: true
-    });
+        });
+
+        Object.defineProperty(Node.prototype, '_$50priorityDirty', {
+            set(v: boolean) {
+                if (this.__$50priorityDirty) {
+                    return;
+                }
+                this.__$50priorityDirty = true;
+
+                this._$50_event_before_commit_priority_callback = () => {
+                    let priorityAs = [...this.children].sort((a: Node, b: Node) => {
+                        let uiTransformA = a.uiTransform;
+                        let uiTransformB = b.uiTransform;
+                        if (!uiTransformA || !uiTransformB) {
+                            return 0;
+                        }
+                        return uiTransformA.priority - uiTransformB?.priority;
+                    });
+                    priorityAs.forEach((value, index) => {
+                        value.setSiblingIndex(index);
+                    });
+                    this.__$50priorityDirty = false;
+                    this._$50_event_before_commit_priority_callback = null;
+                }
+
+                director.once(Director.EVENT_BEFORE_COMMIT, this._$50_event_before_commit_priority_callback, this);
+            },
+            enumerable: false,
+            configurable: true
+        });
+
+
+
+        js.mixin(Node.prototype, {
+            clearNodeCache() {
+                this.__nodeCaches__.componentMap.clear();
+            }
+        })
+
+        js.mixin(Vec2.prototype, {
+            copyAsVec3() {
+                return new Vec3(this.x, this.y, 0);
+            }
+        });
+
+        js.mixin(Vec3.prototype, {
+            copyAsVec2() {
+                return new Vec2(this.x, this.y);
+            }
+        });
+
+        js.mixin(Button.prototype, {
+            setSoundName(soundName: string) {
+                this.__$soundName = soundName;
+            }
+        })
+    }
 }
-
-js.mixin(Node.prototype, {
-    clearNodeCahce() {
-        this.__nodeCaches__.componentMap.clear();
-    }
-})
-
-js.mixin(Vec2.prototype, {
-    copyAsVec3() {
-        return new Vec3(this.x, this.y, 0);
-    }
-});
-
-js.mixin(Vec3.prototype, {
-    copyAsVec2() {
-        return new Vec2(this.x, this.y);
-    }
-});
-
-js.mixin(Button.prototype, {
-    setSoundName(soundName: string) {
-        this.__$soundName = soundName;
-    }
-})
 declare module "cc" {
 
-    export interface Button{
+    export interface Button {
         __$soundName: string;
-        
+
     }
     export interface Node {
 
@@ -144,7 +157,7 @@ declare module "cc" {
         uiOpacity: UIOpacity,
         uiTransform: UITransform,
         setSoundName(soundName: string);
-        clearNodeCahce();
+        clearNodeCache();
     }
 
     export interface Vec2 {
