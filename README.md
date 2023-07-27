@@ -70,8 +70,8 @@ https://onvia.gitlab.io/ccc-demo/tnt-example/
 
 
 ### 感谢
-[Preview 插件](https://github.com/kaxifakl/cocos-preview) 由 [卡西法](https://github.com/kaxifakl) 提供
-
+[Preview 插件](https://github.com/kaxifakl/cocos-preview) 由 [@卡西法](https://github.com/kaxifakl) 提供  
+[psd2ui 插件 Mac 版](https://gitee.com/onvia/ccc-tnt-psd2ui) 由 [@bophie](https://gitee.com/bophie) 提供部分支持
 
 ### QQ群
 - 858173205
