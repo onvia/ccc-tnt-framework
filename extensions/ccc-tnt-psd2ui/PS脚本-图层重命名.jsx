@@ -48,6 +48,37 @@ text:'图层批量重命名 ',\
 															dropdownlist:DropDownList { alignment:'left', itemSize: [34,16] },\
 													}, \
 												}\
+										prefabGroup: Panel{orientation: 'column',alignChildren:'top',text: '属性预设',\
+                                                    prefab1: Group { orientation: 'row', alignment:'left', \
+                                                            btnButton: Button { text:'btn',size:{width:72,height:22}}, \
+                                                            btnToggle: Button { text:'toggle'} \
+                                                            btnCheck: Button { text:'toggle@check'} \
+                                                    }, \
+                                                    prefab2: Group { orientation: 'row',alignment:'left', \
+                                                            btnPng9: Button { text:'.9',size:{width:60,height:22}} \
+                                                            btnProgressBar: Button { text:'progressBar'} \
+                                                            btnBar: Button { text:'progressBar@bar'} \
+                                                    }, \
+                                                    prefab3: Group { orientation: 'row',alignment:'left', \
+                                                            btnSize: Button { text:'size'} \
+                                                            btnScale: Button { text:'scale'} \
+                                                            btnFull: Button { text:'full'} \
+                                                    }, \
+                                                    prefab4: Group { orientation: 'row', alignment:'left',\
+                                                            btnFlip: Button { text:'flip'} \
+                                                            btnFlipX: Button { text:'flipX'} \
+                                                            btnFlipY: Button { text:'flipY'} \
+                                                    }, \
+                                                    prefab5: Group { orientation: 'row',alignment:'left', \
+                                                            btnIgnore: Button { text:'ignore'} \
+                                                            btnIgnoreImg: Button { text:'ignoreimg'} \
+                                                            btnIgnoreNode: Button { text:'ignorenode'} \
+                                                    }, \
+                                                    prefab6: Group { orientation: 'row', alignment:'left',\
+                                                            btnImg: Button { text:'img'} \
+                                                            btnAR: Button { text:'ar'} \
+                                                    }, \
+												}\
 									  }, \
 				repGroup: Group { orientation: 'column',alignChildren:'left',text: '命名规则',\
 										helpTip: Group{orientation: 'column',alignChildren:'left',\
@@ -110,7 +141,9 @@ text:'图层批量重命名 ',\
 }";
 
 
-
+                                                    
+ var prefabBtns = [['btnButton','@btn'],['btnToggle','@toggle'],['btnCheck','@check'],['btnPng9','@.9{l:0,r:0,b:0,t:0}'],['btnProgressBar','@progressBar'],['btnBar','@bar'],['btnSize','@size{w:100,h:100}'],['btnScale','@scale{x:1,y:1}'],['btnFull','@full'],['btnFlip','@flip{bind: 0, x: 0, y: 0}'],['btnFlipX','@flipX{bind: 0}'],['btnFlipY','@flipY{bind: 0}'],['btnIgnore','@ignore'],['btnIgnoreImg','@ignoreimg'],['btnIgnoreNode','@ignorenode'],['btnImg','@img{name: *,id: 0,bind: 0}'],['btnAR','@ar{x:0.5,y:0.5}']];
+                                                    
 app.bringToFront();
 if (documents.length == 0) {
     alert("没有可处理的文档");
@@ -182,15 +215,35 @@ function initWin(){
         win.close();
     }
     win.buttons.btnOK.onClick = function () {
+        var isSucc = false;
          if(renameall.visible){
-             exeRename();
+             isSucc  = exeRename();
          }else if(add_del.visible){
-             exeAdd_Del();
+             isSucc  = exeAdd_Del();
          }else if(repGroup.visible){
-             exeReplace();
+             isSucc  = exeReplace();
           }
-        win.close();
+      
+        isSucc  && win.close();
     }
+    
+
+    for(var i=0;i<prefabBtns.length;i++){
+        var prefab = prefabBtns[i];
+        var btn = prefab[0];
+        var property = prefab[1];
+        var fun = function(property){
+            return function(){
+                    if(renameall.name.edit.text.indexOf(property) != -1){
+                        alert ("请勿输入相同声明");
+                        return;
+                     }
+                    renameall.name.edit.text += property;
+                }
+            }
+        renameall.prefabGroup["prefab"+(Math.floor(i/3)+1)][btn].onClick =fun(property);
+    }
+
     
     win.center();
     win.show();
@@ -203,7 +256,10 @@ function exeRename(){
     var beginIds = Number(renameall.paramGroup.beginId.edit.text);
     var incremental =Number(renameall.paramGroup.incremental.edit.text);
     var bits = Number(renameall.paramGroup.bits.dropdownlist.selection) + 1;
-    
+    if(name == ""){
+        alert("空文本无法使用");
+        return false;
+        }
     if(win.group.mode.selected.value){
         layers = getSelectedLayers(); 
     }else{
@@ -221,27 +277,28 @@ function exeRename(){
         newname = newname.replace (reg3, "");//删除空格
         layers[i].name = newname ;
     }
+return true;
 }
 function exeReplace(){
     var layers = []; 
     var repGroup = win.group.allGroup.repGroup;
     var oldstr = repGroup.oldStr.edit.text;
     var newstr = repGroup.newStr.edit.text;
-    
-    
-     if(win.group.mode.selected.value){
-        layers = getSelectedLayers(); 
-    }else{
-        getLayers(app.activeDocument, layers);
-    }
+        
       var oldstrs= new Array(); //定义一数组 
       oldstrs = oldstr.split (",");
       var newstrs= new Array(); //定义一数组 
       newstrs = newstr.split (",");
       if(oldstrs.length != newstrs.length){
                 alert ("新字符的数量必须和旧字符串的数量一致");
-            return;          
+            return false;          
         }
+    
+     if(win.group.mode.selected.value){
+        layers = getSelectedLayers(); 
+    }else{
+        getLayers(app.activeDocument, layers);
+    }
      for (var i = 0; i < layers.length; i++) {
             var newname = layers[i].name;
             
@@ -255,6 +312,7 @@ function exeReplace(){
             //newname = newname.replace (reg, newstr);//替换字符
             layers[i].name = newname ;
         }
+    return true;
 }
 function exeAdd_Del(){
     var layers = []; 
@@ -300,6 +358,7 @@ function exeAdd_Del(){
         
         layers[i].name = newname ;
     }
+    return true;
 }
 //插入字符
 //参数说明：str表示原字符串变量，flg表示要插入的字符串，sn表示要插入的位置

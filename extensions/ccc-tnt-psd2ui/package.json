@@ -9,6 +9,7 @@
         "canvas": "^2.11.0",
         "fs-extra": "^10.1.0",
         "minimist": "^1.2.7",
+        "pinyin-pro": "^3.16.0",
         "vue": "^3.1.4"
     },
     "devDependencies": {

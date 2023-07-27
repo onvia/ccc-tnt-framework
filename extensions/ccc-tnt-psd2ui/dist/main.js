@@ -49,10 +49,12 @@ exports.methods = {
         let isForceImg = param.isForceImg;
         let isImgOnly = param.isImgOnly;
         let output = param.output;
+        let isPinyin = param.isPinyin;
         let options = {
             "project-assets": projectAssets,
             "cache": cacheFile,
             "engine-version": ENGINE_VER,
+            "pinyin": isPinyin,
         };
         let tasks = [];
         for (let i = 0; i < files.length; i++) {
@@ -82,15 +84,19 @@ exports.methods = {
             }
             _exec(args, tasks);
         }
-        await Promise.all(tasks);
-        genUUID2MD5Mapping();
-        console.log("[ccc-tnt-psd2ui]  psd 导出完成，输出位置为：", output ? output : "psd 同级目录");
+        Promise.all(tasks).then(() => {
+            genUUID2MD5Mapping();
+            console.log("[ccc-tnt-psd2ui]  psd 导出完成，输出位置为：", output ? output : "psd 同级目录");
+        }).catch((reason) => {
+            console.log("[ccc-tnt-psd2ui]  导出失败", reason);
+        }).finally(() => {
+        });
     },
 };
 function _exec(options, tasks) {
     let jsonContent = JSON.stringify(options);
     if (!fs_extra_1.default.existsSync(nodejsFile)) {
-        console.log(`main-> 没有批处理文件`, nodejsFile);
+        console.log(`[ccc-tnt-psd2ui] 没有内置 nodejs`, nodejsFile);
         return tasks;
     }
     // 处理权限问题
@@ -100,10 +106,11 @@ function _exec(options, tasks) {
             fs_extra_1.default.chmodSync(nodejsFile, 33261);
         }
     }
-    console.log("[ccc-tnt-psd2ui] 批处理命令参数：" + jsonContent);
+    console.log("[ccc-tnt-psd2ui] 命令参数：" + jsonContent);
+    console.log("[ccc-tnt-psd2ui] 命令执行中");
     let base64 = Buffer.from(jsonContent).toString("base64");
     tasks.push(new Promise((rs) => {
-        // console.log(`main-> `, `${nodejsFile} ${psd}` + ' ' + `--json ${base64}`);
+        // console.log(`[ccc-tnt-psd2ui] `, `${nodejsFile} ${psd}` + ' ' + `--json ${base64}`);
         exec(`${nodejsFile} ${psd}` + ' ' + `--json ${base64}`, { windowsHide: false }, (err, stdout, stderr) => {
             console.log("[ccc-tnt-psd2ui]:\n", stdout);
             if (stderr) {

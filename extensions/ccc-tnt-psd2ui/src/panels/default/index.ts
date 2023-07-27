@@ -15,8 +15,8 @@ const AssetDir = `${Editor.Project.path}/assets`;
 // Editor.Panel.define = Editor.Panel.define || function(options: any) { return options }
 module.exports = Editor.Panel.define({
     listeners: {
-        show() {  },
-        hide() {  },
+        show() { },
+        hide() { },
     },
     template: readFileSync(join(__dirname, '../../../static/template/default/index.html'), 'utf-8'),
     style: readFileSync(join(__dirname, '../../../static/style/default/index.css'), 'utf-8'),
@@ -37,6 +37,7 @@ module.exports = Editor.Panel.define({
                         isImgOnly: false,
                         isForceImg: false,
                         isProcessing: false,
+                        isPinyin: true,
                         outputPath: "",
                     };
                 },
@@ -64,9 +65,11 @@ module.exports = Editor.Panel.define({
                     onImgOnlyChanged() {
                         this.isImgOnly = !this.isImgOnly;
                     },
-
+                    onPinyinChanged() {
+                        this.isPinyin = !this.isPinyin;
+                    },
                     async onClickDropArea(event: any) {
-                        if(this.isProcessing){
+                        if (this.isProcessing) {
                             Editor.Dialog.warn("当前有正在处理的文件，请等待完成。\n如果已完成，请关闭 DOS 窗口。")
                             return;
                         }
@@ -95,7 +98,7 @@ module.exports = Editor.Panel.define({
                         // event.target.remove("drag-hovering")
                     },
                     async onDropFiles(event: any) {
-                      
+
                         let files: any[] = [];
                         [].forEach.call(event.dataTransfer.files, function (file: any) {
                             files.push(file.path);
@@ -103,8 +106,8 @@ module.exports = Editor.Panel.define({
                         this.processPsd(files);
                     },
 
-                    async processPsd(files: any[]){
-                        if(!files.length){
+                    async processPsd(files: any[]) {
+                        if (!files.length) {
                             return;
                         }
                         if (this.isProcessing) {
@@ -112,7 +115,7 @@ module.exports = Editor.Panel.define({
                             return;
                         }
                         this.isProcessing = true;
-                        await Editor.Message.request("ccc-tnt-psd2ui", "on-drop-file", { output: this.outputPath, files, isForceImg: this.isForceImg, isImgOnly: this.isImgOnly });
+                        await Editor.Message.request("ccc-tnt-psd2ui", "on-drop-file", { output: this.outputPath, files, isForceImg: this.isForceImg, isImgOnly: this.isImgOnly,isPinyin: this.isPinyin });
                         this.isProcessing = false;
                     }
                 },

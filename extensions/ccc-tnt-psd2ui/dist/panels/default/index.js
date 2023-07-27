@@ -32,6 +32,7 @@ module.exports = Editor.Panel.define({
                         isImgOnly: false,
                         isForceImg: false,
                         isProcessing: false,
+                        isPinyin: true,
                         outputPath: "",
                     };
                 },
@@ -57,6 +58,9 @@ module.exports = Editor.Panel.define({
                     },
                     onImgOnlyChanged() {
                         this.isImgOnly = !this.isImgOnly;
+                    },
+                    onPinyinChanged() {
+                        this.isPinyin = !this.isPinyin;
                     },
                     async onClickDropArea(event) {
                         if (this.isProcessing) {
@@ -102,7 +106,7 @@ module.exports = Editor.Panel.define({
                             return;
                         }
                         this.isProcessing = true;
-                        await Editor.Message.request("ccc-tnt-psd2ui", "on-drop-file", { output: this.outputPath, files, isForceImg: this.isForceImg, isImgOnly: this.isImgOnly });
+                        await Editor.Message.request("ccc-tnt-psd2ui", "on-drop-file", { output: this.outputPath, files, isForceImg: this.isForceImg, isImgOnly: this.isImgOnly, isPinyin: this.isPinyin });
                         this.isProcessing = false;
                     }
                 },
