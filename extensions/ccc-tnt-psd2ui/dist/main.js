@@ -17,6 +17,7 @@ const projectAssets = path_1.default.join(Editor.Project.path, "assets");
 const cacheFile = path_1.default.join(Editor.Project.path, "local", "psd-to-prefab-cache.json");
 const configFile = path_1.default.join(`${packagePath}/config/psd.config.json`);
 const nodejsFile = path_1.default.join(packagePath, "bin", `node${os_1.default.platform() == 'darwin' ? "" : ".exe"}`);
+const commandFile = path_1.default.join(packagePath, "libs", "psd2ui", `command.${os_1.default.platform() == 'darwin' ? "sh" : "bat"}`);
 const psd = path_1.default.join(packagePath, "libs", "psd2ui", "index.js");
 let uuid2md5 = new Map();
 let cacheFileJson = {};
@@ -105,14 +106,30 @@ function _exec(options, tasks) {
             console.log(`[ccc-tnt-psd2ui] 设置权限`);
             fs_extra_1.default.chmodSync(nodejsFile, 33261);
         }
+        if (fs_extra_1.default.statSync(commandFile).mode != 33261) {
+            console.log(`[ccc-tnt-psd2ui] commandFile 设置权限`);
+            fs_extra_1.default.chmodSync(commandFile, 33261);
+        }
     }
     console.log("[ccc-tnt-psd2ui] 命令参数：" + jsonContent);
     console.log("[ccc-tnt-psd2ui] 命令执行中");
     let base64 = Buffer.from(jsonContent).toString("base64");
     tasks.push(new Promise((rs) => {
         // console.log(`[ccc-tnt-psd2ui] `, `${nodejsFile} ${psd}` + ' ' + `--json ${base64}`);
-        exec(`${nodejsFile} ${psd}` + ' ' + `--json ${base64}`, { windowsHide: false }, (err, stdout, stderr) => {
+        // exec(`${nodejsFile} ${psd}` + ' ' + `--json ${base64}`, { windowsHide: false }, (err, stdout, stderr) => {
+        //     console.log("[ccc-tnt-psd2ui]:\n", stdout);
+        //     if (stderr) {
+        //         console.log(stderr);
+        //     }
+        //     rs();
+        // })
+        let shellScript = commandFile; // 你的脚本路径
+        let scriptArgs = `--json ${base64}`; // 你的脚本参数
+        let command = os_1.default.platform() == 'darwin' ? `osascript -e 'tell app "Terminal" to do script "cd ${process.cwd()}; ${shellScript} ${scriptArgs}"'`
+            : `start ${commandFile} ${scriptArgs}`;
+        exec(command, (error, stdout, stderr) => {
             console.log("[ccc-tnt-psd2ui]:\n", stdout);
+            console.log("[ccc-tnt-psd2ui]: 程序执行完后请手动关闭终端窗口");
             if (stderr) {
                 console.log(stderr);
             }
