@@ -46,6 +46,8 @@ module.exports = Editor.Panel.define({
                     if (str) {
                         this.outputPath = str;
                     }
+
+                    Editor.Message.broadcast("ccc-tnt-psd2ui:check-update");
                 },
                 beforeUnmount() {
                     localStorage.setItem(`${Editor.Project.name}_psd2ui_output`, this.outputPath);

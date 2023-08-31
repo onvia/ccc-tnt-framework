@@ -1,20 +1,26 @@
 {
     "package_version": 2,
-    "version": "1.0.0",
+    "version": "1.0.4",
     "name": "ccc-tnt-psd2ui",
     "description": "i18n:ccc-tnt-psd2ui.description",
     "main": "./dist/main.js",
+    "repository": {
+        "type": "git",
+        "url": "https://gitee.com/onvia/ccc-tnt-psd2ui"
+    },
     "dependencies": {
         "ag-psd": "^15.0.0",
         "canvas": "^2.11.0",
         "fs-extra": "^10.1.0",
         "minimist": "^1.2.7",
+        "node-fetch": "^2.7.0",
         "pinyin-pro": "^3.16.0",
         "vue": "^3.1.4"
     },
     "devDependencies": {
         "@types/fs-extra": "^9.0.5",
         "@types/node": "^16.0.1",
+        "@types/node-fetch": "^2.6.4",
         "typescript": "^4.3.4"
     },
     "panels": {

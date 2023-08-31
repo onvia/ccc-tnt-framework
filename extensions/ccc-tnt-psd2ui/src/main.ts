@@ -1,22 +1,25 @@
-//@ts-ignore
+// @ts-ignore
 import packageJSON from '../package.json';
 import fs from 'fs-extra';
 import path from 'path';
 import Os from 'os';
 
 import child_process from "child_process";
+import { updater } from './updater';
 let exec = child_process.exec;
 
 
 const ENGINE_VER = "v342"; // 
-const packagePath = path.join(Editor.Project.path, "extensions", packageJSON.name);
+const pluginPath = path.join(Editor.Project.path, "extensions", packageJSON.name);
 const projectAssets = path.join(Editor.Project.path, "assets");
 const cacheFile = path.join(Editor.Project.path, "local", "psd-to-prefab-cache.json");
-const configFile = path.join(`${packagePath}/config/psd.config.json`);
+const configFile = path.join(`${pluginPath}/config/psd.config.json`);
 
-const nodejsFile = path.join(packagePath, "bin", `node${Os.platform() == 'darwin' ? "" : ".exe"}`);
-const commandFile = path.join(packagePath, "libs", "psd2ui", `command.${Os.platform() == 'darwin' ? "sh" : "bat"}`);
-const psd = path.join(packagePath, "libs", "psd2ui", "index.js");
+const nodejsFile = path.join(pluginPath, "bin", `node${Os.platform() == 'darwin' ? "" : ".exe"}`);
+const commandFile = path.join(pluginPath, "libs", "psd2ui", `command.${Os.platform() == 'darwin' ? "sh" : "bat"}`);
+const psdCore = path.join(pluginPath, "libs", "psd2ui", "index.js");
+const packagePath = path.join(pluginPath, "package.json");
+
 
 let uuid2md5: Map<string, string> = new Map();
 let cacheFileJson: Record<string, any> = {};
@@ -96,8 +99,10 @@ export const methods: { [key: string]: (...any: any) => any } = {
         }
 
         Promise.all(tasks).then(() => {
-            genUUID2MD5Mapping();
-            console.log("[ccc-tnt-psd2ui]  psd 导出完成，输出位置为：", output ? output : "psd 同级目录");
+            if (tasks.length) {
+                genUUID2MD5Mapping();
+                console.log("[ccc-tnt-psd2ui]  psd 导出完成，输出位置为：", output ? output : "psd 同级目录");
+            }
         }).catch((reason) => {
             console.log("[ccc-tnt-psd2ui]  导出失败", reason);
         }).finally(() => {
@@ -117,7 +122,7 @@ function _exec(options: any, tasks: any) {
             console.log(`[ccc-tnt-psd2ui] 设置权限`);
             fs.chmodSync(nodejsFile, 33261);
         }
-        
+
         if (fs.statSync(commandFile).mode != 33261) {
             console.log(`[ccc-tnt-psd2ui] commandFile 设置权限`);
             fs.chmodSync(commandFile, 33261);
@@ -125,29 +130,20 @@ function _exec(options: any, tasks: any) {
     }
 
     console.log("[ccc-tnt-psd2ui] 命令参数：" + jsonContent);
-    console.log("[ccc-tnt-psd2ui] 命令执行中");
+    console.log("[ccc-tnt-psd2ui] 命令执行中，执行完后请手动关闭终端窗口");
 
     let base64 = Buffer.from(jsonContent).toString("base64");
     tasks.push(new Promise<void>((rs) => {
-        // console.log(`[ccc-tnt-psd2ui] `, `${nodejsFile} ${psd}` + ' ' + `--json ${base64}`);
-        // exec(`${nodejsFile} ${psd}` + ' ' + `--json ${base64}`, { windowsHide: false }, (err, stdout, stderr) => {
-        //     console.log("[ccc-tnt-psd2ui]:\n", stdout);
-        //     if (stderr) {
-        //         console.log(stderr);
-        //     }
-        //     rs();
-        // })
-        
+
         let shellScript = commandFile;  // 你的脚本路径
         let scriptArgs = `--json ${base64}`;  // 你的脚本参数
 
         let command =
-        Os.platform() == 'darwin' ? `osascript -e 'tell app "Terminal" to do script "cd ${process.cwd()}; ${shellScript} ${scriptArgs}"'`
-        : `start ${commandFile} ${scriptArgs}`;
+            Os.platform() == 'darwin' ? `osascript -e 'tell app "Terminal" to do script "cd ${process.cwd()}; ${shellScript} ${scriptArgs}"'`
+                : `start ${commandFile} ${scriptArgs}`;
 
         exec(command, (error, stdout, stderr) => {
             console.log("[ccc-tnt-psd2ui]:\n", stdout);
-            console.log("[ccc-tnt-psd2ui]: 程序执行完后请手动关闭终端窗口", );
             if (stderr) {
                 console.log(stderr);
             }
@@ -195,6 +191,7 @@ function genUUID2MD5Mapping() {
 export const load = function () {
     genUUID2MD5Mapping();
     Editor.Message.addBroadcastListener("asset-db:asset-delete", onAssetDeletedListener);
+    Editor.Message.addBroadcastListener("ccc-tnt-psd2ui:check-update", checkUpdate);
 };
 
 /**
@@ -204,4 +201,59 @@ export const load = function () {
 export const unload = function () {
 
     Editor.Message.removeBroadcastListener("asset-db:asset-delete", onAssetDeletedListener);
+    Editor.Message.removeBroadcastListener("ccc-tnt-psd2ui:check-update", checkUpdate);
 };
+
+
+async function checkUpdate() {
+
+    const result = await updater.checkUpdate();
+    const remoteVersion = await updater.getRemoteVersion();
+    if (result === -10 || result === -100) {
+        console.info(`[ccc-tnt-psd2ui]：插件发现新版本：${remoteVersion}`);
+        console.info(`[ccc-tnt-psd2ui]：下载地址：${packageJSON.repository.url}/releases`);
+    } else if (result === -1) {
+        console.log(`[ccc-tnt-psd2ui]：更新 psd2ui 运行库`);
+        updateCore(remoteVersion);
+    }
+}
+
+async function updateCore(remoteVersion: string) {
+
+    // 备份当前版本
+    console.log(`[ccc-tnt-psd2ui]：备份 ${psdCore}`);
+
+    let localVersion = updater.getLocalVersion();
+
+    try {
+        let psdCoreFile = await fs.readFile(psdCore);
+        await fs.writeFile(`${psdCore}.${localVersion}`, psdCoreFile, "binary");
+    } catch (error) {
+        console.log(`[ccc-tnt-psd2ui]：备份失败，停止更新`, error);
+        return;
+    }
+
+    console.log(`[ccc-tnt-psd2ui]：备份完成，开始下载新版本`);
+    try {
+        let fileBuffer = await updater.downloadCoreAsBuffer("psd2ui-tools/dist/index.js");
+        await fs.writeFile(psdCore, fileBuffer, "binary");
+    } catch (error) {
+        console.log(`[ccc-tnt-psd2ui]：更新失败`, error);
+        return;
+    }
+
+    console.log(`[ccc-tnt-psd2ui]：更新版本号`);
+
+    try {
+        let packageJSON = await fs.readJson(packagePath);
+        packageJSON.version = remoteVersion;
+        await fs.writeJson(packagePath, packageJSON, {
+            spaces: 4,
+            encoding: 'utf-8'
+        });
+    } catch (error) {
+        console.log(`[ccc-tnt-psd2ui]：更新版本号失败，下次启动会重新进行更新`);
+    }
+
+    console.log(`[ccc-tnt-psd2ui]：更新完成`);
+}
