@@ -1,6 +1,6 @@
 {
     "package_version": 2,
-    "version": "1.0.4",
+    "version": "1.0.0",
     "name": "ccc-tnt-psd2ui",
     "description": "i18n:ccc-tnt-psd2ui.description",
     "main": "./dist/main.js",
