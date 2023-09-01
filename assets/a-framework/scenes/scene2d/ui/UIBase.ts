@@ -351,7 +351,7 @@ class UIBase<Options = any> extends tnt.GComponent<Options> implements IUIAble {
             }
             tnt.resourcesMgr.addPrefabNode(this, clazz, parentNode, options).then((result) => {
                 tnt.btnCommonEventMgr.bind(result);
-                resolve(result);
+                resolve(result as Key_Global_UI_Item_Ctor<T>);
             });
         })
     }
@@ -369,7 +369,7 @@ class UIBase<Options = any> extends tnt.GComponent<Options> implements IUIAble {
         return new Promise<Key_Global_UI_Item_Ctor<T>>((resolve, reject) => {
             tnt.resourcesMgr.loadPrefabNode(this, clazz, options).then((result) => {
                 tnt.btnCommonEventMgr.bind(result);
-                resolve(result);
+                resolve(result as Key_Global_UI_Item_Ctor<T>);
             });
         })
     }
