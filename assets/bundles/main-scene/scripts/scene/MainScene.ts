@@ -15,15 +15,22 @@ export class MainScene extends tnt.SceneBase {
             btn.name = `btn${element.scene}`;
             btn.parent = parent;
             let label = btn.getChildByName("Label");
-            this.setLabelText(label,element.button);
-            this.registerButtonClick(btn,()=>{
-                tnt.sceneMgr.to(element.scene as any,{bundle: element.bundle});
+            this.setLabelText(label, element.button);
+            this.registerButtonClick(btn, () => {
+                tnt.sceneMgr.to(element.scene as any, { bundle: element.bundle });
             });
         }
-        
+
+        this.registerButtonClick("btnGitHub", () => {
+            window.open("https://github.com/onvia/ccc-tnt-framework")
+        });
+
+        this.registerButtonClick("btnGitee", () => {
+            window.open("https://gitee.com/onvia/ccc-tnt-framework")
+        });
         // tnt.btnCommonEventMgr.bind(this);
     }
-    
+
     onEnterTransitionFinished(sceneName?: string): void {
 
     }
