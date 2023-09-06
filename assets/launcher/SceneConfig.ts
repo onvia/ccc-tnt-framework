@@ -57,6 +57,10 @@ export const SceneConfig: ISceneConfig[] = [
         scene: "RVO2Scene",
         button: "RVO2",
         bundle: "rvo2-example",
-
+    },
+    {
+        scene: "PixelClickDemo",
+        button: "像素点击",
+        bundle: "pixel-click-example"
     }
 ]
