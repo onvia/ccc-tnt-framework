@@ -46,8 +46,6 @@ class HitTest {
             let hit = oldHitTest.call(uiTransform, screenPoint, windowId);
 
             if (!hit) {
-                console.log(`HitTest-> false 1`);
-
                 return false;
             }
             let w = uiTransform.contentSize.width;
@@ -55,7 +53,6 @@ class HitTest {
 
             let pixelData = this.readPixelsFromSpriteFrame(node.sprite?.spriteFrame);
             if (!pixelData) {
-                console.log(`HitTest-> false 2`);
                 return false;
             }
             let scene = uiTransform._sceneGetter?.() ?? node.scene.renderScene;
