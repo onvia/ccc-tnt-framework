@@ -33,13 +33,11 @@ class HitTest {
             return;
         }
         let node = uiTransform.node;
-        if (!node.sprite) {
-            return;
-        }
-        if (!node.sprite.trim || node.sprite.sizeMode != Sprite.SizeMode.TRIMMED) {
-            console.warn(`[tnt] 像素点击暂时只支持 trim 模式。sprite.trim = true, sprite.sizeMode = Sprite.SizeMode.TRIMMED ，目标节点: ${node.name}`);
-            return;
-        }
+
+        // if (!node.sprite.trim || node.sprite.sizeMode != Sprite.SizeMode.TRIMMED) {
+        //     console.warn(`[tnt] 像素点击暂时只支持 trim 模式。sprite.trim = true, sprite.sizeMode = Sprite.SizeMode.TRIMMED ，目标节点: ${node.name}`);
+        //     return;
+        // }
         let oldHitTest = uiTransform.hitTest;
         this.nodeHitTestFnMap.set(uiTransform, oldHitTest);
         uiTransform.hitTest = (screenPoint: math.Vec2, windowId: number = 0) => {
@@ -51,7 +49,7 @@ class HitTest {
             let w = uiTransform.contentSize.width;
             let h = uiTransform.contentSize.height;
 
-            let pixelData = this.readPixelsFromSpriteFrame(node.sprite?.spriteFrame);
+            let pixelData = this.readPixelsFromSprite(node.sprite);
             if (!pixelData) {
                 return false;
             }
@@ -98,7 +96,7 @@ class HitTest {
      * @param texture 
      * @param flipY 是否翻转Y轴，默认true
      */
-    public readPixels(texture: __private._cocos_asset_assets_texture_base__TextureBase, flipY?: boolean): Uint8Array {
+    public readPixels(texture: __private._cocos_asset_assets_texture_base__TextureBase, flipY: boolean = true): Uint8Array {
         if (!texture) {
             return null;
         }
@@ -115,7 +113,7 @@ class HitTest {
         bufferViews.push(buffer);
         gfxDevice?.copyTextureToBuffers(gfxTexture, bufferViews, [region]);
         // 翻转
-        if (flipY !== false) {
+        if (flipY) {
             let i = 0, len1 = height / 2, len2 = width * 4, j: number, idx0: number, idx1: number;
             while (i < len1) {
                 j = 0;
@@ -133,17 +131,25 @@ class HitTest {
     }
     /**
   * 读取渲染纹理像素信息
-  * @param texture 
+  * @param spriteFrame 
   * @param flipY 是否翻转Y轴，默认true
   */
-    public readPixelsFromSpriteFrame(spriteFrame: SpriteFrame, flipY?: boolean): Uint8Array {
-        if (!spriteFrame) {
+    public readPixelsFromSprite(sprite: Sprite, flipY: boolean = true): Uint8Array {
+        if (!sprite) {
             return null;
         }
+        let spriteFrame = sprite.spriteFrame;
         if (this.spriteFrameBufferMap.has(spriteFrame)) {
             return this.spriteFrameBufferMap.get(spriteFrame);
         }
         if (spriteFrame.packable) {
+
+            let isRaw = !sprite.trim && sprite.sizeMode === Sprite.SizeMode.RAW;
+            let buffer = this.readPixels(spriteFrame.original._texture, isRaw ? flipY : false);
+            let clipBuffer = isRaw ? buffer : this.clipTransparentPixels(buffer, spriteFrame, flipY);
+
+            return clipBuffer;
+
             let atlasPixelData = this.readPixels(spriteFrame.texture, false);
             let atlasWidth = spriteFrame.texture.width;
             let atlasHeight = spriteFrame.texture.height;
@@ -182,7 +188,41 @@ class HitTest {
             return extractedTextureData;
         }
 
+
         return this.readPixels(spriteFrame.texture, flipY);
+    }
+
+    clipTransparentPixels(pixelData: Uint8Array, spriteFrame: SpriteFrame, flipY: boolean = true) {
+        let minX = spriteFrame.original._x;
+        let minY = spriteFrame.original._y;
+        let maxX = minX + spriteFrame.rect.width;
+        let maxY = minY + spriteFrame.rect.height;
+
+        let newWidth = spriteFrame.rect.width;
+        let newHeight = spriteFrame.rect.height;
+
+        // 创建新的Uint8Array
+        let clippedPixelData = new Uint8Array(newWidth * newHeight * 4);
+
+        // 复制像素数据
+        for (let y = minY; y <= maxY; y++) {
+            for (let x = minX; x <= maxX; x++) {
+                let sourceIndex = (y * spriteFrame.originalSize.width + x) * 4;
+                let destIndex;
+                if (flipY) {
+                    destIndex = ((maxY - y) * newWidth + (x - minX)) * 4;
+                } else {
+                    destIndex = ((y - minY) * newWidth + (x - minX)) * 4;
+                }
+
+                clippedPixelData[destIndex] = pixelData[sourceIndex];     // R通道
+                clippedPixelData[destIndex + 1] = pixelData[sourceIndex + 1]; // G通道
+                clippedPixelData[destIndex + 2] = pixelData[sourceIndex + 2]; // B通道
+                clippedPixelData[destIndex + 3] = pixelData[sourceIndex + 3]; // A通道
+            }
+        }
+
+        return clippedPixelData;
     }
 }
 
