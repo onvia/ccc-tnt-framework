@@ -1,4 +1,4 @@
-import { _decorator, Component, Node, __private, gfx, SpriteFrame, Mat4, math, UITransform, Vec2, Vec3, Sprite } from 'cc';
+import { _decorator, Component, Node, __private, gfx, SpriteFrame, Mat4, math, UITransform, Vec2, Vec3, Sprite, js } from 'cc';
 const { ccclass, property } = _decorator;
 const _mat4_temp = new Mat4();
 const _worldMatrix = new Mat4();
@@ -35,7 +35,7 @@ class HitTest {
         }
         let node = uiTransform.node;
 
-
+        this.enableSpriteFrameListener(node.sprite);
         let oldHitTest = uiTransform.hitTest;
         this.nodeHitTestFnMap.set(uiTransform, oldHitTest);
         uiTransform.hitTest = (screenPoint: math.Vec2, windowId: number = 0) => {
@@ -44,8 +44,10 @@ class HitTest {
             if (!hit) {
                 return false;
             }
-            let w = uiTransform.contentSize.width;
-            let h = uiTransform.contentSize.height;
+
+            if (!node.sprite) {
+                return hit;
+            }
 
             // let pixelData = this.readPixelsFromSprite(node.sprite);
             // if (!pixelData) {
@@ -69,6 +71,7 @@ class HitTest {
                     continue;
                 }
                 Vec2.transformMat4(testPt, v2WorldPt, _mat4_temp);
+                
                 // testPt.x += uiTransform.anchorPoint.x * w;
                 // testPt.y += uiTransform.anchorPoint.y * h;
                 // let pixelIndex = (Math.floor(testPt.y) * w + Math.floor(testPt.x)) * 4; // 4表示每个像素的RGBA分量
@@ -90,16 +93,131 @@ class HitTest {
                     // 用户点击了不透明的像素
                     return true;
                 }
-
-                // if(this.checkPixel(testPt,node.sprite)){
-                //     return true;
-                // }
             }
-
-            // return true;
             return false;
         }
     }
+
+    /**
+     * 监听 spriteFrame 变化，删除缓存的像素数据
+     *
+     * @private
+     * @param {Sprite} sprite
+     * @return {*} 
+     * @memberof HitTest
+     */
+    private enableSpriteFrameListener(sprite: Sprite) {
+        if (!sprite) {
+            return;
+        }
+        let _property = "spriteFrame";
+        let desc = js.getPropertyDescriptor(sprite, _property);
+        if (!!desc.set) {
+            Object.defineProperty(sprite, _property, {
+                get: desc.get,
+                set: (value) => {
+                    if (sprite.spriteFrame != value) {
+                        this.spriteBufferMap.delete(sprite);
+                    }
+                    desc.set.call(sprite, value);
+                }
+            });
+            return;
+        }
+    }
+
+    public readPixelsFromSprite(sprite: Sprite) {
+        let buffer: Uint8Array = null;
+        if (this.spriteBufferMap.has(sprite)) {
+            buffer = this.spriteBufferMap.get(sprite);
+        }
+
+        if (!buffer) {
+            let spriteFrame = sprite.spriteFrame;
+            let texture = spriteFrame.texture;
+            let tx = spriteFrame.rect.x;
+            let ty = spriteFrame.rect.y;
+            if (spriteFrame.packable) {
+                texture = spriteFrame.original._texture;
+                tx = spriteFrame.original._x;
+                ty = spriteFrame.original._y;
+            }
+            let width = spriteFrame.rect.width;
+            let height = spriteFrame.rect.height;
+
+            let gfxTexture = texture.getGFXTexture();
+            let gfxDevice = texture['_getGFXDevice']();
+            let bufferViews = [];
+            let region = new gfx.BufferTextureCopy()
+            buffer = new Uint8Array(width * height * 4);
+            region.texOffset.x = tx, region.texOffset.y = ty;
+            region.texExtent.width = width;
+            region.texExtent.height = height;
+            bufferViews.push(buffer);
+            gfxDevice?.copyTextureToBuffers(gfxTexture, bufferViews, [region]);
+            this.spriteBufferMap.set(sprite, buffer);
+        }
+
+        return buffer;
+    }
+
+    public getPixels(worldPosition: Vec2, sprite: Sprite) {
+        sprite.node.uiTransform.convertToNodeSpaceAR(worldPosition.copyAsVec3(), v3WorldPt);
+        Vec2.set(v2WorldPt, v3WorldPt.x, v3WorldPt.y);
+        return this._getPixels(v2WorldPt, sprite);
+    }
+
+    private _getPixels(position: Vec2, sprite: Sprite) {
+        let spriteFrame = sprite.spriteFrame;
+        let buffer = this.readPixelsFromSprite(sprite);
+
+        const texWidth = spriteFrame.rect.width;
+        const texHeight = spriteFrame.rect.height;
+        const originSize = spriteFrame.originalSize;
+        const uiTrans = sprite.node.uiTransform;
+
+        const anchorX = uiTrans.anchorX;
+        const anchorY = uiTrans.anchorY;
+
+        const contentWidth = uiTrans.width;
+        const contentHeight = uiTrans.height;
+
+        let pixels = { r: 0, g: 0, b: 0, a: 0 };
+        let index = -1;
+
+        if (sprite.trim) {
+            let x = Math.floor(position.x / (contentWidth / texWidth) + texWidth * anchorX);
+            let y = Math.floor(texHeight - (position.y / (contentHeight / texHeight) + texHeight * anchorY));
+            index = (y * texWidth + x) * 4;
+        } else {
+            let scaleX = contentWidth / originSize.width; // 计算原始图像与节点大小的缩放系数
+            let scaleY = contentHeight / originSize.height;
+
+            let leftPoint = position.x + contentWidth * anchorX; // 转换到左上角坐标
+            let topPoint = Math.abs(position.y + contentHeight * (anchorY - 1));
+
+            let tx = spriteFrame.rect.x;
+            let ty = spriteFrame.rect.y;
+            if (spriteFrame.packable) {
+                tx = spriteFrame.original._x;
+                ty = spriteFrame.original._y;
+            }
+            // 计算鼠标在图像像素上的位置
+            let x = Math.floor((leftPoint - tx * scaleX) / scaleX);
+            let y = Math.floor((topPoint - ty * scaleY) / scaleY);
+            index = (y * texWidth + x) * 4;
+        }
+
+        if (index > -1) {
+            pixels.r = buffer[index + 0];
+            pixels.g = buffer[index + 1];
+            pixels.b = buffer[index + 2];
+            pixels.a = buffer[index + 3];
+        }
+        return pixels;
+    }
+
+
 
     /**
      * 读取渲染纹理像素信息
@@ -111,7 +229,10 @@ class HitTest {
             return null;
         }
         if (this.textureBufferMap.has(texture)) {
-            return this.textureBufferMap.get(texture);
+            let buffer = this.textureBufferMap.get(texture);
+            if (buffer) {
+                return buffer;
+            }
         }
 
         // 通用版本
@@ -234,96 +355,6 @@ class HitTest {
     //     return clippedPixelData;
     // }
 
-
-    readPixelsFromSprite(sprite: Sprite) {
-        let buffer: Uint8Array = null;
-        if (this.spriteBufferMap.has(sprite)) {
-            buffer = this.spriteBufferMap.get(sprite);
-        } else {
-
-            let spriteFrame = sprite.spriteFrame;
-            let texture = spriteFrame.texture;
-            let tx = spriteFrame.rect.x;
-            let ty = spriteFrame.rect.y;
-            if (spriteFrame.packable) {
-                texture = spriteFrame.original._texture;
-                tx = spriteFrame.original._x;
-                ty = spriteFrame.original._y;
-            }
-            let width = spriteFrame.rect.width;
-            let height = spriteFrame.rect.height;
-
-            let gfxTexture = texture.getGFXTexture();
-            let gfxDevice = texture['_getGFXDevice']();
-            let bufferViews = [];
-            let region = new gfx.BufferTextureCopy()
-            buffer = new Uint8Array(width * height * 4);
-            region.texOffset.x = tx, region.texOffset.y = ty;
-            region.texExtent.width = width;
-            region.texExtent.height = height;
-            bufferViews.push(buffer);
-            gfxDevice?.copyTextureToBuffers(gfxTexture, bufferViews, [region]);
-            this.spriteBufferMap.set(sprite, buffer);
-        }
-
-        return buffer;
-    }
-
-    public getPixels(worldPosition: Vec2, sprite: Sprite) {
-        sprite.node.uiTransform.convertToNodeSpaceAR(worldPosition.copyAsVec3(), v3WorldPt);
-        Vec2.set(v2WorldPt, v3WorldPt.x, v3WorldPt.y);
-        return this._getPixels(v2WorldPt, sprite);
-    }
-
-    private _getPixels(position: Vec2, sprite: Sprite) {
-        let spriteFrame = sprite.spriteFrame;
-        let buffer = this.readPixelsFromSprite(sprite);
-
-        const texWidth = spriteFrame.rect.width;
-        const texHeight = spriteFrame.rect.height;
-        const originSize = spriteFrame.originalSize;
-        const uiTrans = sprite.node.uiTransform;
-
-        const anchorX = uiTrans.anchorX;
-        const anchorY = uiTrans.anchorY;
-
-        const contentWidth = uiTrans.width;
-        const contentHeight = uiTrans.height;
-
-        let pixels = { r: 0, g: 0, b: 0, a: 0 };
-        let index = -1;
-
-        if (sprite.trim) {
-            let x = Math.floor(position.x / (contentWidth / texWidth) + texWidth * anchorX);
-            let y = Math.floor(texHeight - (position.y / (contentHeight / texHeight) + texHeight * anchorY));
-            index = (y * texWidth + x) * 4;
-        } else {
-            let scaleX = contentWidth / originSize.width; // 计算原始图像与节点大小的缩放系数
-            let scaleY = contentHeight / originSize.height;
-
-            let leftPoint = position.x + contentWidth * anchorX; // 转换到左上角坐标
-            let topPoint = Math.abs(position.y + contentHeight * (anchorY - 1));
-
-            let tx = spriteFrame.rect.x;
-            let ty = spriteFrame.rect.y;
-            if (spriteFrame.packable) {
-                tx = spriteFrame.original._x;
-                ty = spriteFrame.original._y;
-            }
-            // 计算鼠标在图像像素上的位置
-            let x = Math.floor((leftPoint - tx * scaleX) / scaleX);
-            let y = Math.floor((topPoint - ty * scaleY) / scaleY);
-            index = (y * texWidth + x) * 4;
-        }
-
-        if (index > -1) {
-            pixels.r = buffer[index + 0];
-            pixels.g = buffer[index + 1];
-            pixels.b = buffer[index + 2];
-            pixels.a = buffer[index + 3];
-        }        
-        return pixels;
-    }
 
 }
 

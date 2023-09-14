@@ -32,6 +32,12 @@ export class PixelClickDemo extends tnt.SceneBase {
             //     btn.node.destroy();
             // })
         });
+
+        // n 秒后更换图片
+        // setTimeout(() => {
+        //     let sheep_down_0 = this.getNodeByName("sheep_down_0");
+        //     tnt.resourcesMgr.updateSpriteFrame(this, sheep_down_0, "common-bundle#textures/clover1");
+        // }, 5000);
     }
 
 }
