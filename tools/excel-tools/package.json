@@ -6,6 +6,7 @@
   "scripts": {
     "build": "tsc -b",
     "watch": "tsc -w",
+    "rollup": "rollup -c",
     "test": "node dist/index.js --input ./test-data/data/data1.xlsx --output ./out/",
     "test-dts": "node dist/index.js --input ./test-data/data1.xlsx --output ./out/ --dts",
     "test-dir": "node dist/index.js --input ./test-data/data --output ./out/",
@@ -13,7 +14,7 @@
     "test-dts-custom-name": "node dist/index.js --input ./test-data/data --output ./out/ --dts ./out/tbl1.d.ts",
     "test-dir-xml": "node dist/index.js --input ./test-data --output ./out/ --format xml",
     "test-language-json": "node dist/index.js --format language-json --input ./test-data/language --output ./out/language --dts",
-    "test-cc": "node dist/index.js --input ./test-data --output ../../assets/resources/data --dts ../../tbl.d.ts",
+    "test-cc": "node dist/index.js --input ../../excels ../../assets/resources/data --dts ../../tbl.d.ts",
     "cc-data": "ts-node src/index.ts --input ../../excels --output ../../assets/resources/data --dts ../../tbl.d.ts"
   },
   "author": "",
@@ -27,7 +28,11 @@
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
+    "@rollup/plugin-commonjs": "^25.0.4",
+    "@rollup/plugin-json": "^6.0.0",
     "@types/fs-extra": "^9.0.13",
-    "@types/node": "^18.11.9"
+    "@types/node": "^18.11.9",
+    "rollup-plugin-terser": "^7.0.2",
+    "rollup-plugin-typescript2": "^0.35.0"
   }
 }
