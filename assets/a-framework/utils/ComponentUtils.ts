@@ -1,4 +1,4 @@
-import { _decorator, Component, Node, __private, Button, EditBox, Toggle, Slider, Scene, ToggleContainer, isValid } from "cc";
+import { _decorator, Component, Node, __private, Button, EditBox, Toggle, Slider, Scene, ToggleContainer, isValid, js } from "cc";
 declare module 'cc' {
     interface Node {
         __$nodes: Record<string, Node[]>;
@@ -28,6 +28,9 @@ declare module 'cc' {
         __$50SliderEventFn: Runnable,
         __$50SliderEventTarget: Object,
 
+        __$50ChildAddedEventFn: Runnable,
+        __$50ChildRemovedEventFn: Runnable,
+
     }
 }
 
@@ -43,6 +46,7 @@ declare global {
 let patchWeakSet: WeakSet<Node> = new WeakSet();
 
 class ComponentUtils {
+
 
 
     public findNode(name: string, _root: Node | Scene, parent?: Node | Scene): Node {
@@ -88,19 +92,48 @@ class ComponentUtils {
             }
             // 如果没找到，则取第一个
             return cacheArr[0];
+        } else if (parentNode) {
+            // 重新对指定父节点进行遍历
+            this._walk(rootNode, parentNode);
+            return this._checkout(name, rootNode, parentNode);
         }
         return null;
     }
     private _walk(root: Node, node: Node) {
+        if (!node.__$50ChildAddedEventFn) {
+            node.__$50ChildAddedEventFn = (child: Node) => {
+                this._pushRootNodes(root, child);
+            }
+            node.__$50ChildRemovedEventFn = (child: Node) => {
+                if (root.__$nodes[child.name]) {
+                    js.array.fastRemove(root.__$nodes[child.name], child);
+                    patchWeakSet.has(node) && patchWeakSet.delete(node);
+                }
+            }
+
+            node.on(Node.EventType.CHILD_ADDED, node.__$50ChildAddedEventFn, this);
+            node.on(Node.EventType.CHILD_REMOVED, node.__$50ChildRemovedEventFn, this);
+            node.once(Node.EventType.PARENT_CHANGED, (parent) => {
+                if (parent != node) {
+                    node.off(Node.EventType.CHILD_ADDED, node.__$50ChildAddedEventFn, this);
+                    node.off(Node.EventType.CHILD_REMOVED, node.__$50ChildRemovedEventFn, this);
+                    node.__$50ChildAddedEventFn = null;
+                    node.__$50ChildRemovedEventFn = null;
+                }
+            }, this)
+        }
         for (let i = 0; i < node.children.length; i++) {
             const child = node.children[i];
-            if (!root.__$nodes[child.name]) {
-                root.__$nodes[child.name] = [];
-            }
-            root.__$nodes[child.name].push(child);
-
+            this._pushRootNodes(root, child);
             this._walk(root, child);
         }
+    }
+
+    private _pushRootNodes(root: Node, child: Node) {
+        if (!root.__$nodes[child.name]) {
+            root.__$nodes[child.name] = [];
+        }
+        root.__$nodes[child.name].push(child);
     }
 
 

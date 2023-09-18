@@ -1,4 +1,4 @@
-import { _decorator, Component, Node, __private, gfx, SpriteFrame, Mat4, math, UITransform, Vec2, Vec3, Sprite, js } from 'cc';
+import { _decorator, Component, Node, __private, gfx, SpriteFrame, Mat4, math, UITransform, Vec2, Vec3, Sprite, js, sys } from 'cc';
 const { ccclass, property } = _decorator;
 const _mat4_temp = new Mat4();
 const _worldMatrix = new Mat4();
@@ -71,7 +71,7 @@ class HitTest {
                     continue;
                 }
                 Vec2.transformMat4(testPt, v2WorldPt, _mat4_temp);
-                
+
                 // testPt.x += uiTransform.anchorPoint.x * w;
                 // testPt.y += uiTransform.anchorPoint.y * h;
                 // let pixelIndex = (Math.floor(testPt.y) * w + Math.floor(testPt.x)) * 4; // 4表示每个像素的RGBA分量
@@ -137,7 +137,7 @@ class HitTest {
             let texture = spriteFrame.texture;
             let tx = spriteFrame.rect.x;
             let ty = spriteFrame.rect.y;
-            if (spriteFrame.packable) {
+            if (spriteFrame.packable && spriteFrame.original) {
                 texture = spriteFrame.original._texture;
                 tx = spriteFrame.original._x;
                 ty = spriteFrame.original._y;
@@ -198,7 +198,7 @@ class HitTest {
 
             let tx = spriteFrame.rect.x;
             let ty = spriteFrame.rect.y;
-            if (spriteFrame.packable) {
+            if (spriteFrame.packable && spriteFrame.original) {
                 tx = spriteFrame.original._x;
                 ty = spriteFrame.original._y;
             }
@@ -274,7 +274,7 @@ class HitTest {
     //     if (this.spriteFrameBufferMap.has(spriteFrame)) {
     //         return this.spriteFrameBufferMap.get(spriteFrame);
     //     }
-    //     if (spriteFrame.packable) {
+    //     if (spriteFrame.packable && spriteFrame.original) {
 
     //         let isRaw = !sprite.trim && sprite.sizeMode === Sprite.SizeMode.RAW;
     //         let buffer = this.readPixels(spriteFrame.original._texture, isRaw ? flipY : false);

@@ -1,4 +1,4 @@
-import { _decorator, Component, Node, EventTouch } from 'cc';
+import { _decorator, Component, Node, EventTouch, Layout, instantiate } from 'cc';
 const { ccclass, property } = _decorator;
 
 @ccclass('BaseDemo')
@@ -46,19 +46,45 @@ export class BaseDemo extends tnt.SceneBase {
         });
 
         // Toggle
-        this.registerToggleClick("Toggle",(toggle)=>{
+        this.registerToggleClick("Toggle", (toggle) => {
             this.setLabelText("labelToggleState1", "复选状态：" + toggle.isChecked);
         });
-        
+
         // 滑块
-        this.registerSliderEvent("Slider",(slider)=>{
-            this.setLabelText("labelSliderState",`滑块进度：${slider.progress.toFixed(2)}`);
-            
+        this.registerSliderEvent("Slider", (slider) => {
+            this.setLabelText("labelSliderState", `滑块进度：${slider.progress.toFixed(2)}`);
+
         });
 
-        this.registerEditBoxDidEnd("EditBox",(editBox)=>{
-            this.setLabelText("labelEditBoxState",`输入：${editBox.string}`);
+        this.registerEditBoxDidEnd("EditBox", (editBox) => {
+            this.setLabelText("labelEditBoxState", `输入：${editBox.string}`);
         });
+
+
+        // let layout1 = this.getNodeByName("Layout1");
+        // let layout2 = this.getNodeByName("Layout2");
+        // let labelTest = this.getNodeByName("labelTest");
+        // labelTest.label.string = "0";
+
+        // let copy1 = instantiate(labelTest);
+        // copy1.name = "labelTest";
+        // copy1.parent = layout1;
+        // copy1.label.string = "1";
+
+
+        // let findCopy1 = this.getNodeByName("labelTest", layout1);
+
+        // console.log(`BaseDemo-> `);
+
+
+        // let copy2 = instantiate(labelTest);
+        // copy2.name = "labelTest";
+        // copy2.parent = layout2;
+        // copy2.label.string = "2";
+        // let findCopy2 = this.getNodeByName("labelTest", layout2);
+
+        // console.log(`BaseDemo-> `);
+
     }
 
 }
