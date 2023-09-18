@@ -49,10 +49,6 @@ class HitTest {
                 return hit;
             }
 
-            // let pixelData = this.readPixelsFromSprite(node.sprite);
-            // if (!pixelData) {
-            //     return false;
-            // }
             let scene = uiTransform._sceneGetter?.() ?? node.scene.renderScene;
             for (let i = 0; i < scene.cameras.length; i++) {
                 const camera = scene.cameras[i];
@@ -71,21 +67,6 @@ class HitTest {
                     continue;
                 }
                 Vec2.transformMat4(testPt, v2WorldPt, _mat4_temp);
-
-                // testPt.x += uiTransform.anchorPoint.x * w;
-                // testPt.y += uiTransform.anchorPoint.y * h;
-                // let pixelIndex = (Math.floor(testPt.y) * w + Math.floor(testPt.x)) * 4; // 4表示每个像素的RGBA分量
-
-                // //     // // 获取像素数据
-                // //     // let red = pixelData[pixelIndex];
-                // //     // let green = pixelData[pixelIndex + 1];
-                // //     // let blue = pixelData[pixelIndex + 2];
-                // let alpha = pixelData[pixelIndex + 3];
-
-                // if (alpha > 0) {
-                //     // 用户点击了不透明的像素
-                //     return true;
-                // }
 
                 let checked = this._checkPixels(testPt, node.sprite);
 
@@ -161,29 +142,11 @@ class HitTest {
         return buffer;
     }
 
-    public getPixels(worldPosition: Vec2, sprite: Sprite) {
-        v3WorldPt.set(worldPosition.x, worldPosition.y)
-        sprite.node.uiTransform.convertToNodeSpaceAR(v3WorldPt, v3WorldPt);
-        Vec2.set(v2WorldPt, v3WorldPt.x, v3WorldPt.y);
-        let buffer = this.readPixelsFromSprite(sprite);
-        let index = this._getBufferIndex(v2WorldPt, sprite);
-        let pixels = { r: 0, g: 0, b: 0, a: 0 };
-        if (index > -1) {
-            pixels.r = buffer[index + 0];
-            pixels.g = buffer[index + 1];
-            pixels.b = buffer[index + 2];
-            pixels.a = buffer[index + 3];
-        }
-        return pixels;
-    }
-
-
     private _checkPixels(position: Vec2, sprite: Sprite) {
         let buffer = this.readPixelsFromSprite(sprite);
         let index = this._getBufferIndex(position, sprite);
         return buffer[index + 3] > 0;
     }
-
 
     private _getBufferIndex(position: Vec2, sprite: Sprite) {
 
@@ -226,7 +189,7 @@ class HitTest {
 
         return index;
     }
-
+    
     /**
      * 读取渲染纹理像素信息
      * @param texture 

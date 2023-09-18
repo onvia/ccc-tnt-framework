@@ -1,15 +1,21 @@
-import { _decorator, Component, Node, UITransform, math, Vec3, Mat4, Vec2, instantiate, v3 } from 'cc';
+import { _decorator, Component, Node, UITransform, math, Vec3, Mat4, Vec2, instantiate, v3, Sprite, EventTouch, v2, Color, Camera } from 'cc';
 const { ccclass, property } = _decorator;
-const { node } = tnt._decorator;
+const { node, sprite, component } = tnt._decorator;
+
+const _mat4_temp = new Mat4();
+const _worldMatrix = new Mat4();
+const _zeroMatrix = new Mat4(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+const testPt = new Vec2();
+const v2WorldPt = new Vec2();
+const v3WorldPt = new Vec3();
+
 @ccclass('PixelClickDemo')
 export class PixelClickDemo extends tnt.SceneBase {
-
 
     @node()
     ClickTest: Node = null;
 
     onEnterTransitionStart() {
-
         let Layout1 = this.getNodeByName("Layout1");
         Layout1.children.forEach((child) => {
             tnt.hitTest.enablePixelHitTest(child.uiTransform);
@@ -17,7 +23,6 @@ export class PixelClickDemo extends tnt.SceneBase {
         let Layout2 = this.getNodeByName("Layout2");
         Layout2.children.forEach((child) => {
             tnt.hitTest.enablePixelHitTest(child.uiTransform);
-
             // setTimeout(() => {
             //     tnt.hitTest.enablePixelHitTest(child.uiTransform, false);
             // }, 5000);
