@@ -87,9 +87,9 @@ class HitTest {
                 //     return true;
                 // }
 
-                let pixel = this._getPixels(testPt, node.sprite);
+                let checked = this._checkPixels(testPt, node.sprite);
 
-                if (pixel.a > 0) {
+                if (checked) {
                     // 用户点击了不透明的像素
                     return true;
                 }
@@ -162,15 +162,32 @@ class HitTest {
     }
 
     public getPixels(worldPosition: Vec2, sprite: Sprite) {
-        sprite.node.uiTransform.convertToNodeSpaceAR(worldPosition.copyAsVec3(), v3WorldPt);
+        v3WorldPt.set(worldPosition.x, worldPosition.y)
+        sprite.node.uiTransform.convertToNodeSpaceAR(v3WorldPt, v3WorldPt);
         Vec2.set(v2WorldPt, v3WorldPt.x, v3WorldPt.y);
-        return this._getPixels(v2WorldPt, sprite);
+        let buffer = this.readPixelsFromSprite(sprite);
+        let index = this._getBufferIndex(v2WorldPt, sprite);
+        let pixels = { r: 0, g: 0, b: 0, a: 0 };
+        if (index > -1) {
+            pixels.r = buffer[index + 0];
+            pixels.g = buffer[index + 1];
+            pixels.b = buffer[index + 2];
+            pixels.a = buffer[index + 3];
+        }
+        return pixels;
     }
 
-    private _getPixels(position: Vec2, sprite: Sprite) {
-        let spriteFrame = sprite.spriteFrame;
-        let buffer = this.readPixelsFromSprite(sprite);
 
+    private _checkPixels(position: Vec2, sprite: Sprite) {
+        let buffer = this.readPixelsFromSprite(sprite);
+        let index = this._getBufferIndex(position, sprite);
+        return buffer[index + 3] > 0;
+    }
+
+
+    private _getBufferIndex(position: Vec2, sprite: Sprite) {
+
+        let spriteFrame = sprite.spriteFrame;
         const texWidth = spriteFrame.rect.width;
         const texHeight = spriteFrame.rect.height;
         const originSize = spriteFrame.originalSize;
@@ -182,7 +199,6 @@ class HitTest {
         const contentWidth = uiTrans.width;
         const contentHeight = uiTrans.height;
 
-        let pixels = { r: 0, g: 0, b: 0, a: 0 };
         let index = -1;
 
         if (sprite.trim) {
@@ -208,16 +224,8 @@ class HitTest {
             index = (y * texWidth + x) * 4;
         }
 
-        if (index > -1) {
-            pixels.r = buffer[index + 0];
-            pixels.g = buffer[index + 1];
-            pixels.b = buffer[index + 2];
-            pixels.a = buffer[index + 3];
-        }
-        return pixels;
+        return index;
     }
-
-
 
     /**
      * 读取渲染纹理像素信息
@@ -260,102 +268,6 @@ class HitTest {
         this.textureBufferMap.set(texture, buffer);
         return buffer;
     }
-
-    // /**
-    //  * 读取渲染纹理像素信息
-    //  * @param spriteFrame 
-    //  * @param flipY 是否翻转Y轴，默认true
-    //  */
-    // public readPixelsFromSprite(sprite: Sprite, flipY: boolean = true): Uint8Array {
-    //     if (!sprite) {
-    //         return null;
-    //     }
-    //     let spriteFrame = sprite.spriteFrame;
-    //     if (this.spriteFrameBufferMap.has(spriteFrame)) {
-    //         return this.spriteFrameBufferMap.get(spriteFrame);
-    //     }
-    //     if (spriteFrame.packable && spriteFrame.original) {
-
-    //         let isRaw = !sprite.trim && sprite.sizeMode === Sprite.SizeMode.RAW;
-    //         let buffer = this.readPixels(spriteFrame.original._texture, isRaw ? flipY : false);
-    //         let clipBuffer = isRaw ? buffer : this.clipTransparentPixels(buffer, spriteFrame, flipY);
-
-    //         return clipBuffer;
-
-    //         let atlasPixelData = this.readPixels(spriteFrame.texture, false);
-    //         let atlasWidth = spriteFrame.texture.width;
-    //         let atlasHeight = spriteFrame.texture.height;
-    //         let rect = spriteFrame.rect;
-    //         // 计算要提取的纹理在Uint8Array中的起始位置
-    //         let startX = Math.floor(rect.x);
-    //         let startY = Math.floor(rect.y);
-
-    //         // 计算提取纹理的宽度和高度
-    //         let textureWidth = rect.width;
-    //         let textureHeight = rect.height;
-
-
-    //         // 创建一个新的 Uint8Array 来存储提取的纹理像素数据
-    //         let extractedTextureData = new Uint8Array(textureWidth * textureHeight * 4); // 4表示RGBA分量
-
-    //         // 从 atlasPixelData 中复制提取的像素数据到 extractedTextureData
-    //         for (let y = 0; y < textureHeight; y++) {
-    //             // 如果需要进行Y轴翻转，可以调整行的顺序
-    //             let sourceY = flipY !== false ? (textureHeight - y - 1) : y;
-
-    //             for (let x = 0; x < textureWidth; x++) {
-    //                 // 计算在 atlasPixelData 中的索引
-    //                 let atlasIndex = ((startY + sourceY) * atlasWidth + (startX + x)) * 4;
-
-    //                 // 计算在 extractedTextureData 中的索引
-    //                 let extractedIndex = (y * textureWidth + x) * 4;
-
-    //                 // 复制像素数据
-    //                 for (let component = 0; component < 4; component++) {
-    //                     extractedTextureData[extractedIndex + component] = atlasPixelData[atlasIndex + component];
-    //                 }
-    //             }
-    //         }
-    //         this.spriteFrameBufferMap.set(spriteFrame, extractedTextureData);
-    //         return extractedTextureData;
-    //     }
-
-
-    //     return this.readPixels(spriteFrame.texture, flipY);
-    // }
-
-    // clipTransparentPixels(pixelData: Uint8Array, spriteFrame: SpriteFrame, flipY: boolean = true) {
-    //     let minX = spriteFrame.original._x;
-    //     let minY = spriteFrame.original._y;
-    //     let maxX = minX + spriteFrame.rect.width;
-    //     let maxY = minY + spriteFrame.rect.height;
-
-    //     let newWidth = spriteFrame.rect.width;
-    //     let newHeight = spriteFrame.rect.height;
-
-    //     // 创建新的Uint8Array
-    //     let clippedPixelData = new Uint8Array(newWidth * newHeight * 4);
-    //     // 复制像素数据
-    //     for (let y = minY; y <= maxY; y++) {
-    //         for (let x = minX; x <= maxX; x++) {
-    //             let sourceIndex = (y * spriteFrame.originalSize.width + x) * 4;
-    //             let destIndex;
-    //             if (flipY) {
-    //                 destIndex = ((maxY - y) * newWidth + (x - minX)) * 4;
-    //             } else {
-    //                 destIndex = ((y - minY) * newWidth + (x - minX)) * 4;
-    //             }
-
-    //             clippedPixelData[destIndex] = pixelData[sourceIndex];     // R通道
-    //             clippedPixelData[destIndex + 1] = pixelData[sourceIndex + 1]; // G通道
-    //             clippedPixelData[destIndex + 2] = pixelData[sourceIndex + 2]; // B通道
-    //             clippedPixelData[destIndex + 3] = pixelData[sourceIndex + 3]; // A通道
-    //         }
-    //     }
-    //     return clippedPixelData;
-    // }
-
-
 }
 
 tnt.hitTest = new HitTest();
