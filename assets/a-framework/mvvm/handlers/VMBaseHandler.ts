@@ -1,4 +1,4 @@
-import { Component, js, Node } from "cc";
+import { Asset, Component, js, Node, path } from "cc";
 import { DEV } from "cc/env";
 import { TriggerOpTypes } from "../reactivity/_internals";
 import { isArray } from "../VMGeneral";
@@ -15,6 +15,7 @@ export abstract class VMBaseHandler<T extends object = any>{
     private declare _node: Node;
     protected declare templateValuesCache: string[] | number[] | boolean[];
     private _tween: IVMTween = null;
+    protected _realFinalValue = null; // 一般作为资源路径使用
     protected get tween() {
         if (this._tween) {
             return this._tween;
@@ -117,17 +118,20 @@ export abstract class VMBaseHandler<T extends object = any>{
      */
     protected _updateTargetValue(target: T, value: any) {
         if (!this.isValid) {
-            return;
+            return false;
         }
         if (this._vmProperty in target) {
             target[this._vmProperty] = value;
-            return;
+            return true;
         }
 
         let key = this.attr._targetPropertyKey;
         if (key in target) {
             target[key] = value;
+            return true;
         }
+
+        return false;
     }
 
     /**
@@ -139,11 +143,29 @@ export abstract class VMBaseHandler<T extends object = any>{
      * @memberof VMTrigger
      */
     protected async _updateValue(newValue: any, oldValue: any, watchPath: WatchPath) {
+        this._realFinalValue = newValue;
         let val = await this.formatValue(newValue, oldValue, this.node, 0, watchPath);
-        this._updateTargetValue(this.target, val);
+        // 如果是资源，这里判断是否是自己所需要的，防止出现由于加载延迟导致的显示错误问题
+        if (val && val instanceof Asset) {
+            if (path.basename(this._realFinalValue) !== val.name) {
+                return;
+            }
+        }
+        let isSuccess = this._updateTargetValue(this.target, val);
+
+        if (isSuccess) {
+            let options = {
+                newValue,
+                oldValue,
+                watchPath,
+                handler: this,
+                attr: this.attr,
+            }
+            this.attr.onValueChange?.call(this.userControllerComponent, options);
+        }
     }
 
-    protected  abstract onInitValue();
+    protected abstract onInitValue();
 
     protected abstract onBind();
 

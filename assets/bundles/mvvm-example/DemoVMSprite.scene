@@ -21,7 +21,7 @@
     "_active": true,
     "_components": [],
     "_prefab": {
-      "__id__": 81
+      "__id__": 84
     },
     "_lpos": {
       "__type__": "cc.Vec3",
@@ -52,7 +52,7 @@
     },
     "autoReleaseAssets": true,
     "_globals": {
-      "__id__": 82
+      "__id__": 85
     },
     "_id": "6d4837a9-a715-434e-9cb3-5677a2eb9120"
   },
@@ -84,18 +84,21 @@
       },
       {
         "__id__": 74
+      },
+      {
+        "__id__": 78
       }
     ],
     "_active": true,
     "_components": [
       {
-        "__id__": 78
+        "__id__": 81
       },
       {
-        "__id__": 79
+        "__id__": 82
       },
       {
-        "__id__": 80
+        "__id__": 83
       }
     ],
     "_prefab": null,
@@ -191,7 +194,7 @@
     "_priority": -1,
     "_fov": 60,
     "_fovAxis": 0,
-    "_orthoHeight": 385.2487804878049,
+    "_orthoHeight": 360,
     "_near": 1,
     "_far": 4096,
     "_color": {
@@ -2512,6 +2515,113 @@
     "_id": "0cMp1qq5VMcJSHIpC/M6LB"
   },
   {
+    "__type__": "cc.Node",
+    "_name": "spineboy-pro",
+    "_objFlags": 0,
+    "_parent": {
+      "__id__": 2
+    },
+    "_children": [],
+    "_active": true,
+    "_components": [
+      {
+        "__id__": 79
+      },
+      {
+        "__id__": 80
+      }
+    ],
+    "_prefab": null,
+    "_lpos": {
+      "__type__": "cc.Vec3",
+      "x": -512.679,
+      "y": -263.743,
+      "z": 0
+    },
+    "_lrot": {
+      "__type__": "cc.Quat",
+      "x": 0,
+      "y": 0,
+      "z": 0,
+      "w": 1
+    },
+    "_lscale": {
+      "__type__": "cc.Vec3",
+      "x": 0.3,
+      "y": 0.3,
+      "z": 1
+    },
+    "_mobility": 0,
+    "_layer": 1073741824,
+    "_euler": {
+      "__type__": "cc.Vec3",
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "_id": "3bj8qMllpL5KKUtzVd/j/B"
+  },
+  {
+    "__type__": "cc.UITransform",
+    "_name": "",
+    "_objFlags": 0,
+    "node": {
+      "__id__": 78
+    },
+    "_enabled": true,
+    "__prefab": null,
+    "_contentSize": {
+      "__type__": "cc.Size",
+      "width": 419.84,
+      "height": 686.08
+    },
+    "_anchorPoint": {
+      "__type__": "cc.Vec2",
+      "x": 0.454125381097561,
+      "y": 0.011660447761194029
+    },
+    "_id": "94ICjUmO1CzJtYYf75t3dO"
+  },
+  {
+    "__type__": "sp.Skeleton",
+    "_name": "",
+    "_objFlags": 0,
+    "node": {
+      "__id__": 78
+    },
+    "_enabled": true,
+    "__prefab": null,
+    "_customMaterial": null,
+    "_srcBlendFactor": 2,
+    "_dstBlendFactor": 4,
+    "_color": {
+      "__type__": "cc.Color",
+      "r": 255,
+      "g": 255,
+      "b": 255,
+      "a": 255
+    },
+    "loop": true,
+    "_timeScale": 1,
+    "_useTint": false,
+    "_preCacheMode": 0,
+    "_cacheMode": 0,
+    "_defaultCacheMode": 0,
+    "_debugBones": false,
+    "_debugSlots": false,
+    "_skeletonData": {
+      "__uuid__": "90e88d2a-ce75-4324-b9b1-1c88bdcab0c7",
+      "__expectedType__": "sp.SkeletonData"
+    },
+    "_premultipliedAlpha": true,
+    "defaultSkin": "default",
+    "defaultAnimation": "",
+    "_enableBatch": false,
+    "_sockets": [],
+    "_debugMesh": false,
+    "_id": "70DNEBRsdI04zs9SK+k6tq"
+  },
+  {
     "__type__": "cc.Canvas",
     "_name": "",
     "_objFlags": 0,
@@ -2570,22 +2680,22 @@
   {
     "__type__": "cc.SceneGlobals",
     "ambient": {
-      "__id__": 83
-    },
-    "shadows": {
-      "__id__": 84
-    },
-    "_skybox": {
-      "__id__": 85
-    },
-    "fog": {
       "__id__": 86
     },
-    "octree": {
+    "shadows": {
       "__id__": 87
     },
-    "lightProbeInfo": {
+    "_skybox": {
       "__id__": 88
+    },
+    "fog": {
+      "__id__": 89
+    },
+    "octree": {
+      "__id__": 90
+    },
+    "lightProbeInfo": {
+      "__id__": 91
     },
     "bakedWithStationaryMainLight": false,
     "bakedWithHighpLightmap": false

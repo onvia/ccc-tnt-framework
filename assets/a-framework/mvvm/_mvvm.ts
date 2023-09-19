@@ -1,8 +1,8 @@
-import { Component, Label, Node, Sprite, EditBox, ProgressBar, RichText, Slider, Toggle, UIOpacity, UIRenderer, js, UITransform, isValid, SpriteFrame, Button } from "cc";
+import { Component, Label, Node, Sprite, EditBox, ProgressBar, RichText, Slider, Toggle, UIOpacity, UIRenderer, js, UITransform, isValid, SpriteFrame, Button, sp } from "cc";
 import { DEBUG } from "cc/env";
 import { GVMTween } from "./VMTween";
 import { isArray } from "./VMGeneral";
-import { VMBaseAttr, BaseAttrBind, WatchPath, Formatter, ReturnValueType, VMForAttr, SpriteAttrBind, VMSpriteAttr, LabelAttrBind, BaseValueType, VMEventAttr, DataChanged } from "./_mv_declare";
+import { VMBaseAttr, WatchPath, Formatter, ReturnValueType, VMForAttr, SpriteAttrBind, VMSpriteAttr, LabelAttrBind, BaseValueType, VMEventAttr, DataChanged, CustomAttrBind, VMCustomAttr } from "./_mv_declare";
 import * as VMFactory from "./VMFactory";
 import { VMHandlerName } from "./VMFactory";
 import { handlerMap, IVMObserveAutoUnbind, proxyMap, Raw, rawDepsMap, rawMap, rawNameMap, targetMap, unbindMap } from "./reactivity/_internals";
@@ -37,6 +37,8 @@ _defaultKey.set(UIOpacity, "opacity");
 _defaultKey.set(UIRenderer, "color");
 _defaultKey.set(UITransform, "contentSize");
 _defaultKey.set(Button, "interactable");
+_defaultKey.set(sp.Skeleton, "skeletonData");
+
 
 // 默认的格式化方法
 const _defaultFormatter: WeakMap<Object, Record<string, Formatter<any, any>>> = new WeakMap();
@@ -44,11 +46,28 @@ const _defaultFormatter: WeakMap<Object, Record<string, Formatter<any, any>>> = 
 // 注册 Sprite 默认格式化 spriteFrame 的方法
 registerDefaultFormatter(Sprite, "spriteFrame", async (options) => {
     let spriteFrame = await new Promise<SpriteFrame>((rs) => {
+        if (!options.newValue) {
+            rs(null);
+            return;
+        }
         tnt.resourcesMgr.load(options.attr.loaderKey, options.newValue, SpriteFrame, (err, spriteFrame) => {
             rs(err ? null : spriteFrame);
         }, options.attr.bundle);
     });
     return spriteFrame;
+});
+// 注册 Spine 默认格式化 skeletonData 的方法
+registerDefaultFormatter(sp.Skeleton, "skeletonData", async (options) => {
+    let skeletonData = await new Promise<sp.SkeletonData>((rs) => {
+        if (!options.newValue) {
+            rs(null);
+            return;
+        }
+        tnt.resourcesMgr.load(options.attr.loaderKey, options.newValue, sp.SkeletonData, (err, skeletonData) => {
+            rs(err ? null : skeletonData);
+        }, options.attr.bundle);
+    });
+    return skeletonData;
 });
 
 if (DEBUG) {
@@ -106,7 +125,7 @@ class VM {
         if (_target) {
             _target.data = proxy;
         }
-        
+
         let node: Node = null;
         if (_target) {
             if (_target instanceof Component) {
@@ -176,23 +195,25 @@ class VM {
      * @template T
      * @param {IMVVMObject} mvvmObject
      * @param {T} bindObject
-     * @param {(BaseAttrBind<T> | WatchPath)} attr
+     * @param {(CustomAttrBind<T> | WatchPath)} attr
      * @param {Formatter<ReturnValueType>} [formatter]
      * @return {*} 
      * @memberof VM
      */
-    public bind<T extends Component | Node, A extends BaseAttrBind<T>>(mvvmObject: IMVVMObject, bindObject: T, attr: A)
-    public bind<T extends Component | Node, A extends BaseAttrBind<T>>(mvvmObject: IMVVMObject, bindObject: T, attr: WatchPath)
-    public bind<T extends Component | Node, A extends BaseAttrBind<T>>(mvvmObject: IMVVMObject, bindObject: T, attr: WatchPath, formatter: Formatter<ReturnValueType, unknown>)
-    public bind<T extends Component | Node, A extends BaseAttrBind<T>>(mvvmObject: IMVVMObject, bindObject: T, attr: A | WatchPath, formatter: Formatter<ReturnValueType, unknown>)
-    public bind<T extends Component | Node, A extends BaseAttrBind<T>>(mvvmObject: IMVVMObject, bindObject: T, attr: A | WatchPath, formatter?: Formatter<ReturnValueType, unknown>) {
+    public bind<T extends Component | Node, A extends CustomAttrBind<T>>(mvvmObject: IMVVMObject, bindObject: T, attr: A)
+    public bind<T extends Component | Node, A extends CustomAttrBind<T>>(mvvmObject: IMVVMObject, bindObject: T, attr: WatchPath)
+    public bind<T extends Component | Node, A extends CustomAttrBind<T>>(mvvmObject: IMVVMObject, bindObject: T, attr: WatchPath, formatter: Formatter<ReturnValueType, unknown>)
+    public bind<T extends Component | Node, A extends CustomAttrBind<T>>(mvvmObject: IMVVMObject, bindObject: T, attr: A | WatchPath, formatter: Formatter<ReturnValueType, unknown>)
+    public bind<T extends Component | Node, A extends CustomAttrBind<T>>(mvvmObject: IMVVMObject, bindObject: T, attr: A | WatchPath, formatter?: Formatter<ReturnValueType, unknown>) {
         if (!bindObject) {
             console.error(`_mvvm-> 绑定对象不存在`);
             return;
         }
         let _attrs = _formatAttr(mvvmObject, bindObject, attr, formatter);
         for (const key in _attrs) {
-            const opt = _attrs[key] as VMBaseAttr<any>;
+            const opt = _attrs[key] as VMCustomAttr<any>;
+            opt.loaderKey = opt.loaderKey || mvvmObject.loaderKey;
+            opt.bundle = opt.bundle || mvvmObject.bundle;
             this._collect(mvvmObject, bindObject, opt);
         }
     }
@@ -243,14 +264,14 @@ class VM {
     }
 
 
-    public node(mvvmObject: IMVVMObject, node: Node, attr: BaseAttrBind<Node>)
+    public node(mvvmObject: IMVVMObject, node: Node, attr: CustomAttrBind<Node>)
     public node(mvvmObject: IMVVMObject, node: Node, attr: WatchPath, formatter?: Formatter<boolean, unknown>)
-    public node(mvvmObject: IMVVMObject, node: Node, attr: BaseAttrBind<Node> | WatchPath, formatter?: Formatter<boolean, unknown>) {
+    public node(mvvmObject: IMVVMObject, node: Node, attr: CustomAttrBind<Node> | WatchPath, formatter?: Formatter<boolean, unknown>) {
         // 有 formatter 的时候，一般使用默认属性， Node 为 node.active 类型为 boolean
         this.bind(mvvmObject, node, attr, formatter);
     }
 
-    public children<T extends Component | Node>(mvvmObject: IMVVMObject, parent: Node, component: Component | Node, attr: BaseAttrBind<T> | WatchPath, formatter?: Formatter<boolean, unknown>) {
+    public children<T extends Component | Node>(mvvmObject: IMVVMObject, parent: Node, component: Component | Node, attr: CustomAttrBind<T> | WatchPath, formatter?: Formatter<boolean, unknown>) {
 
     }
 
@@ -263,22 +284,16 @@ class VM {
             return;
         }
         let _comp: Sprite = _typeTransition(bindObject, Sprite);
-        let _attrs = _formatAttr(mvvmObject, _comp, attr, formatter);
-        for (const key in _attrs) {
-            const opt = _attrs[key] as VMSpriteAttr<any>;
-            opt.loaderKey = opt.loaderKey || mvvmObject.loaderKey;
-            opt.bundle = opt.bundle || mvvmObject.bundle;
-            this._collect(mvvmObject, _comp, opt);
-        }
+        this.bind(mvvmObject, _comp, attr, formatter);
     }
 
-    public progressBar(mvvmObject: IMVVMObject, bindObject: ProgressBar | Node, attr: BaseAttrBind<ProgressBar> | WatchPath, formatter?: Formatter<number, unknown>) {
+    public progressBar(mvvmObject: IMVVMObject, bindObject: ProgressBar | Node, attr: CustomAttrBind<ProgressBar> | WatchPath, formatter?: Formatter<number, unknown>) {
         // 有 formatter 的时候，一般使用默认属性， ProgressBar，Slider 为 comp.progress 类型为 number
         let _comp = _typeTransition(bindObject, ProgressBar);
         this.bind(mvvmObject, _comp, attr, formatter);
     }
 
-    public slider(mvvmObject: IMVVMObject, bindObject: Slider | Node, attr: BaseAttrBind<Slider> | WatchPath, formatter?: Formatter<number, unknown>) {
+    public slider(mvvmObject: IMVVMObject, bindObject: Slider | Node, attr: CustomAttrBind<Slider> | WatchPath, formatter?: Formatter<number, unknown>) {
         // 有 formatter 的时候，一般使用默认属性， ProgressBar，Slider 为 comp.progress 类型为 number
         let _comp = _typeTransition(bindObject, Slider);
         this.bind(mvvmObject, _comp, attr, formatter);
@@ -308,18 +323,19 @@ class VM {
      * @param {*} formatter
      * @memberof VM
      */
-    public event(mvvmObject: IMVVMObject,watchPath: WatchPath,formatter: DataChanged) {
+    public event(mvvmObject: IMVVMObject, watchPath: WatchPath, formatter: DataChanged) {
         let attr: VMEventAttr = {
             _handler: VMHandlerName.Event,
-            onChange: formatter,
+            onValueChange: formatter,
             watchPath
         }
-        
+
         attr.watchPath = _parseWatchPath(attr.watchPath, mvvmObject._vmTag);
         this._collect(mvvmObject, mvvmObject as any, attr);
     }
 
     private _collect<T extends Component | Node>(mvvmObject: IMVVMObject, bindObject: T, attr: VMBaseAttr<any>) {
+
         let handlerArray = handlerMap.get(bindObject) || [];
         for (let i = 0; i < handlerArray.length; i++) {
             const _vmTrigger = handlerArray[i];
@@ -408,7 +424,7 @@ class VM {
     private _getDataByPath(path: string) {
         let rs = path.split(".").map(val => val.trim());
         let viewModel = this._mvMap.get(rs[0]);
-        if(!viewModel){
+        if (!viewModel) {
             return null;
         }
         let targetData = viewModel.data;
@@ -432,7 +448,7 @@ class VM {
 
         // 防止无法注册
         let isProxy = rawMap.has(data);
-        if(isProxy){
+        if (isProxy) {
             data = rawMap.get(data);
         }
 
@@ -547,8 +563,8 @@ function _parseObserveArgs(mvvmObjectOrData: IMVVMObject | object, data?: object
     return { target, data: data as object, tag }
 }
 
-function _formatAttr<T>(mvvmObject: IMVVMObject, component: T, attr: BaseAttrBind<T> | WatchPath, formatter?: Formatter<ReturnValueType, unknown>) {
-    let _attr: BaseAttrBind<any> = null;
+function _formatAttr<T>(mvvmObject: IMVVMObject, component: T, attr: CustomAttrBind<T> | WatchPath, formatter?: Formatter<ReturnValueType, unknown>) {
+    let _attr: CustomAttrBind<any> = null;
     if (typeof attr === 'string' || isArray(attr)) {
         let defKey = _getDefaultKey(component);
         _attr = {

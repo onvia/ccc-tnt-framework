@@ -15,7 +15,7 @@ export class VMEventHandler extends VMBaseImplHandler {
             handler: this,
             attr: this.attr,
         }
-        this.attr.onChange.call(this.userControllerComponent, options);
+        this.attr.onValueChange.call(this.userControllerComponent, options);
     }
 
 }

@@ -37,9 +37,15 @@ export interface VMBaseAttr<R = any> {
     watchPath: WatchPath;
     tween?: IVMTween | boolean | number;
     formatter?: Formatter<R, unknown>;
+    /** 数据发生改变 */
+    onValueChange?: DataChanged;
 }
 
 export interface VMCustomAttr<R> extends VMBaseAttr<R> {
+
+    bundle?: string;
+
+    loaderKey?: string;
 
 }
 
@@ -58,10 +64,6 @@ export interface VMForAttr extends VMBaseAttr {
 }
 
 export interface VMSpriteAttr<R> extends VMCustomAttr<R> {
-
-    bundle?: string;
-
-    loaderKey?: string;
 
     /** @deprecated 在 VMSpriteAttr 中不要使用这个属性*/
     tween?: null;
@@ -84,18 +86,16 @@ export interface VMEventAttr extends VMBaseAttr {
     /** @deprecated 在 VMEventAttr 中不要使用这个属性 */
     formatter?: null;
 
-    /** 数据发生改变 */
-    onChange: DataChanged;
 }
 
 
 // 约束返回值类型，如果返回值类型是 字符串，则可以返回 数值、字符串以及 数值数组、字符串数组
 type BaseValueTypeOrOriginal<T> = T extends string ? number | number[] | string | string[] : T;
 
-// 属性绑定
-export type BaseAttrBind<T> = {
-    [P in keyof T]?: WatchPath | VMBaseAttr<BaseValueTypeOrOriginal<T[P]>>;
-}
+// // 属性绑定
+// export type BaseAttrBind<T> = {
+//     [P in keyof T]?: WatchPath | VMBaseAttr<BaseValueTypeOrOriginal<T[P]>>;
+// }
 
 // 属性绑定
 export type CustomAttrBind<T> = {

@@ -79,6 +79,9 @@ export class VMStringHandler extends VMCustomHandler {
     }
 
     getFormatText(value): string {
+        if (!value) {
+            return value ?? "";
+        }
         if (!this.templateParamCount) {
             return value;
         }
