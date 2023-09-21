@@ -1,4 +1,4 @@
-import { Component, js, Label, Button, Layout, ProgressBar, EditBox, Sprite, Graphics, RichText, Toggle, _decorator, Widget, Slider } from "cc";
+import { Component, js, Label, Button, Layout, ProgressBar, EditBox, Sprite, Graphics, RichText, Toggle, _decorator, Widget, Slider, ScrollView } from "cc";
 import { DEV, EDITOR } from "cc/env";
 
 /**
@@ -355,6 +355,15 @@ let __decorator = {
         return _component_sound(name, Button, parent, options);
     },
 
+    /**
+     * scrollView 组件装饰器
+     * @param name 组件名
+     * @param parent 父节点名或按钮属性选项
+     * @param options 按钮属性选项
+     */
+    scrollView(name?: string, parent?: string) {
+        return __decorator.component(name, ScrollView, parent)
+    },
     /**
      * 组件装饰器，用于给组件添加属性
      * @param name 属性名或组件名

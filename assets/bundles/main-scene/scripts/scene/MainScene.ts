@@ -28,6 +28,8 @@ export class MainScene extends tnt.SceneBase {
         this.registerButtonClick("btnGitee", () => {
             window.open("https://gitee.com/onvia/ccc-tnt-framework")
         });
+
+        btnTemplate.destroy();
         // tnt.btnCommonEventMgr.bind(this);
     }
 

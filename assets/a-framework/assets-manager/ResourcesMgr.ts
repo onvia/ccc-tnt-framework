@@ -269,7 +269,7 @@ class ResourcesMgr {
     public updateSpriteFrame(loaderKeyAble: LoaderType, spriteOrNode: Sprite | Node, url: string, cb: Runnable): void
     public updateSpriteFrame(loaderKeyAble: LoaderType, spriteOrNode: Sprite | Node, url: string, bundle: string): void
     public updateSpriteFrame(loaderKeyAble: LoaderType, spriteOrNode: Sprite | Node, url: string, cb: Runnable, bundle: string): void
-    public updateSpriteFrame(loaderKeyAble: LoaderType, spriteOrNode: Sprite | Node, url: string, cbOrBundle?: Runnable | string, bundle?: string): void 
+    public updateSpriteFrame(loaderKeyAble: LoaderType, spriteOrNode: Sprite | Node, url: string, cbOrBundle?: Runnable | string, bundle?: string): void
     public updateSpriteFrame(loaderKeyAble: LoaderType, spriteOrNode: Sprite | Node, url: string, cbOrBundle?: Runnable | string, bundle?: string): void {
         let loader = this._convertToLoader(loaderKeyAble);
         let sprite = spriteOrNode instanceof Node ? spriteOrNode.getComponent(Sprite) : spriteOrNode;
@@ -299,7 +299,7 @@ class ResourcesMgr {
         }, bundle);
     }
 
-    public loadPrefabAsset<Options, T extends tnt.GComponent<Options>>(loaderKeyAble: ILoaderKeyAble | tnt.AssetLoader | string, clazz: GConstructor<T> | string, options?: Options) {
+    public loadPrefabAsset<Options, T extends tnt.GComponent<Options>>(loaderKeyAble: ILoaderKeyAble | tnt.AssetLoader | string, clazz: GConstructor<T> | string, options?: T['options']) {
         return new Promise<Prefab>((resolve, reject) => {
             let { loader, cls } = this._formatArgs(loaderKeyAble, clazz);
 
@@ -315,7 +315,7 @@ class ResourcesMgr {
         });
     }
 
-    public loadPrefabNode<Options, T extends tnt.GComponent<Options>>(loaderKeyAble: ILoaderKeyAble | tnt.AssetLoader | string, clazz: GConstructor<T> | string, options?: Options) {
+    public loadPrefabNode<Options, T extends tnt.GComponent<Options>>(loaderKeyAble: ILoaderKeyAble | tnt.AssetLoader | string, clazz: GConstructor<T> | string, options?: T['options']) {
         return new Promise<T>((resolve, reject) => {
 
             let { loader, cls } = this._formatArgs(loaderKeyAble, clazz);
@@ -338,7 +338,7 @@ class ResourcesMgr {
         });
     }
 
-    public addPrefabNode<Options, T extends tnt.GComponent<Options>>(loaderKeyAble: ILoaderKeyAble | tnt.AssetLoader | string, clazz: GConstructor<T> | string, parent: Node, options?: Options): Promise<T> {
+    public addPrefabNode<Options, T extends tnt.GComponent<Options>>(loaderKeyAble: ILoaderKeyAble | tnt.AssetLoader | string, clazz: GConstructor<T> | string, parent: Node, options?: T['options']): Promise<T> {
         return new Promise<T>((resolve, reject) => {
             this.loadPrefabNode(loaderKeyAble, clazz, options).then(component => {
                 if (!component) {

@@ -43,13 +43,19 @@ class UIBase<Options = any> extends tnt.GComponent<Options> implements IUIAble {
      * 注册节点触摸事件
      *
      * @param {NodeNoun<Node>} node
-     * @param {ITouch} touch
+     * @param {Partial<ITouch> | ITouch["onTouchEnded"]} touch
      * @param {*} [target]
      * @param {Node} [parent]
      * @param {boolean} [useCapture]
      * @memberof UIBase
      */
-    public registerNodeTouchEvent(node: NodeNoun<Node>, touch: ITouch, target?: any, parent?: Node, useCapture?: boolean) {
+    public registerNodeTouchEvent(node: NodeNoun<Node>, touch: Partial<ITouch> | ITouch["onTouchEnded"], target?: any, parent?: Node, useCapture?: boolean) {
+        if (typeof touch === 'function') {
+            let func = touch;
+            touch = {
+                onTouchEnded: func,
+            }
+        }
         tnt.componentUtils.registerNodeTouchEvent(node, touch, target || this, this.node, parent, useCapture);
     }
 

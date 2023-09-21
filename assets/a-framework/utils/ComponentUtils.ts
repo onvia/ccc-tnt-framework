@@ -4,8 +4,8 @@ declare module 'cc' {
         __$nodes: Record<string, Node[]>;
 
         // 节点点击事件
-        __$50NodeTouch: ITouch;
-        __$50NodeTouchTarget: ITouch;
+        __$50NodeTouch: Partial<ITouch>;
+        __$50NodeTouchTarget: Object;
 
         // 按钮点击事件
         __$50BtnClickFn: Runnable,
@@ -235,7 +235,7 @@ class ComponentUtils {
      * @return {*} 
      * @memberof ComponentUtils
      */
-    public registerNodeTouchEvent(name: NodeNoun<Node>, touch: ITouch, target: any, root: Node, parent?: Node, useCapture?: any) {
+    public registerNodeTouchEvent(name: NodeNoun<Node>, touch: Partial<ITouch>, target: any, root: Node, parent?: Node, useCapture?: any) {
         let node = this._convertToNode(name, root, parent);
         if (!node) {
             return;
@@ -243,17 +243,17 @@ class ComponentUtils {
         let _touch = node.__$50NodeTouch;
         if (_touch) {
             let _target = node.__$50NodeTouchTarget;
-            node.off(Node.EventType.TOUCH_START, _touch.onTouchBegan, _target, useCapture);
-            node.off(Node.EventType.TOUCH_MOVE, _touch.onTouchMoved, _target, useCapture);
-            node.off(Node.EventType.TOUCH_END, _touch.onTouchEnded, _target, useCapture);
-            node.off(Node.EventType.TOUCH_CANCEL, _touch.onTouchCancel, _target, useCapture);
+            _touch.onTouchBegan && node.off(Node.EventType.TOUCH_START, _touch.onTouchBegan, _target, useCapture);
+            _touch.onTouchMoved && node.off(Node.EventType.TOUCH_MOVE, _touch.onTouchMoved, _target, useCapture);
+            _touch.onTouchEnded && node.off(Node.EventType.TOUCH_END, _touch.onTouchEnded, _target, useCapture);
+            _touch.onTouchCancel && node.off(Node.EventType.TOUCH_CANCEL, _touch.onTouchCancel, _target, useCapture);
         }
         node.__$50NodeTouch = touch;
         node.__$50NodeTouchTarget = target;
-        node.on(Node.EventType.TOUCH_START, touch.onTouchBegan, target, useCapture);
-        node.on(Node.EventType.TOUCH_MOVE, touch.onTouchMoved, target, useCapture);
-        node.on(Node.EventType.TOUCH_END, touch.onTouchEnded, target, useCapture);
-        node.on(Node.EventType.TOUCH_CANCEL, touch.onTouchCancel, target, useCapture);
+        touch.onTouchBegan && node.on(Node.EventType.TOUCH_START, touch.onTouchBegan, target, useCapture);
+        touch.onTouchMoved && node.on(Node.EventType.TOUCH_MOVE, touch.onTouchMoved, target, useCapture);
+        touch.onTouchEnded && node.on(Node.EventType.TOUCH_END, touch.onTouchEnded, target, useCapture);
+        touch.onTouchCancel && node.on(Node.EventType.TOUCH_CANCEL, touch.onTouchCancel, target, useCapture);
     }
 
     /**
