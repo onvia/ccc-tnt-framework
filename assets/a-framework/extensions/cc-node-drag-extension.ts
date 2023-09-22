@@ -24,7 +24,6 @@ if (!EDITOR) {
             _dragging: false,
             _dragTesting: false,
             _dragStartPoint: null,
-            _isTouchBegin50: false,
             initDrag: function () {
                 if (this._draggable) {
                     this.on(Node.EventType.TOUCH_START, this.onTouchBegin_0, this);
@@ -44,11 +43,10 @@ if (!EDITOR) {
                 }
                 DEV && console.log(`cc-node-drag-extension-> onTouchBegin_0  ${this.name}`);
 
-                event.preventSwallow = true;
+                // event.preventSwallow = true;
                 let pos = event.getUILocation();
                 this._dragStartPoint.set(pos);
                 this._dragTesting = true;
-                this._isTouchBegin50 = true;
             },
             onTouchMove_0: function (event: EventTouch) {
                 if (!this._dragging && this._draggable && this._dragTesting) {
@@ -59,7 +57,7 @@ if (!EDITOR) {
                         return;
                     }
 
-                    event.preventSwallow = true;
+                    // event.preventSwallow = true;
                     this._dragging = true;
                     this._dragTesting = false;
                     this.emit(Node.DragEvent.DRAG_START, event);
@@ -79,8 +77,6 @@ if (!EDITOR) {
                     this._dragging = false;
                     this.emit(Node.DragEvent.DRAG_END, event);
                 }
-
-                this._patchCheckTouchBegin(event);
                 DEV && console.log(`cc-node-drag-extension-> onTouchEnd_0  ${this.name}, _dragging: ${this._dragging}`);
             },
 
@@ -89,18 +85,10 @@ if (!EDITOR) {
                     this._dragging = false;
                     this.emit(Node.DragEvent.DRAG_END, event);
                 }
-                this._patchCheckTouchBegin(event);
                 DEV && console.log(`cc-node-drag-extension-> onTouchCancel_0  ${this.name}, _dragging: ${this._dragging}`);
             },
 
-            /** 修复转换拖动时的bug */
-            _patchCheckTouchBegin: function (event: EventTouch) {
-                if (!this._isTouchBegin50) {
-                    let index = this._eventProcessor.claimedTouchIdList.indexOf(event.getID());
-                    js.array.removeAt(this._eventProcessor.claimedTouchIdList, index);
-                }
-            },
-            //
+
             startDrag: function () {
                 //此节点是否在场景中激活
                 if (!this.activeInHierarchy) {

@@ -1,4 +1,4 @@
-import { Node, js, Toggle, Animation, Button, Canvas, EditBox, Graphics, Label, Layout, PageView, ProgressBar, RichText, ScrollView, Slider, Sprite, Vec2, Vec3, Skeleton, Widget, UIOpacity, UITransform, director, Director } from "cc";
+import { Node, js, Toggle, Animation, Button, Canvas, EditBox, Graphics, Label, Layout, PageView, ProgressBar, RichText, ScrollView, Slider, Sprite, Vec2, Vec3, Skeleton, Widget, UIOpacity, UITransform, director, Director, Mask } from "cc";
 import { EDITOR } from "cc/env";
 
 if (!EDITOR) {
@@ -24,6 +24,7 @@ if (!EDITOR) {
             "widget": Widget,
             "uiOpacity": UIOpacity,
             "uiTransform": UITransform,
+            "mask": Mask,
         };
 
         Object.defineProperty(Node.prototype, "__nodeCaches__", {
@@ -156,6 +157,7 @@ declare module "cc" {
         widget: Widget,
         uiOpacity: UIOpacity,
         uiTransform: UITransform,
+        mask: Mask;
         setSoundName(soundName: string);
         clearNodeCache();
     }
