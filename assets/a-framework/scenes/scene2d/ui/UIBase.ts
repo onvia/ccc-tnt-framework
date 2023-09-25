@@ -209,7 +209,7 @@ class UIBase<Options = any> extends tnt.GComponent<Options> implements IUIAble {
      * @param {Options} [param]
      * @memberof UIWindowBase
      */
-    public addPanel<Options, T extends tnt.UIPanel<Options>>(container: string | Node, uiPanelCtor: GConstructor<T> | string, uiPanelName?: string, param?: Options): boolean {
+    public addPanel<Options, T extends tnt.UIPanel<Options>>(container: string | Node, uiPanelCtor: GConstructor<T> | string, uiPanelName?: string, param?: T["options"]): boolean {
 
         if (!this.uiPanelPackMap) {
             console.error(`UIBase-> [ uiPanelPackMap ] 未初始化`);
@@ -282,7 +282,7 @@ class UIBase<Options = any> extends tnt.GComponent<Options> implements IUIAble {
      * @return {*}  {Promise<T>}
      * @memberof UIBase
      */
-    public showPanel<Options, T extends tnt.UIPanel<Options>>(key: string | GConstructor<T>, options?: Options): Promise<T> {
+    public showPanel<Options, T extends tnt.UIPanel<Options>>(key: string | GConstructor<T>, options?: T["options"]): Promise<T> {
         return new Promise<T>((resolve, reject) => {
             let __switch = true; // 常量 true
             let _name = tnt.uiMgr._getClassName(key);
@@ -350,14 +350,16 @@ class UIBase<Options = any> extends tnt.GComponent<Options> implements IUIAble {
      * @return {*}  {Promise<Key_Global_UI_Item_Ctor<T>>}
      * @memberof UIBase
      */
-    public addUI<T extends Key_Global_UI_Type>(clazz: T, parentNode: string | Node, options?: Key_Global_UI_Item_Options<T>): Promise<Key_Global_UI_Item_Ctor<T>> {
-        return new Promise<Key_Global_UI_Item_Ctor<T>>((resolve, reject) => {
+    public addUI<T extends Key_Global_UI_Type>(clazz: T, parentNode: string | Node, options?: Key_Global_UI_Item_Options<T>): Promise<Key_Global_UI_Item_Ctor<T>>
+    public addUI<Options, T extends UIBase<Options>>(clazz: GConstructor<T>, parentNode: string | Node, options?: T["options"]): Promise<T>
+    public addUI<Options, T extends UIBase<Options>>(clazz: GConstructor<T>, parentNode: string | Node, options?: T["options"]): Promise<T> {
+        return new Promise<any>((resolve, reject) => {
             if (typeof parentNode == 'string') {
                 parentNode = this.find(parentNode);
             }
             tnt.resourcesMgr.addPrefabNode(this, clazz, parentNode, options).then((result) => {
                 tnt.btnCommonEventMgr.bind(result);
-                resolve(result as Key_Global_UI_Item_Ctor<T>);
+                resolve(result);
             });
         })
     }
@@ -371,11 +373,13 @@ class UIBase<Options = any> extends tnt.GComponent<Options> implements IUIAble {
      * @return {*}  {Promise<Key_Global_UI_Item_Ctor<T>>}
      * @memberof UIBase
      */
-    public loadUI<T extends Key_Global_UI_Type>(clazz: T, options?: Key_Global_UI_Item_Options<T>): Promise<Key_Global_UI_Item_Ctor<T>> {
-        return new Promise<Key_Global_UI_Item_Ctor<T>>((resolve, reject) => {
+    public loadUI<T extends Key_Global_UI_Type>(clazz: T, options?: Key_Global_UI_Item_Options<T>): Promise<Key_Global_UI_Item_Ctor<T>>
+    public loadUI<Options, T extends UIBase<Options>>(clazz: GConstructor<T>, options?: T["options"]): Promise<T>
+    public loadUI<Options, T extends UIBase<Options>>(clazz: GConstructor<T>, options?: T["options"]): Promise<T> {
+        return new Promise<any>((resolve, reject) => {
             tnt.resourcesMgr.loadPrefabNode(this, clazz, options).then((result) => {
                 tnt.btnCommonEventMgr.bind(result);
-                resolve(result as Key_Global_UI_Item_Ctor<T>);
+                resolve(result);
             });
         })
     }
@@ -391,16 +395,15 @@ class UIBase<Options = any> extends tnt.GComponent<Options> implements IUIAble {
      * @return {*}  {Promise<T>}
      * @memberof UIBase
      */
-    public addUIWithCtor<Options, T extends UIBase<Options>>(clazz: GConstructor<T>, parentNode: string | Node, options?: Options): Promise<T> {
-        return new Promise<T>((resolve, reject) => {
-            if (typeof parentNode == 'string') {
-                parentNode = this.find(parentNode);
-            }
-            tnt.resourcesMgr.addPrefabNode(this, clazz, parentNode, options).then((result) => {
-                tnt.btnCommonEventMgr.bind(result);
-                resolve(result);
-            });
-        })
+    public addUISync<T extends Key_Global_UI_Type>(clazz: T, parentNode: string | Node, options?: Key_Global_UI_Item_Options<T>): Key_Global_UI_Item_Ctor<T>
+    public addUISync<Options, T extends UIBase<Options>>(clazz: GConstructor<T>, parentNode: string | Node, options?: T["options"]): T
+    public addUISync<Options, T extends UIBase<Options>>(clazz: GConstructor<T>, parentNode: string | Node, options?: T["options"]): T {
+        if (typeof parentNode == 'string') {
+            parentNode = this.find(parentNode);
+        }
+        let result = tnt.resourcesMgr.addPrefabNodeSync(this, clazz, parentNode, options)
+        result && tnt.btnCommonEventMgr.bind(result);
+        return result;
     }
 
     /**
@@ -413,15 +416,13 @@ class UIBase<Options = any> extends tnt.GComponent<Options> implements IUIAble {
      * @return {*}  {Promise<T>}
      * @memberof UIBase
      */
-    public loadUIWithCtor<Options, T extends UIBase<Options>>(clazz: GConstructor<T>, options?: Options): Promise<T> {
-        return new Promise<T>((resolve, reject) => {
-            tnt.resourcesMgr.loadPrefabNode(this, clazz, options).then((result) => {
-                tnt.btnCommonEventMgr.bind(result);
-                resolve(result);
-            });
-        })
+    public loadUISync<T extends Key_Global_UI_Type>(clazz: T, options?: Key_Global_UI_Item_Options<T>): Key_Global_UI_Item_Ctor<T>
+    public loadUISync<Options, T extends UIBase<Options>>(clazz: GConstructor<T>, options?: T["options"]): T
+    public loadUISync<Options, T extends UIBase<Options>>(clazz: GConstructor<T>, options?: T["options"]): T {
+        let result = tnt.resourcesMgr.loadPrefabNodeSync(this, clazz, options);
+        result && tnt.btnCommonEventMgr.bind(result);
+        return result;
     }
-
 }
 
 tnt.UIBase = UIBase;

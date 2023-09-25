@@ -1,0 +1,143 @@
+{
+  "ver": "1.0.25",
+  "importer": "image",
+  "imported": true,
+  "uuid": "53e5783c-c40e-4850-adba-6dd827d6a5fe",
+  "files": [
+    ".json",
+    ".png"
+  ],
+  "subMetas": {
+    "6c48a": {
+      "ver": "1.0.22",
+      "importer": "texture",
+      "uuid": "53e5783c-c40e-4850-adba-6dd827d6a5fe@6c48a",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {},
+      "userData": {
+        "wrapModeS": "clamp-to-edge",
+        "wrapModeT": "clamp-to-edge",
+        "minfilter": "linear",
+        "magfilter": "linear",
+        "mipfilter": "none",
+        "premultiplyAlpha": false,
+        "anisotropy": 0,
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "53e5783c-c40e-4850-adba-6dd827d6a5fe",
+        "visible": false
+      },
+      "displayName": "default_radio_button_bg",
+      "id": "6c48a",
+      "name": "texture"
+    },
+    "f9941": {
+      "ver": "1.0.11",
+      "importer": "sprite-frame",
+      "uuid": "53e5783c-c40e-4850-adba-6dd827d6a5fe@f9941",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {},
+      "userData": {
+        "wrapModeS": "clamp-to-edge",
+        "wrapModeT": "clamp-to-edge",
+        "minfilter": "linear",
+        "magfilter": "linear",
+        "premultiplyAlpha": false,
+        "generateMipmap": false,
+        "anisotropy": 1,
+        "trimType": "auto",
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 3,
+        "trimY": 3,
+        "width": 26,
+        "height": 26,
+        "rawWidth": 32,
+        "rawHeight": 32,
+        "borderTop": 13,
+        "borderBottom": 13,
+        "borderLeft": 13,
+        "borderRight": 13,
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "53e5783c-c40e-4850-adba-6dd827d6a5fe@6c48a",
+        "atlasUuid": "",
+        "mipfilter": "none",
+        "packable": true,
+        "vertices": {
+          "rawPosition": [
+            -13,
+            -13,
+            0,
+            13,
+            -13,
+            0,
+            -13,
+            13,
+            0,
+            13,
+            13,
+            0
+          ],
+          "indexes": [
+            0,
+            1,
+            2,
+            2,
+            1,
+            3
+          ],
+          "uv": [
+            3,
+            29,
+            29,
+            29,
+            3,
+            3,
+            29,
+            3
+          ],
+          "nuv": [
+            0.09375,
+            0.09375,
+            0.90625,
+            0.09375,
+            0.09375,
+            0.90625,
+            0.90625,
+            0.90625
+          ],
+          "minPos": [
+            -13,
+            -13,
+            0
+          ],
+          "maxPos": [
+            13,
+            13,
+            0
+          ]
+        },
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0
+      },
+      "displayName": "default_radio_button_bg",
+      "id": "f9941",
+      "name": "spriteFrame"
+    }
+  },
+  "userData": {
+    "type": "sprite-frame",
+    "redirect": "53e5783c-c40e-4850-adba-6dd827d6a5fe@f9941",
+    "hasAlpha": true,
+    "fixAlphaTransparencyArtifacts": false
+  }
+}

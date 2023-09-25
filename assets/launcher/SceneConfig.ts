@@ -62,5 +62,10 @@ export const SceneConfig: ISceneConfig[] = [
         scene: "PixelClickDemo",
         button: "像素点击",
         bundle: "pixel-click-example"
+    },
+    {
+        scene: "CCGUITestScene",
+        button: "cc-gui",
+        bundle: "cc-gui-test"
     }
 ]

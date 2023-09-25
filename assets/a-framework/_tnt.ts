@@ -43,6 +43,7 @@ import "./utils/ComponentUtils";
 import "./utils/TimeUtils";
 import "./utils/TweenUtils";
 import "./utils/DebugUtils";
+import "./utils/FunctionUtils";
 import "./task/TaskMgr";
 import "./task/LoadingTaskQueue";
 import "./mvvm/_mvvm";

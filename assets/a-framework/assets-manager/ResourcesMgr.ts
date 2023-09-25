@@ -356,6 +356,33 @@ class ResourcesMgr {
 
 
 
+    public loadPrefabNodeSync<Options, T extends tnt.GComponent<Options>>(loaderKeyAble: ILoaderKeyAble | tnt.AssetLoader | string, clazz: GConstructor<T> | string, options?: T['options']): T {
+        let { loader, cls } = this._formatArgs(loaderKeyAble, clazz);
+        let { prefabUrl, bundle } = this._parseAssetUrl(cls, options);
+
+        let assets = loader.getAsset(prefabUrl, Prefab, bundle);
+        if (!assets) {
+            return null;
+        }
+        let node = instantiate(assets.asset as Prefab);
+        let component = node.getComponent(cls) || node.addComponent(cls);
+        if (!component.loaderKey) {
+            component.loaderKey = loader.key;
+        }
+        component.updateOptions(options);
+        component.onCreate();
+        return component;
+    }
+
+    public addPrefabNodeSync<Options, T extends tnt.GComponent<Options>>(loaderKeyAble: ILoaderKeyAble | tnt.AssetLoader | string, clazz: GConstructor<T> | string, parent: Node, options?: T['options']): T {
+        let component = this.loadPrefabNodeSync(loaderKeyAble, clazz, options)
+        if (!component) {
+            return null;
+        }
+        component.node.parent = parent;
+        return component;
+    }
+
     /**
      * 释放单个资源
      *

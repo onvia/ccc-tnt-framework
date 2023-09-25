@@ -7,6 +7,10 @@ if (cc['settings']) {
     if (assets?.preloadBundles) {
         assets.preloadBundles = assets.preloadBundles.concat([{ bundle: "framework" }]);
     }
+
+    if (CC_DEBUG) {
+        if (assets?.projectBundles?.includes("cc-gui")) {
+            assets.preloadBundles = assets.preloadBundles.concat([{ bundle: "cc-gui" }]);
+        }
+    }
 }
-
-

@@ -41,10 +41,10 @@ export class EmbedWindow extends tnt.UIWindow {
 
 
 
-        // 添加角标预制体
-        // this.addUIWithCtor(UIEmbedItem, "itemRoot");
+        // // 添加角标预制体
+        // this.addUI(UIEmbedItem, "itemRoot", { 'name': '' });
         // 或者
-        this.addUI("UIEmbedItem","itemRoot");
+        this.addUI("UIEmbedItem", "itemRoot", { 'name': '' });
 
 
         this.registerButtonClick('btnTab01', () => {

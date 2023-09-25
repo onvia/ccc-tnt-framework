@@ -1,6 +1,6 @@
 
 
-import { profiler, EffectAsset, game } from "cc";
+import { profiler, EffectAsset, game, Input, input } from "cc";
 
 declare global {
 
@@ -23,6 +23,8 @@ declare global {
 
         /** TiledMap */
         tiled: ITiled;
+
+        input: Input;
 
         startup(options?: IStartupOptions);
         enableTimer();
@@ -75,6 +77,7 @@ declare global {
 
         /** 音效配置，键名为 节点名 */
         soundConfig?: { [k in string]: string };
+
     }
 }
 
@@ -88,7 +91,7 @@ tnt.startup = (options?: IStartupOptions) => {
     options?.i18nConfig && tnt.i18n.init(options?.i18nConfig);
     tnt._decorator._registerPlugins();
     options.debug && profiler?.showStats();
-
+    tnt.input = input;
 
     game.emit(tnt.EVENT_TNT_STARTUP);
     tnt.eventMgr.emit(tnt.EVENT_TNT_STARTUP);

@@ -1,4 +1,4 @@
-import { _decorator, Component, Node, Button, Scene, __private, js,game} from "cc";
+import { _decorator, Component, Node, Button, Scene, __private, js, game } from "cc";
 const { ccclass } = _decorator;
 
 
@@ -30,7 +30,7 @@ declare global {
 class GComponent<Options = any> extends Component {
 
     protected declare _loaderKey: string;
-    
+
     public get loaderKey(): string {
         if (!this._loaderKey) {
             this._loaderKey = js.getClassName(this);
@@ -133,7 +133,7 @@ class GComponent<Options = any> extends Component {
     public getNodeByName(name: string, parent?: Node) {
         return this.find(name, parent);
     }
-    
+
     /**
      * 仅加载 指定脚本的预制体
      *
@@ -181,7 +181,7 @@ class GComponent<Options = any> extends Component {
                     parent = this.find(param.parent)
                 }
                 let node = this.find(param.name, parent);
-                comp[key] = node;
+                node && (comp[key] = node);
             }
         }
 
@@ -195,7 +195,7 @@ class GComponent<Options = any> extends Component {
                     parent = this.find(param.parent)
                 }
                 let _comp = this.findComponent(param.name, param.type, parent);
-                comp[key] = _comp;
+                _comp && (comp[key] = _comp);
             }
         }
 

@@ -479,6 +479,14 @@ class AssetLoader implements IPluginMgr {
 
     /** 获取已加载的资源 */
     public getAsset(path: string, type: CCAssetType, bundle?: Bundle | string) {
+
+        let pathObj = this.parsePath(path);
+        path = pathObj.path;
+        // 优先使用路径内的 bundle 
+        if (pathObj.bundle) {
+            bundle = pathObj.bundle;
+        }
+
         let bundleWrap = this.getBundleAsset(bundle);
         let u_path = this.jointKey(bundleWrap.name, path);
         let asset = this._cache.get(u_path, type);
