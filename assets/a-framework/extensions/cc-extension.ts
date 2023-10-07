@@ -1,4 +1,4 @@
-import { Node, js, Toggle, Animation, Button, Canvas, EditBox, Graphics, Label, Layout, PageView, ProgressBar, RichText, ScrollView, Slider, Sprite, Vec2, Vec3, Skeleton, Widget, UIOpacity, UITransform, director, Director, Mask } from "cc";
+import { Node, js, Event, Toggle, Animation, Button, Canvas, EditBox, Graphics, Label, Layout, PageView, ProgressBar, RichText, ScrollView, Slider, Sprite, Vec2, Vec3, Skeleton, Widget, UIOpacity, UITransform, director, Director, Mask, ViewGroup } from "cc";
 import { EDITOR } from "cc/env";
 
 if (!EDITOR) {
@@ -129,6 +129,35 @@ if (!EDITOR) {
                 this.__$soundName = soundName;
             }
         })
+    }
+
+
+    // let _hasNestedViewGroup = ScrollView.prototype["_hasNestedViewGroup"];
+    // 滑动面板内有可滑动的节点
+    ScrollView.prototype["_hasNestedViewGroup"] = function (event: Event, captureListeners?: Node[]) {
+        if (!event || event.eventPhase !== Event.CAPTURING_PHASE) {
+            return false;
+        }
+
+        if (captureListeners) {
+            // captureListeners are arranged from child to parent
+            for (const listener of captureListeners) {
+                const item = listener;
+
+                if (this.node === item) {
+                    let target: Node = event.target;
+                    if (target && (target.getComponent(ViewGroup) || target.getComponent(Slider))) {
+                        return true;
+                    }
+                    return false;
+                }
+
+                if (item.getComponent(ViewGroup) || item.getComponent(Slider)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }
 declare module "cc" {
