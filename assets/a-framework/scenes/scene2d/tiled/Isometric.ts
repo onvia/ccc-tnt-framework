@@ -1,16 +1,16 @@
 
-import { _decorator, math, UITransform } from 'cc';
+import { _decorator, UITransform, Vec2 } from 'cc';
 
 const { ccclass, property } = _decorator;
 
 declare global {
 
-    interface ITiled {
+    interface ITmx {
         Isometric: typeof Isometric;
     }
 
     namespace tnt {
-        namespace tiled {
+        namespace tmx {
             type Isometric = InstanceType<typeof Isometric>;
         }
     }
@@ -18,17 +18,17 @@ declare global {
 
 
 @ccclass('Isometric')
-class Isometric extends tnt.tiled.OrientationAdapter {
+class Isometric extends tnt.tmx.OrientationAdapter {
     init(): void {
     }
 
-    pixelToTileCoords(position: math.Vec2): math.Vec2;
-    pixelToTileCoords(x: number, y: number): math.Vec2;
-    pixelToTileCoords(xOrPos: number | math.Vec2, y?: number): math.Vec2;
-    pixelToTileCoords(xOrPos: number | math.Vec2, y?: number): math.Vec2 {
+    pixelToTileCoords(position: Vec2): Vec2;
+    pixelToTileCoords(x: number, y: number): Vec2;
+    pixelToTileCoords(xOrPos: number | Vec2, y?: number): Vec2;
+    pixelToTileCoords(xOrPos: number | Vec2, y?: number): Vec2 {
         let x = 0;
         if (typeof y === 'undefined') {
-            let pos = (xOrPos as math.Vec2);
+            let pos = (xOrPos as Vec2);
             x = pos.x;
             y = pos.y;
         } else {
@@ -50,15 +50,15 @@ class Isometric extends tnt.tiled.OrientationAdapter {
         const tileY = y / tileHeight;
         const tileX = x / tileWidth;
 
-        return new math.Vec2(Math.floor(tileY + tileX), Math.floor(tileY - tileX));
+        return new Vec2(Math.floor(tileY + tileX), Math.floor(tileY - tileX));
     }
-    tileToPixelCoords(position: math.Vec2): math.Vec2;
-    tileToPixelCoords(x: number, y: number): math.Vec2;
-    tileToPixelCoords(xOrPos: number | math.Vec2, y?: number): math.Vec2;
-    tileToPixelCoords(xOrPos: number | math.Vec2, y?: number): math.Vec2 {
+    tileToPixelCoords(position: Vec2): Vec2;
+    tileToPixelCoords(x: number, y: number): Vec2;
+    tileToPixelCoords(xOrPos: number | Vec2, y?: number): Vec2;
+    tileToPixelCoords(xOrPos: number | Vec2, y?: number): Vec2 {
         let x = 0;
         if (typeof y === 'undefined') {
-            let pos = (xOrPos as math.Vec2);
+            let pos = (xOrPos as Vec2);
             x = pos.x;
             y = pos.y;
         } else {
@@ -80,11 +80,11 @@ class Isometric extends tnt.tiled.OrientationAdapter {
         pixelX = pixelX - tileWidth / 2;
         pixelY = this.mapSizeInPixel.height - pixelY - tileHeight;
 
-        return new math.Vec2(pixelX, pixelY);
+        return new Vec2(pixelX, pixelY);
     }
 
 }
 
-tnt.tiled.Isometric = Isometric;
+tnt.tmx.Isometric = Isometric;
 
 export { };

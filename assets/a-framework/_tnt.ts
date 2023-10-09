@@ -54,6 +54,6 @@ import "./red-point/_red-point"
 
 
 if (!EDITOR) {
-    game.emit(tnt.EVENT_TNT_INITED);
-    tnt.eventMgr.emit(tnt.EVENT_TNT_INITED);
+    game.emit(tnt.EVENT_TNT_INITD);
+    tnt.eventMgr.emit(tnt.EVENT_TNT_INITD);
 }

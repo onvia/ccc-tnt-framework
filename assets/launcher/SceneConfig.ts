@@ -41,6 +41,10 @@ export const SceneConfig: ISceneConfig[] = [
         scene: "TiledMapOrientationDemo",
         button: "TiledMap",
         bundle: "tiled-map-example"
+    }, {
+        scene: "PathFindingDemo",
+        button: "寻路",
+        bundle: "tiled-map-example"
     },
     {
         scene: "LongPressDemo",

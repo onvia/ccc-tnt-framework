@@ -6,26 +6,26 @@ const { ccclass } = _decorator;
 
 declare global {
 
-    interface ITiled {
+    interface ITmx {
         TiledMapProxy: typeof TiledMapProxy;
     }
 
     namespace tnt{
-        namespace tiled {
+        namespace tmx {
             type TiledMapProxy = InstanceType<typeof TiledMapProxy>;
         }
     }
 }
 
 @ccclass('TiledMapProxy')
-export class TiledMapProxy implements IOrientation {
+class TiledMapProxy implements IOrientation {
     tiledMap: TiledMap = null;
     tileSize: Readonly<Size> = null; //瓷砖的大小 
     mapSize: Readonly<Size> = null; //
     mapSizeInPixel: Readonly<Size> = null;
 
-    private _orientationAdapter: tnt.tiled.OrientationAdapter = null;
-    public get orientationAdapter(): tnt.tiled.OrientationAdapter {
+    private _orientationAdapter: tnt.tmx.OrientationAdapter = null;
+    public get orientationAdapter(): tnt.tmx.OrientationAdapter {
         return this._orientationAdapter;
     }
 
@@ -46,13 +46,13 @@ export class TiledMapProxy implements IOrientation {
 
         switch (orientation) {
             case 0: // ORTHO
-                this._orientationAdapter = new tnt.tiled.Orthogonal();
+                this._orientationAdapter = new tnt.tmx.Orthogonal();
                 break;
             case 1: // HEX
-                this._orientationAdapter = new tnt.tiled.Hexagonal();
+                this._orientationAdapter = new tnt.tmx.Hexagonal();
                 break;
             case 2: // ISO
-                this._orientationAdapter = new tnt.tiled.Isometric();
+                this._orientationAdapter = new tnt.tmx.Isometric();
                 break;
 
             default:
@@ -185,6 +185,6 @@ export class TiledMapProxy implements IOrientation {
 
 }
 
-tnt.tiled.TiledMapProxy = TiledMapProxy;
+tnt.tmx.TiledMapProxy = TiledMapProxy;
 
 export { };

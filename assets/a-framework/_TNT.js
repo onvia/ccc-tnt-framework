@@ -3,7 +3,8 @@ _this['tnt'] = _this['tnt'] || {
     tbl: {},
     game: {},
     utils: {},
-    tiled: {},
-    EVENT_TNT_INITED: "event_tnt_inited",
+    tmx: {},
+    pf: {},
+    EVENT_TNT_INITD: "event_tnt_initd",
     EVENT_TNT_STARTUP: "event_tnt_startup",
 };

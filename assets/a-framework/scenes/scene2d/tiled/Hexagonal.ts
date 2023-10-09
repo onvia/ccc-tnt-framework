@@ -1,6 +1,6 @@
 
-import { _decorator, math, TiledMap } from 'cc';
-const { ccclass, property } = _decorator;
+import { _decorator, TiledMap, Vec2, Size } from 'cc';
+const { ccclass } = _decorator;
 
 /**
  * 说明：Cocos Creator 3.7.2（当前最高版本） 以及之前的版本 六角交错地图宽高计算有误，图层渲染有误，
@@ -14,12 +14,12 @@ const { ccclass, property } = _decorator;
 
 declare global {
 
-    interface ITiled {
+    interface ITmx {
         Hexagonal: typeof Hexagonal;
     }
 
     namespace tnt {
-        namespace tiled {
+        namespace tmx {
             type Hexagonal = InstanceType<typeof Hexagonal>;
         }
     }
@@ -69,15 +69,15 @@ class HexParams {
     }
 }
 
-const offsetsStaggerX = [new math.Vec2(0, 0), new math.Vec2(1, -1), new math.Vec2(1, 0), new math.Vec2(2, 0)];
-const offsetsStaggerY = [new math.Vec2(0, 0), new math.Vec2(-1, 1), new math.Vec2(0, 1), new math.Vec2(0, 2)];
+const offsetsStaggerX = [new Vec2(0, 0), new Vec2(1, -1), new Vec2(1, 0), new Vec2(2, 0)];
+const offsetsStaggerY = [new Vec2(0, 0), new Vec2(-1, 1), new Vec2(0, 1), new Vec2(0, 2)];
 
 @ccclass('Hexagonal')
-class Hexagonal extends tnt.tiled.OrientationAdapter {
+class Hexagonal extends tnt.tmx.OrientationAdapter {
     tiledMap: TiledMap = null;
-    tileSize: Readonly<math.Size> = null;
-    mapSize: Readonly<math.Size> = null;
-    mapSizeInPixel: Readonly<math.Size> = null;
+    tileSize: Readonly<Size> = null;
+    mapSize: Readonly<Size> = null;
+    mapSizeInPixel: Readonly<Size> = null;
 
     hexParams: HexParams = null;
 
@@ -86,13 +86,13 @@ class Hexagonal extends tnt.tiled.OrientationAdapter {
         this.hexParams.initWithTiledMap(this.tiledMap);
     }
 
-    pixelToTileCoords(position: math.Vec2): math.Vec2;
-    pixelToTileCoords(x: number, y: number): math.Vec2;
-    pixelToTileCoords(xOrPos: number | math.Vec2, y?: number): math.Vec2;
-    pixelToTileCoords(xOrPos: number | math.Vec2, y?: number): math.Vec2 {
+    pixelToTileCoords(position: Vec2): Vec2;
+    pixelToTileCoords(x: number, y: number): Vec2;
+    pixelToTileCoords(xOrPos: number | Vec2, y?: number): Vec2;
+    pixelToTileCoords(xOrPos: number | Vec2, y?: number): Vec2 {
         let x = 0;
         if (typeof y === 'undefined') {
-            let pos = (xOrPos as math.Vec2);
+            let pos = (xOrPos as Vec2);
             x = pos.x;
             y = pos.y;
         } else {
@@ -115,13 +115,13 @@ class Hexagonal extends tnt.tiled.OrientationAdapter {
         }
 
         // Start with the coordinates of a grid-aligned tile
-        let referencePoint = new math.Vec2(
+        let referencePoint = new Vec2(
             Math.floor(x / (p.columnWidth * 2)),
             Math.floor(y / (p.rowHeight * 2))
         );
 
         // Relative x and y position on the base square of the grid-aligned tile
-        const rel = new math.Vec2(
+        const rel = new Vec2(
             x - referencePoint.x * (p.columnWidth * 2),
             y - referencePoint.y * (p.rowHeight * 2));
 
@@ -139,26 +139,26 @@ class Hexagonal extends tnt.tiled.OrientationAdapter {
         // p.staggerX ? referencePoint.x : referencePoint.y = staggerAxisIndex;
 
         // Determine the nearest hexagon tile by the distance to the center
-        let centers: math.Vec2[] = new Array(4);
+        let centers: Vec2[] = new Array(4);
 
         if (p.staggerX) {
             const left = p.sideLengthX / 2;
             const centerX = left + p.columnWidth;
             const centerY = p.tileHeight / 2;
 
-            centers[0] = new math.Vec2(left, centerY);
-            centers[1] = new math.Vec2(centerX, centerY - p.rowHeight);
-            centers[2] = new math.Vec2(centerX, centerY + p.rowHeight);
-            centers[3] = new math.Vec2(centerX + p.columnWidth, centerY);
+            centers[0] = new Vec2(left, centerY);
+            centers[1] = new Vec2(centerX, centerY - p.rowHeight);
+            centers[2] = new Vec2(centerX, centerY + p.rowHeight);
+            centers[3] = new Vec2(centerX + p.columnWidth, centerY);
         } else {
             const top = p.sideLengthY / 2;
             const centerX = p.tileWidth / 2;
             const centerY = top + p.rowHeight;
 
-            centers[0] = new math.Vec2(centerX, top);
-            centers[1] = new math.Vec2(centerX - p.columnWidth, centerY);
-            centers[2] = new math.Vec2(centerX + p.columnWidth, centerY);
-            centers[3] = new math.Vec2(centerX, centerY + p.rowHeight);
+            centers[0] = new Vec2(centerX, top);
+            centers[1] = new Vec2(centerX - p.columnWidth, centerY);
+            centers[2] = new Vec2(centerX + p.columnWidth, centerY);
+            centers[3] = new Vec2(centerX, centerY + p.rowHeight);
         }
 
         let nearest = 0;
@@ -178,16 +178,16 @@ class Hexagonal extends tnt.tiled.OrientationAdapter {
         return referencePoint.add(offsets[nearest]);
     }
 
-    tileToPixelCoords(position: math.Vec2): math.Vec2;
-    tileToPixelCoords(x: number, y: number): math.Vec2;
-    tileToPixelCoords(xOrPos: number | math.Vec2, y?: number): math.Vec2;
-    tileToPixelCoords(xOrPos: number | math.Vec2, y?: number): math.Vec2 {
+    tileToPixelCoords(position: Vec2): Vec2;
+    tileToPixelCoords(x: number, y: number): Vec2;
+    tileToPixelCoords(xOrPos: number | Vec2, y?: number): Vec2;
+    tileToPixelCoords(xOrPos: number | Vec2, y?: number): Vec2 {
 
         this._checkAnchor();
 
         let x = 0;
         if (typeof y === 'undefined') {
-            let pos = (xOrPos as math.Vec2);
+            let pos = (xOrPos as Vec2);
             x = pos.x;
             y = pos.y;
         } else {
@@ -223,8 +223,8 @@ class Hexagonal extends tnt.tiled.OrientationAdapter {
             pixelY = this.mapSizeInPixel.height - (pixelY + p.tileHeight) + Math.floor(p.sideLengthY / 2) + Math.floor((p.tileHeight - p.sideLengthY) / 2) - Math.floor(p.tileHeight / 2);
         }
 
-        return new math.Vec2(pixelX, pixelY);
+        return new Vec2(pixelX, pixelY);
     }
 }
-tnt.tiled.Hexagonal = Hexagonal;
+tnt.tmx.Hexagonal = Hexagonal;
 export { };

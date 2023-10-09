@@ -14,7 +14,9 @@ declare global {
 export class CCGUITestScene extends tnt.SceneBase<CCGUITestSceneOptions> {
 
     async onEnter(): Promise<void> {
-        await this.addDebugWindow();
+        tnt.resourcesMgr.loadBundle("cc-gui", async () => {
+            await this.addDebugWindow();
+        });
         // await this.add2Window();
     }
 
@@ -22,7 +24,7 @@ export class CCGUITestScene extends tnt.SceneBase<CCGUITestSceneOptions> {
     async addDebugWindow() {
 
         let testProgress = 0;
-        let guiWindow = await tnt.gui.create("Debug", new Size(360, 480));
+        let guiWindow = await tnt.gui.create("Debug", new Size(360, 9999));
         {
 
             let group1 = guiWindow.addGroup("Common");

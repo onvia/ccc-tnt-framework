@@ -68,8 +68,8 @@ export class GUITable<Options extends GUITableOptions> extends GUIBase<Options> 
         return ui;
     }
 
-    addItem(name: string) {
-        let ui = this.addUISync(GUIItem, this.content, { name });
+    addItem(name: string, updateFn?: () => string) {
+        let ui = this.addUISync(GUIItem, this.content, { name, updateFn });
         ui.parentGroup = this;
         return this;
     }

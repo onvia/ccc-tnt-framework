@@ -10,7 +10,7 @@ declare global {
     interface GUIItemOptions {
         name: string;
         clickFn?: Runnable1<any>,
-        // updateFn?: Runnable1<any>,
+        updateFn?: Runnable,
 
     }
 }
@@ -108,7 +108,9 @@ export class GUIItem extends tnt.UIItem<GUIItemOptions> {
     }
 
 
-    //protected update(dt: number): void {
-    //    
-    //}
+    protected update(dt: number): void {
+        if (this.options.updateFn) {
+            this.nameLabel.string = this.options.name + ": " + this.options.updateFn();
+        }
+    }
 }

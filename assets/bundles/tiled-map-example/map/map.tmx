@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.4" tiledversion="1.4.0" orientation="orthogonal" renderorder="right-down" width="60" height="30" tilewidth="32" tileheight="32" infinite="0" nextlayerid="4" nextobjectid="3">
+ <tileset firstgid="1" name="barriers" tilewidth="32" tileheight="32" tilecount="36" columns="6">
+  <image source="barriers.png" width="192" height="192"/>
+  <tile id="0">
+   <properties>
+    <property name="barrier" value="true"/>
+   </properties>
+  </tile>
+  <tile id="1">
+   <properties>
+    <property name="barrier" value="true"/>
+   </properties>
+  </tile>
+  <tile id="2">
+   <properties>
+    <property name="barrier" value="true"/>
+   </properties>
+  </tile>
+  <tile id="3">
+   <properties>
+    <property name="barrier" value="true"/>
+   </properties>
+  </tile>
+  <tile id="4">
+   <properties>
+    <property name="barrier" value="true"/>
+   </properties>
+  </tile>
+  <tile id="5">
+   <properties>
+    <property name="barrier" value="true"/>
+   </properties>
+  </tile>
+  <tile id="6">
+   <properties>
+    <property name="barrier" value="true"/>
+   </properties>
+  </tile>
+  <tile id="7">
+   <properties>
+    <property name="barrier" value="true"/>
+   </properties>
+  </tile>
+  <tile id="8">
+   <properties>
+    <property name="barrier" value="true"/>
+   </properties>
+  </tile>
+  <tile id="9">
+   <properties>
+    <property name="barrier" value="true"/>
+   </properties>
+  </tile>
+  <tile id="10">
+   <properties>
+    <property name="barrier" value="true"/>
+   </properties>
+  </tile>
+  <tile id="11">
+   <properties>
+    <property name="barrier" value="true"/>
+   </properties>
+  </tile>
+  <tile id="12">
+   <properties>
+    <property name="barrier" value="true"/>
+   </properties>
+  </tile>
+  <tile id="13">
+   <properties>
+    <property name="barrier" value="true"/>
+   </properties>
+  </tile>
+  <tile id="14">
+   <properties>
+    <property name="barrier" value="true"/>
+   </properties>
+  </tile>
+  <tile id="15">
+   <properties>
+    <property name="barrier" value="true"/>
+   </properties>
+  </tile>
+  <tile id="16">
+   <properties>
+    <property name="barrier" value="true"/>
+   </properties>
+  </tile>
+  <tile id="17">
+   <properties>
+    <property name="barrier" value="true"/>
+   </properties>
+  </tile>
+  <tile id="18">
+   <properties>
+    <property name="barrier" value="true"/>
+   </properties>
+  </tile>
+  <tile id="19">
+   <properties>
+    <property name="barrier" value="true"/>
+   </properties>
+  </tile>
+  <tile id="20">
+   <properties>
+    <property name="barrier" value="true"/>
+   </properties>
+  </tile>
+  <tile id="21">
+   <properties>
+    <property name="barrier" value="true"/>
+   </properties>
+  </tile>
+  <tile id="22">
+   <properties>
+    <property name="barrier" value="true"/>
+   </properties>
+  </tile>
+  <tile id="23">
+   <properties>
+    <property name="barrier" value="true"/>
+   </properties>
+  </tile>
+  <tile id="24">
+   <properties>
+    <property name="barrier" value="true"/>
+   </properties>
+  </tile>
+  <tile id="25">
+   <properties>
+    <property name="barrier" value="true"/>
+   </properties>
+  </tile>
+  <tile id="26">
+   <properties>
+    <property name="barrier" value="true"/>
+   </properties>
+  </tile>
+  <tile id="27">
+   <properties>
+    <property name="barrier" value="true"/>
+   </properties>
+  </tile>
+  <tile id="28">
+   <properties>
+    <property name="barrier" value="true"/>
+   </properties>
+  </tile>
+  <tile id="29">
+   <properties>
+    <property name="barrier" value="true"/>
+   </properties>
+  </tile>
+  <tile id="30">
+   <properties>
+    <property name="barrier" value="true"/>
+   </properties>
+  </tile>
+  <tile id="31">
+   <properties>
+    <property name="barrier" value="true"/>
+   </properties>
+  </tile>
+  <tile id="32">
+   <properties>
+    <property name="barrier" value="true"/>
+   </properties>
+  </tile>
+  <tile id="33">
+   <properties>
+    <property name="barrier" value="true"/>
+   </properties>
+  </tile>
+  <tile id="34">
+   <properties>
+    <property name="barrier" value="true"/>
+   </properties>
+  </tile>
+  <tile id="35">
+   <properties>
+    <property name="barrier" value="true"/>
+   </properties>
+  </tile>
+ </tileset>
+ <tileset firstgid="37" name="ground" tilewidth="32" tileheight="32" tilecount="1" columns="1">
+  <image source="ground.png" width="32" height="32"/>
+  <tile id="0">
+   <properties>
+    <property name="floor" value="true"/>
+   </properties>
+  </tile>
+ </tileset>
+ <layer id="1" name="floor" width="60" height="30">
+  <properties>
+   <property name="floor" value="true"/>
+  </properties>
+  <data encoding="base64" compression="zlib">
+   eJztwwENAAAMw6CamX+LF3JIWDVVVVVVVVX1xQNtcwQ4
+  </data>
+ </layer>
+ <layer id="2" name="barrier" width="60" height="30">
+  <properties>
+   <property name="barrier" value="true"/>
+  </properties>
+  <data encoding="base64" compression="zlib">
+   eJzdWNlu4zAMZC/30nY3sF97of3/b6yFNYHBZEhJrh+KDkAkdiSKI5IilSczezpQnld5OVjnkfLvYH0fq3z+AF6R3Ns+TPB93mR03hEY0Xdr53zd9mWTiEcJ5k2W8+d5vUCd16vcbM8j+pDvxSqXq1wl49mnCgVsm8G21rwIaJfrfFjlcVBPBfKt3+/gubWXzCMC2zbKl+3qQWQb8v1j//P5L9gV7SW+x/h1X3CcYF6M5i/b1QNlW4Xz9XxFtOzyOQWe3Rcz6MXxZufxnsleKNvM9HnlvxfL11S56b5wfyi+RyA6GzLbKpCv2teW3ta5gbqOrEMei7w+nm3+m4rnFjJevTFY7Dxn2MZReP1zRGeb2xbxVf6cEtt6OEfv3UZ1zs3wiXmPHAt8Zmcb8/Ucj87kQrbt8Qevb5vOedPLvuEcWMT7mT55DczHnnhGfc63tx56Pcj0uk9OQm9P7+Q+Uutwniu+ak9dX3T+YvxjXFd7sxxAqNzbe6a3+g30eVSHMruj88xjwusxgve1jlssj+e9PR2ucR+M4brU6uuimKoxcRLzOFbVWcNjsjqh4pJ9lOUv2472ZDkZceYz84j+oxWX6KPFzvmyT3nP/HfMaXX/4XW/2x9WRPmU+Rx9VO1kvpWHqm0KUY+T2YbozUXHnlqIe/xgOp4zjlFP2IojpaPnDot6R2thBXNRfCPf4H0js6uC4wj9iDq4L2P9uL9cC9W6rTuW813oXdTfIfBOyz7kOMp67+y5tb/ca7R6G+XfrL+riPw/Bd8zO1p3bnW/4HE4JuuzsH/GmMv6u4ttrtoHrAfF9v1/2bpz4ziF6O7KfFXMqf6Czwx1V1a2Z3foyG5+zvLS3y3AZRHjs35D9XfRmbEIPvxf7sh/it+p1dlc5Kv62ejs514k6qHZ/71g/ZNYT+1xC8hX1aqs1u393zxD1OsUsV52T4lQOV2CvK7ytso7vf9N8gWHCyUN
+  </data>
+ </layer>
+ <objectgroup id="3" name="players">
+  <object id="1" name="SpawnPoint" x="143" y="914">
+   <ellipse/>
+  </object>
+  <object id="2" name="SuccessPoint" x="655" y="80">
+   <ellipse/>
+  </object>
+ </objectgroup>
+</map>

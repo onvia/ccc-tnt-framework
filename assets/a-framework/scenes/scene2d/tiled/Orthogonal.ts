@@ -1,33 +1,33 @@
 
-import { _decorator, math } from 'cc';
+import { Vec2, _decorator, } from 'cc';
 const { ccclass, property } = _decorator;
 
 
 declare global {
 
-    interface ITiled {
+    interface ITmx {
         Orthogonal: typeof Orthogonal;
     }
 
     namespace tnt {
-        namespace tiled {
+        namespace tmx {
             type Orthogonal = InstanceType<typeof Orthogonal>;
         }
     }
 }
 
 @ccclass('Orthogonal')
-class Orthogonal extends tnt.tiled.OrientationAdapter {
+class Orthogonal extends tnt.tmx.OrientationAdapter {
     init(): void {
     }
 
-    pixelToTileCoords(position: math.Vec2): math.Vec2;
-    pixelToTileCoords(x: number, y: number): math.Vec2;
-    pixelToTileCoords(xOrPos: number | math.Vec2, y?: number): math.Vec2;
-    pixelToTileCoords(xOrPos: number | math.Vec2, y?: number): math.Vec2 {
+    pixelToTileCoords(position: Vec2): Vec2;
+    pixelToTileCoords(x: number, y: number): Vec2;
+    pixelToTileCoords(xOrPos: number | Vec2, y?: number): Vec2;
+    pixelToTileCoords(xOrPos: number | Vec2, y?: number): Vec2 {
         let x = 0;
         if (typeof y === 'undefined') {
-            let pos = (xOrPos as math.Vec2);
+            let pos = (xOrPos as Vec2);
             x = pos.x;
             y = pos.y;
         } else {
@@ -42,15 +42,15 @@ class Orthogonal extends tnt.tiled.OrientationAdapter {
         let tiledX = Math.floor(x / this.tileSize.width);
         let tiledY = Math.floor(y / this.tileSize.height);
 
-        return new math.Vec2(tiledX, tiledY);
+        return new Vec2(tiledX, tiledY);
     }
-    tileToPixelCoords(position: math.Vec2): math.Vec2;
-    tileToPixelCoords(x: number, y: number): math.Vec2;
-    tileToPixelCoords(xOrPos: number | math.Vec2, y?: number): math.Vec2;
-    tileToPixelCoords(xOrPos: number | math.Vec2, y?: number): math.Vec2 {
+    tileToPixelCoords(position: Vec2): Vec2;
+    tileToPixelCoords(x: number, y: number): Vec2;
+    tileToPixelCoords(xOrPos: number | Vec2, y?: number): Vec2;
+    tileToPixelCoords(xOrPos: number | Vec2, y?: number): Vec2 {
         let x = 0;
         if (typeof y === 'undefined') {
-            let pos = (xOrPos as math.Vec2);
+            let pos = (xOrPos as Vec2);
             x = pos.x;
             y = pos.y;
         } else {
@@ -64,11 +64,11 @@ class Orthogonal extends tnt.tiled.OrientationAdapter {
         // 转为左下角
         pixelY = this.mapSizeInPixel.height - pixelY - this.tileSize.height;
 
-        return new math.Vec2(pixelX, pixelY);
+        return new Vec2(pixelX, pixelY);
     }
 
 }
 
-tnt.tiled.Orthogonal = Orthogonal;
+tnt.tmx.Orthogonal = Orthogonal;
 
 export { };

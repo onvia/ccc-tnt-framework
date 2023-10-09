@@ -49,15 +49,15 @@ declare global {
     }
 
     interface ITouch {
-        onTouchBegan(event: EventTouch);
-        onTouchMoved(event: EventTouch);
-        onTouchEnded(event: EventTouch);
-        onTouchCancel(event: EventTouch);
+        onTouchBegan?(event: EventTouch);
+        onTouchMoved?(event: EventTouch);
+        onTouchEnded?(event: EventTouch);
+        onTouchCancel?(event: EventTouch);
     }
 
     interface IMouse {
-        onMouseDown(event: EventMouse);
-        onMouseUp(event: EventMouse);
+        onMouseDown?(event: EventMouse);
+        onMouseUp?(event: EventMouse);
         onMouseWheel?(event: EventMouse);
 
         onMouseEnter?(event: EventMouse);
@@ -114,12 +114,12 @@ declare global {
     }
 
 
-    interface IPluginMgr{
+    interface IPluginMgr {
         registerPlugin?(plugins: IPluginCommon | IPluginCommon[]);
         unregisterPlugin?(plugin: IPluginCommon | string);
     }
     interface IPluginCommon {
-        
+
         name: string;
         // 优先级，越大越先执行
         priority?: number;
@@ -128,7 +128,7 @@ declare global {
         onPluginUnRegister?();
     }
 
-    interface IUIMgrPlugin extends IPluginCommon{
+    interface IUIMgrPlugin extends IPluginCommon {
 
         onUIMgrReInit?();
 
@@ -146,7 +146,7 @@ declare global {
 
     }
 
-    interface ISceneMgrPlugin extends IPluginCommon, ISceneListener{
+    interface ISceneMgrPlugin extends IPluginCommon, ISceneListener {
         /**
          * 开始切换场景，当切换场景的方法被调用时执行
          *
@@ -154,8 +154,8 @@ declare global {
          * @param {string} nextScene
          * @memberof IScenePlugin
          */
-        onSceneChangeBegin?(currentScene: string,nextScene: string);
-        
+        onSceneChangeBegin?(currentScene: string, nextScene: string);
+
         /**
          * 切换场景结束，完全进入（过渡动画结束）到新的场景后执行
          *
@@ -163,7 +163,7 @@ declare global {
          * @param {string} currentScene
          * @memberof IScenePlugin
          */
-        onSceneChangeEnd(previousScene: string,currentScene: string);
+        onSceneChangeEnd(previousScene: string, currentScene: string);
     }
 
 }

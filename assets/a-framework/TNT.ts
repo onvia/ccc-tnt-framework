@@ -7,7 +7,8 @@ declare global {
     interface ITbl { }
     interface IGame { }
     interface IUtils { }
-    interface ITiled { }
+    interface ITmx { }
+    interface IPathFinding { }
 
     interface ITNT {
         options: IStartupOptions;
@@ -22,16 +23,18 @@ declare global {
         utils: IUtils;
 
         /** TiledMap */
-        tiled: ITiled;
+        tmx: ITmx;
 
         input: Input;
+
+        pf: IPathFinding;
 
         startup(options?: IStartupOptions);
         enableTimer();
 
 
         /** TNT 框架初始化完成事件 */
-        readonly EVENT_TNT_INITED;
+        readonly EVENT_TNT_INITD;
 
         /** 框架启动 */
         readonly EVENT_TNT_STARTUP;

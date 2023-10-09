@@ -1,4 +1,4 @@
-import { _decorator, Node, Label, Event, Sprite, Mask, ScrollView, Size, widgetManager } from "cc";
+import { _decorator, Node, Label, Event, Sprite, Mask, ScrollView, Size, widgetManager, view } from "cc";
 import { GUIGroup } from "./GUIGroup";
 
 const { ccclass } = _decorator;
@@ -31,8 +31,9 @@ export class GUIWindow extends GUIGroup<GUIWindowGroupOptions> {
         if (!this.options.size) {
             this.options.size = new Size(200, 300);
         }
-        this.options.size.width = Math.max(this.options.size.width, 200)
-        this.options.size.height = Math.max(this.options.size.height, 300)
+        let visibleSize = view.getVisibleSize();
+        this.options.size.width = Math.max(Math.min(this.options.size.width, visibleSize.width - 2), 200)
+        this.options.size.height = Math.max(Math.min(this.options.size.height, visibleSize.height - 10), 300)
         this.node.uiTransform.width = this.options.size.width;
         this.node.uiTransform.height = this.options.size.height;
         this.scrollView.node.uiTransform.height = this.options.size.height - this.dragArea.node.uiTransform.height;

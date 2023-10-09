@@ -1,54 +1,54 @@
 
-import { _decorator, TiledMap, math, UITransform, TiledLayer } from 'cc';
+import { _decorator, TiledMap, UITransform, TiledLayer, Vec2, Size, Vec3 } from 'cc';
 import { IOrientation } from './_InterfaceTiledMap';
 const { ccclass, property } = _decorator;
 
 
 declare global {
 
-    interface ITiled {
+    interface ITmx {
         OrientationAdapter: typeof OrientationAdapter;
     }
 
     namespace tnt {
-        namespace tiled {
+        namespace tmx {
             type OrientationAdapter = InstanceType<typeof OrientationAdapter>;
         }
     }
 }
 
 
-let tmp1_v3 = new math.Vec3();
+let tmp1_v3 = new Vec3();
 @ccclass('OrientationAdapter')
 abstract class OrientationAdapter implements IOrientation {
     public tiledMap: TiledMap;
-    public tileSize: Readonly<math.Size>;
-    public mapSize: Readonly<math.Size>;
-    public mapSizeInPixel: Readonly<math.Size>;
+    public tileSize: Readonly<Size>;
+    public mapSize: Readonly<Size>;
+    public mapSizeInPixel: Readonly<Size>;
 
     private _isCheckPassed = false;
     init(): void {
 
     }
 
-    public abstract pixelToTileCoords(position: math.Vec2): math.Vec2
-    public abstract pixelToTileCoords(x: number, y: number): math.Vec2
-    public abstract pixelToTileCoords(xOrPos: number | math.Vec2, y?: number): math.Vec2;
+    public abstract pixelToTileCoords(position: Vec2): Vec2
+    public abstract pixelToTileCoords(x: number, y: number): Vec2
+    public abstract pixelToTileCoords(xOrPos: number | Vec2, y?: number): Vec2;
 
 
-    public abstract tileToPixelCoords(position: math.Vec2): math.Vec2
-    public abstract tileToPixelCoords(x: number, y: number): math.Vec2
-    public abstract tileToPixelCoords(xOrPos: number | math.Vec2, y?: number): math.Vec2;
+    public abstract tileToPixelCoords(position: Vec2): Vec2
+    public abstract tileToPixelCoords(x: number, y: number): Vec2
+    public abstract tileToPixelCoords(xOrPos: number | Vec2, y?: number): Vec2;
 
 
 
-    public worldToTileCoords(position: math.Vec2): math.Vec2;
-    public worldToTileCoords(x: number, y: number): math.Vec2;
-    public worldToTileCoords(xOrPos: number | math.Vec2, y?: number): math.Vec2
-    public worldToTileCoords(xOrPos: number | math.Vec2, y?: number): math.Vec2 {
+    public worldToTileCoords(position: Vec2): Vec2;
+    public worldToTileCoords(x: number, y: number): Vec2;
+    public worldToTileCoords(xOrPos: number | Vec2, y?: number): Vec2
+    public worldToTileCoords(xOrPos: number | Vec2, y?: number): Vec2 {
         let x = 0;
         if (typeof y === 'undefined') {
-            let pos = (xOrPos as math.Vec2);
+            let pos = (xOrPos as Vec2);
             x = pos.x;
             y = pos.y;
         } else {
@@ -62,13 +62,13 @@ abstract class OrientationAdapter implements IOrientation {
         return this.pixelToTileCoords(localPos.x, localPos.y);
     }
 
-    public tileToWorldCoords(position: math.Vec2): math.Vec2;
-    public tileToWorldCoords(x: number, y: number): math.Vec2;
-    public tileToWorldCoords(xOrPos: number | math.Vec2, y?: number): math.Vec2;
-    public tileToWorldCoords(xOrPos: number | math.Vec2, y?: number): math.Vec2 {
+    public tileToWorldCoords(position: Vec2): Vec2;
+    public tileToWorldCoords(x: number, y: number): Vec2;
+    public tileToWorldCoords(xOrPos: number | Vec2, y?: number): Vec2;
+    public tileToWorldCoords(xOrPos: number | Vec2, y?: number): Vec2 {
         let x = 0;
         if (typeof y === 'undefined') {
-            let pos = (xOrPos as math.Vec2);
+            let pos = (xOrPos as Vec2);
             x = pos.x;
             y = pos.y;
         } else {
@@ -78,11 +78,11 @@ abstract class OrientationAdapter implements IOrientation {
         let uiTransform = this.tiledMap.node.getComponent(UITransform);
         tmp1_v3.set(position.x, position.y);
         let worldPos = uiTransform.convertToWorldSpaceAR(tmp1_v3, tmp1_v3);
-        return new math.Vec2(worldPos.x, worldPos.y);
+        return new Vec2(worldPos.x, worldPos.y);
     }
 
 
-    public hitTest(worldPos: math.Vec2): boolean {
+    public hitTest(worldPos: Vec2): boolean {
 
         let uiTransform = this.tiledMap.node.getComponent(UITransform);
         tmp1_v3.set(worldPos.x, worldPos.y);
@@ -97,7 +97,7 @@ abstract class OrientationAdapter implements IOrientation {
         return false;
     }
 
-    public isSafe(tiledCoords: math.Vec2): boolean {
+    public isSafe(tiledCoords: Vec2): boolean {
         return tiledCoords.x >= 0 && tiledCoords.y >= 0 && tiledCoords.x < this.mapSize.width && tiledCoords.y < this.mapSize.height;
     }
 
@@ -127,5 +127,5 @@ abstract class OrientationAdapter implements IOrientation {
     }
 }
 
-tnt.tiled.OrientationAdapter = OrientationAdapter;
+tnt.tmx.OrientationAdapter = OrientationAdapter;
 export { };

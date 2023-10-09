@@ -10,7 +10,7 @@ export class TiledMapOrientationDemo extends tnt.SceneBase implements ITouch, IM
     gameCamera: Camera = null;
     layer: TiledLayer = null;
 
-    tiledMapProxy: tnt.tiled.TiledMapProxy = null;
+    tiledMapProxy: tnt.tmx.TiledMapProxy = null;
 
 
     data = {
@@ -71,7 +71,7 @@ export class TiledMapOrientationDemo extends tnt.SceneBase implements ITouch, IM
         this.tiledMap.node.active = true;
 
         this.layer = this.tiledMap.getLayer("layer");
-        this.tiledMapProxy = new tnt.tiled.TiledMapProxy(this.tiledMap);
+        this.tiledMapProxy = new tnt.tmx.TiledMapProxy(this.tiledMap);
 
         let mapBg = this.find("map_bg", null, this.scene);
         mapBg.uiTransform.setContentSize(this.tiledMap.node.uiTransform.contentSize);
