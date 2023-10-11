@@ -120,7 +120,7 @@ class BtnCommonSoundEventPlugin implements IBtnEventPlugin {
     priority: number = 0;
     onClick(button: Button) {
         let sound = button.__$soundName;
-        if (tnt.options.soundConfig) {
+        if (!sound && tnt.options.soundConfig) {
             if (button.node.name in tnt.options.soundConfig) {
                 sound = tnt.options.soundConfig[button.node.name];
             }

@@ -1,4 +1,4 @@
-import { _decorator, Node, Label, EditBox } from "cc";
+import { _decorator, Node, Label, EditBox, Button } from "cc";
 import { GUIBase } from "./GUIBase";
 
 const { ccclass } = _decorator;

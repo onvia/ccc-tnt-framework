@@ -30,7 +30,8 @@ export class GUIGroup<Options extends GUIGroupOptions> extends GUITable<Options>
         this.setFold(this.isFold);
     }
 
-    public setFold(isFold: boolean) {
+    /** 设置折叠 */
+    protected setFold(isFold: boolean) {
         this.isFold = isFold;
         this.arrow.angle = this.isFold ? 90 : 0;
         this.content.active = !this.isFold;

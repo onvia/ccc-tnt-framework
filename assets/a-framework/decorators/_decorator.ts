@@ -46,7 +46,7 @@ let __pluginMap: Map<string, any[]> = new Map();
 /**
  * 是否已经注册插件的标志
  */
-let __isRegistedPlugin = false;
+let __isRegisterPlugin = false;
 
 /**
  * 组件装饰器，用于添加声音属性到组件中
@@ -57,25 +57,106 @@ let __isRegistedPlugin = false;
  */
 function _component_sound(name?: string, type?: GConstructor<Component>, parent?: string | ButtonPropertyOptions, options?: ButtonPropertyOptions) {
     return (target: any, propertyKey: string) => {
+        let _parent = parent as string;
         if (!options && typeof parent == "object") {
             options = parent;
-            parent = null;
+            _parent = null;
         }
-        target.__$$50components__ = target.__$$50components__ || {};
-        target.__$$50components__[propertyKey] = { name: name ?? propertyKey, parent, propertyKey, type };
-        if (options?.soundName) {
-            target.__$$50btnSounds__ = target.__$$50btnSounds__ || {};
-            target.__$$50btnSounds__[propertyKey] = options?.soundName;
+        __decorator.component(name, type, _parent)(target, propertyKey);
+        CommonPropertyDecorator("__$$50btnSounds__", _class_sound_attrs, name, options)(target, propertyKey);
+    }
+}
+
+
+let _extends = {};
+let _class_node_attrs = {};
+let _class_component_attrs = {};
+let _class_sound_attrs = {};
+let _target__ = {};
+let __classIdx = 0;
+
+function checkClassTag(target) {
+    if (target.constructor._$50classTag === undefined || _target__[target.constructor._$50classTag] != target) {
+        target.constructor._$50classTag = `${__classIdx}`;
+        _target__[target.constructor._$50classTag] = target;
+        __classIdx++;
+    }
+    return target.constructor._$50classTag;
+}
+
+function _assign(target, source) {
+    for (const key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+            if (key in target) {
+                continue;
+            }
+            target[key] = source[key];
         }
     }
 }
+function assign(target, ...sources) {
+    for (let i = 0; i < sources.length; i++) {
+        _assign(target, sources[i]);
+    }
+}
+
+/** 需要往组件类上声明属性的可以用这个通用的装饰器 */
+function CommonPropertyDecorator(attrName: string, _classAttrs: Record<string, any>, key?: string, obj?: any) {
+    return (target: any, propertyKey: string) => {
+
+        let _className = target.constructor.name;
+
+        _className = checkClassTag(target);
+
+        !_classAttrs[_className] && (_classAttrs[_className] = {});
+
+        if (!key) {
+            key = propertyKey;
+        }
+
+        let _classObj = _classAttrs[_className];
+        _classObj[propertyKey] = Object.assign({
+            name: key,
+        }, obj || {});
+
+        var base = js.getSuper(target.constructor);
+        (base === Object || base === Object || base === Component) && (base = null);
+        if (base) {
+
+            let parent = checkClassTag(base.prototype);
+            !_extends[_className] && (_extends[_className] = parent);
+
+            var _super = js.getSuper(base);
+            let superIdx = 1;
+            while (_super) {
+                if (_super === Object || _super === Object || _super === Component) {
+                    _super = null;
+                    break;
+                }
+                let superTag = checkClassTag(_super.prototype);
+                !_extends[parent] && (_extends[parent] = superTag);
+                _super = js.getSuper(_super);
+                superIdx++;
+            }
+
+            while (parent) {
+                if (parent in _classAttrs) {
+                    assign(_classObj, _classAttrs[parent]);
+                }
+                parent = _extends[parent];
+            }
+        }
+        target[attrName] = _classAttrs[_className] = _classObj;
+    }
+}
+
 
 /**
  * 补充注册插件
  * @param pluginName 插件名称
  */
 function __registerPlugins(pluginName: string) {
-    if (!__isRegistedPlugin) {
+    if (!__isRegisterPlugin) {
         return;
     }
     let mgr = __pluginMgrMap.get(pluginName);
@@ -101,12 +182,11 @@ function __registerPlugins(pluginName: string) {
  * 统一注册插件
  */
 function _registerPlugins() {
-    if (__isRegistedPlugin) {
+    if (__isRegisterPlugin) {
         return;
     }
-    __isRegistedPlugin = true;
+    __isRegisterPlugin = true;
     console.log(`_decorator-> 注入所有插件`);
-
     __pluginMgrMap.forEach((target, key) => {
         if (!target.registerPluginAuto) {
             console.warn(`插件管理器【${key}】 请实现 registerPluginAuto 静态方法`);
@@ -246,10 +326,7 @@ let __decorator = {
      * @param parent 父节点名
      */
     node(name?: string, parent?: string) {
-        return (target: any, propertyKey: string) => {
-            target.__$$50nodes__ = target.__$$50nodes__ || {};
-            target.__$$50nodes__[propertyKey] = { name: name ?? propertyKey, parent, propertyKey };
-        }
+        return CommonPropertyDecorator("__$$50nodes__", _class_node_attrs, name, { parent });
     },
 
     // 其他组件的装饰器
@@ -364,36 +441,22 @@ let __decorator = {
     scrollView(name?: string, parent?: string) {
         return __decorator.component(name, ScrollView, parent)
     },
+
     /**
      * 组件装饰器，用于给组件添加属性
      * @param name 属性名或组件名
      * @param type 组件类型或属性类型
      * @param parent 父节点名
      */
-    component(name: string | GConstructor<Component>, type?: GConstructor<Component> | string, parent?: string) {
-        return (target: any, propertyKey: string) => {
-            if (type && typeof type != "string") {
-                if (!name) {
-                    name = propertyKey;
-                }
-            } else {
-                if (typeof name !== "string") {
-                    if (typeof type == 'string') {
-                        parent = type;
-                    }
-                    type = name;
-                    name = propertyKey;
-                }
+    component(name?: string | GConstructor<Component>, type?: GConstructor<Component>, parent?: string) {
+        let key = null;
+        if (name) {
+            if (typeof name == "string") {
+                key = name;
             }
-
-            if (!type) {
-                throw new Error("需要组件类型");
-            }
-            target.__$$50components__ = target.__$$50components__ || {};
-            target.__$$50components__[propertyKey] = { name: name ?? propertyKey, parent, propertyKey, type };
         }
+        return CommonPropertyDecorator("__$$50components__", _class_component_attrs, key, { type, parent });
     },
-
     /**
      * 非序列化装饰器，用于标记属性不会被序列化
      */

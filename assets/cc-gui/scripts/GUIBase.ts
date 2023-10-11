@@ -26,4 +26,8 @@ export class GUIBase<Options extends GUIBaseOptions> extends tnt.UIItem<Options>
         this.nameLabel && (this.nameLabel.string = this.options.name);
     }
 
+    setGUIEnable(enable) {
+        this.showNodeByName("disable", !enable);
+        return this.parentGroup;
+    }
 }

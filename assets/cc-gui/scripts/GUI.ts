@@ -28,8 +28,10 @@ class GUI {
 
     doLayout: Runnable = tnt.functionUtils.debounce(() => {
         let canvasNode = find(this.GUICanvasName);
-        canvasNode.layout.updateLayout(true);
-        canvasNode.layout.enabled = false;
+        if (canvasNode.layout) {
+            canvasNode.layout.updateLayout(true);
+            canvasNode.layout.enabled = false;
+        }
     }, 1 / 60 * 1000);
 
     async create(name: string, size?: Size) {
@@ -56,14 +58,31 @@ class GUI {
     }
 
 
-    destroy() {
+    destroy(name?: string) {
+        if (name) {
+            let win = this.windowArray.find((win) => {
+                return win.name == name
+            });
+            win.node.destroy();
+            this.windowArray.fastRemove(win);
+            this.releaseAsset();
+            return;
+        }
         for (let i = 0; i < this.windowArray.length; i++) {
             const element = this.windowArray[i];
             element.node.destroy();
         }
         this.windowArray.length = 0;
+        this.releaseAsset();
     }
 
+    private releaseAsset() {
+        if (this.windowArray.length) {
+            return;
+        }
+        tnt.loaderMgr.releaseLoader(this._loader);
+        this._loader = null;
+    }
     private getGUICanvas() {
 
         let canvasNode = find(this.GUICanvasName);
@@ -86,15 +105,15 @@ class GUI {
             canvasNode.name = this.GUICanvasName;
             director.addPersistRootNode(canvasNode);
 
-            let layout = canvasNode.addComponent(Layout);
-            layout.type = Layout.Type.GRID;
-            layout.resizeMode = Layout.ResizeMode.NONE;
-            layout.verticalDirection = Layout.VerticalDirection.TOP_TO_BOTTOM;
-            layout.horizontalDirection = Layout.HorizontalDirection.RIGHT_TO_LEFT;
+            // let layout = canvasNode.addComponent(Layout);
+            // layout.type = Layout.Type.GRID;
+            // layout.resizeMode = Layout.ResizeMode.NONE;
+            // layout.verticalDirection = Layout.VerticalDirection.TOP_TO_BOTTOM;
+            // layout.horizontalDirection = Layout.HorizontalDirection.RIGHT_TO_LEFT;
 
-            layout.padding = 5;
-            layout.spacingX = 5;
-            layout.spacingY = 5;
+            // layout.padding = 5;
+            // layout.spacingX = 5;
+            // layout.spacingY = 5;
 
             // layout.enabled = false;
         }

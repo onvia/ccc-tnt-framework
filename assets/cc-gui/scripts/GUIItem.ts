@@ -1,6 +1,5 @@
 import { _decorator, Node, Label, Sprite, Color, Button, Toggle, ToggleContainer } from "cc";
-import { GUIGroup } from "./GUIGroup";
-import { GUITable } from "./GUITable";
+import { GUIBase } from "./GUIBase";
 
 const { ccclass, property } = _decorator;
 const { prefabUrl, node, sprite, button, label } = tnt._decorator;
@@ -17,7 +16,7 @@ declare global {
 
 @prefabUrl("cc-gui#prefabs/GUIItem")
 @ccclass('GUIItem')
-export class GUIItem extends tnt.UIItem<GUIItemOptions> {
+export class GUIItem extends GUIBase<GUIItemOptions> {
 
 
     @sprite()
@@ -25,10 +24,6 @@ export class GUIItem extends tnt.UIItem<GUIItemOptions> {
 
     @sprite()
     protected checkMark: Sprite = null;
-
-
-    @label("name")
-    protected nameLabel: Label = null;
 
 
     @property(Color)
@@ -52,8 +47,6 @@ export class GUIItem extends tnt.UIItem<GUIItemOptions> {
     @property(Color)
     disabledColor: Color = new Color("#2a2a2aa0");
 
-    parentGroup: GUITable<GUITableOptions> = null;
-
 
     public onCreate(): void {
 
@@ -61,9 +54,7 @@ export class GUIItem extends tnt.UIItem<GUIItemOptions> {
 
     protected onStart(): void {
         super.onStart();
-
         this.node.name = this.options.name;
-        this.nameLabel.string = this.options.name;
     }
 
 

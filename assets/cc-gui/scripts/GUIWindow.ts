@@ -1,4 +1,4 @@
-import { _decorator, Node, Label, Event, Sprite, Mask, ScrollView, Size, widgetManager, view } from "cc";
+import { _decorator, Node, Label, Event, Sprite, Mask, ScrollView, Size, widgetManager, view, Vec3, director, Director } from "cc";
 import { GUIGroup } from "./GUIGroup";
 
 const { ccclass } = _decorator;
@@ -25,6 +25,13 @@ export class GUIWindow extends GUIGroup<GUIWindowGroupOptions> {
     @sprite()
     protected dragArea: Sprite = null;
 
+    private get maxHeight() {
+        let visibleSize = view.getVisibleSize();
+        return visibleSize.height - 10;
+    }
+
+    private _isLeft = false;
+
     protected onStart(): void {
         super.onStart();
 
@@ -33,10 +40,10 @@ export class GUIWindow extends GUIGroup<GUIWindowGroupOptions> {
         }
         let visibleSize = view.getVisibleSize();
         this.options.size.width = Math.max(Math.min(this.options.size.width, visibleSize.width - 2), 200)
-        this.options.size.height = Math.max(Math.min(this.options.size.height, visibleSize.height - 10), 300)
+        this.options.size.height = Math.max(Math.min(this.options.size.height, this.maxHeight), 300)
         this.node.uiTransform.width = this.options.size.width;
-        this.node.uiTransform.height = this.options.size.height;
-        this.scrollView.node.uiTransform.height = this.options.size.height - this.dragArea.node.uiTransform.height;
+        this.node.uiTransform.height = this.maxHeight; //this.options.size.height;
+        // this.scrollView.node.uiTransform.height = this.options.size.height - this.dragArea.node.uiTransform.height;
 
         // 转换拖动
         let _dragArea = this.dragArea.node;
@@ -49,10 +56,18 @@ export class GUIWindow extends GUIGroup<GUIWindowGroupOptions> {
                 this.node.setSiblingIndex(this.node.parent.children.length - 1);
             },
         });
+
+
+        if (this._isLeft) {
+            this.node.x = -visibleSize.width * 0.5 + this.node.uiTransform.width * 0.5;
+        } else {
+            this.node.x = visibleSize.width * 0.5 - this.node.uiTransform.width * 0.5;
+        }
     }
 
 
-    public setFold(isFold: boolean) {
+    /** 设置折叠 */
+    protected setFold(isFold: boolean) {
         super.setFold(isFold);
         this.scrollView.node.active = !isFold;
     }
@@ -64,16 +79,55 @@ export class GUIWindow extends GUIGroup<GUIWindowGroupOptions> {
     }
 
     private onContentChildChanged() {
-        let showScrollBar = this.content.uiTransform.height > this.view.uiTransform.height;
+        let maxScrollViewHeight = this.maxHeight - this.dragArea.node.uiTransform.height;
+        let showScrollBar = this.content.uiTransform.height > maxScrollViewHeight;
         this.scrollView.verticalScrollBar.node.active = showScrollBar;
         this.content.widget.right = showScrollBar ? (this.scrollView.verticalScrollBar.node.uiTransform.width) : 0;
 
+        this.scrollView.node.uiTransform.height = Math.min(this.content.uiTransform.height, maxScrollViewHeight);
+
+        if (!showScrollBar) {
+            this.content.position = new Vec3(this.content.position.x, this.scrollView.node.uiTransform.height * 0.5, this.content.position.z)
+        }
+
+
         this.view.mask.enabled = showScrollBar;
+
+
         widgetManager.refreshWidgetOnResized(this.content);
+        widgetManager.refreshWidgetOnResized(this.view);
+        widgetManager.refreshWidgetOnResized(this.scrollView.node);
+        // widgetManager.refreshWidgetOnResized(this.node);
+
+
+
+        // director.emit(Director.EVENT_AFTER_UPDATE);
+
+        this.node.layout.updateLayout();
+        this.content.layout.updateLayout();
+
+
+        let oldEnableScroll = this.scrollView.enabled;
+        this.scrollView.enabled = showScrollBar;
+
 
         this.scheduleOnce(() => {
-            this.scrollView.enabled = showScrollBar;
+            if (oldEnableScroll != showScrollBar && showScrollBar) {
+                this.scrollView.scrollToTop();
+            }
         });
+    }
+
+    public left() {
+
+        this._isLeft = true;
+        return this;
+    }
+
+    public right() {
+
+        this._isLeft = false;
+        return this;
     }
 
 }

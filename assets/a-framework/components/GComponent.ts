@@ -204,9 +204,9 @@ class GComponent<Options = any> extends Component {
         let _btnSounds = comp.__$$50btnSounds__;
         if (_btnSounds) {
             for (const key in _btnSounds) {
-                let soundName = _btnSounds[key];
+                let obj = _btnSounds[key];
                 let btn = comp[key] as Button;
-                btn.__$soundName = soundName;
+                btn.__$soundName = obj?.soundName;
             }
         }
     }

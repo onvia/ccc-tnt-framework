@@ -97,7 +97,10 @@ export class LoaderMgr {
      */
     public releaseLoader(key: any) {
         if (!key) {
-            key = this.KEY_SHARE;
+            // key = this.KEY_SHARE;
+            console.warn(`LoaderMgr-> releaseLoader key=null`);
+
+            return;
         }
         // share 只进行资源释放
         if (key === this.KEY_SHARE) {

@@ -21,6 +21,9 @@ export class GUISlider extends GUIBase<GUISliderOptions> {
     @node("background")
     background: Node = null;
 
+    @node("disable")
+    disable: Node = null;
+
     //@sprite("node-name")
     //sprite: Sprite = null;
 
@@ -41,12 +44,12 @@ export class GUISlider extends GUIBase<GUISliderOptions> {
         this.registerSliderEvent(this.slider, this.onSliderCallback);
 
         this.scheduleOnce(() => {
-            let nameWidth = this.nameLabel.node.uiTransform.width;
-            let nameLeft = this.nameLabel.node.widget.left;
+            // let nameWidth = this.nameLabel.node.uiTransform.width;
+            // let nameLeft = this.nameLabel.node.widget.left;
             let width = 0;
             for (let i = 0; i < this.node.children.length; i++) {
                 const child = this.node.children[i];
-                if (child == this.slider.node || child === this.background) {
+                if (child == this.slider.node || child === this.background || child === this.disable) {
                     continue;
                 }
                 width += child.uiTransform.width;
