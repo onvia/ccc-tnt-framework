@@ -28,7 +28,7 @@ declare global {
 
                 // createRouteGraph(gridIn: number[][], ...args);
                 search(startNode: Vec2, endNode: Vec2, ...args): GridNode[];
-
+                updateRouteGraph(graph: RouteGraph, gridIn: number[][]);
                 createGridNode(x: number, y: number, weight: number): GridNode;
             }
 

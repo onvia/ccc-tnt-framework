@@ -198,20 +198,20 @@ export class AStarBinaryHeap implements tnt.pf.IPathFinder {
     // private graph: RouteGraph;
 
     // 曼哈顿距离
-    public manhattan(node1: tnt.pf.GridNode, node2: tnt.pf.GridNode) {
+    public static manhattan(node1: tnt.pf.GridNode, node2: tnt.pf.GridNode) {
         var d1 = Math.abs(node2.x - node1.x);
         var d2 = Math.abs(node2.y - node1.y);
         return (d1 + d2);
     }
 
     // 六角距离
-    public hexagonal(node1: tnt.pf.GridNode, node2: tnt.pf.GridNode) {
+    public static hexagonal(node1: tnt.pf.GridNode, node2: tnt.pf.GridNode) {
         const distance = (Math.abs(node1.x - node2.x) + Math.abs(node1.y - node2.y) + Math.abs(node1.x + node1.y - node2.x - node2.y)) / 2;
         return distance;
     }
 
     // 欧几里得距离
-    public euclidean(node1: tnt.pf.GridNode, node2: tnt.pf.GridNode) {
+    public static euclidean(node1: tnt.pf.GridNode, node2: tnt.pf.GridNode) {
         const dx = node1.x - node2.x;
         const dy = node1.y - node2.y;
         return Math.sqrt(dx * dx + dy * dy);
@@ -226,7 +226,7 @@ export class AStarBinaryHeap implements tnt.pf.IPathFinder {
     public search(start: Vec2, end: Vec2, manhattan: any = null): tnt.pf.GridNode[] {
         let graph = this.graph;
         graph.cleanDirty();
-        let heuristic = manhattan || this.manhattan;
+        let heuristic = manhattan || AStarBinaryHeap.manhattan;
         this.wall = this.wall || new DefaultWall();
 
         let openHeap = new BinaryHeap(function (gridNode: tnt.pf.GridNode) { return gridNode.f });
@@ -323,14 +323,16 @@ export class AStarBinaryHeap implements tnt.pf.IPathFinder {
 
 declare global {
     interface IPathFinding {
+        RouteGraph: typeof RouteGraph;
         AStarBinaryHeap: typeof AStarBinaryHeap;
     }
 
     namespace tnt {
         namespace pf {
             type AStarBinaryHeap = InstanceType<typeof AStarBinaryHeap>;
+            type RouteGraph = InstanceType<typeof RouteGraph>;
         }
     }
 }
-
+tnt.pf.RouteGraph = RouteGraph;
 tnt.pf.AStarBinaryHeap = AStarBinaryHeap;

@@ -16,6 +16,8 @@ class RouteGraphHexagonal extends RouteGraph {
     }
 
 }
+
+/** 六角地图模拟45度交错地图 */
 class RouteGraphStaggered extends RouteGraph {
     staggerX: boolean = false;
     staggerEven: boolean = false;

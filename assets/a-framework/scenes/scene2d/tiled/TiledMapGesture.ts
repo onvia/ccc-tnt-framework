@@ -36,6 +36,7 @@ const tmp5_v3 = new Vec3();
 const tmp1_v2 = new Vec2();
 const tmp2_v2 = new Vec2();
 
+const weakMap = new WeakMap<tnt.tmx.TiledMapProxy, TiledMapGesture>();
 @ccclass('TiledMapGesture')
 class TiledMapGesture implements ITouch, IMouse {
     public tiledMapProxy: tnt.tmx.TiledMapProxy = null;
@@ -58,7 +59,26 @@ class TiledMapGesture implements ITouch, IMouse {
 
     private touchNode: Node = null;
     private CACHE_ENABLE_MULTI_TOUCH = -1;
+
+
+    static create(tiledMapProxy: tnt.tmx.TiledMapProxy, camera: Camera, options: CameraOptions) {
+        let tiledMapGesture: TiledMapGesture = null
+        if (weakMap.has(tiledMapProxy)) {
+            tiledMapGesture = weakMap.get(tiledMapProxy);
+
+            tiledMapGesture.onCtor(tiledMapProxy, camera, options);
+        } else {
+
+            tiledMapGesture = new TiledMapGesture(tiledMapProxy, camera, options);
+            weakMap.set(tiledMapProxy, tiledMapGesture);
+        }
+        return tiledMapGesture;
+    }
+
     constructor(tiledMapProxy: tnt.tmx.TiledMapProxy, camera: Camera, options: CameraOptions) {
+        this.onCtor(tiledMapProxy, camera, options);
+    }
+    onCtor(tiledMapProxy: tnt.tmx.TiledMapProxy, camera: Camera, options: CameraOptions) {
         this.tiledMapProxy = tiledMapProxy;
 
         this.gameCamera = camera;
@@ -66,6 +86,9 @@ class TiledMapGesture implements ITouch, IMouse {
     }
 
     enable(touchNode: Node) {
+        if (this.CACHE_ENABLE_MULTI_TOUCH != -1) {
+            return;
+        }
         this.CACHE_ENABLE_MULTI_TOUCH = macro.ENABLE_MULTI_TOUCH ? 1 : 0;
         macro.ENABLE_MULTI_TOUCH = true;
 
@@ -175,7 +198,8 @@ class TiledMapGesture implements ITouch, IMouse {
                 let location = event.getLocation();
                 tmp1_v3.set(location.x, location.y);
                 this.gameCamera.screenToWorld(tmp1_v3, tmp2_v3);
-                let tileCoords = this.tiledMapProxy.worldToTileCoords(tmp2_v3.x, tmp2_v3.y);
+                let worldPosition = this.gameCamera.screenToWorld(tmp1_v3, tmp2_v3);
+                let tileCoords = this.tiledMapProxy.worldToTileCoords(worldPosition.x, worldPosition.y);
                 if (this.tiledMapProxy.isSafe(tileCoords)) {
                     this.cameraOptions.clickTile(tileCoords);
                 }

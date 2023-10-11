@@ -73,4 +73,8 @@ export class Player extends tnt.Actor2D {
             this.node.position = this._gluePosition;
         }
     }
+
+    stopMove() {
+        this.path.length = 0;
+    }
 }

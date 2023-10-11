@@ -20,7 +20,10 @@ export default class CameraController extends Component {
     static readonly EVENT_CAMERA_ZOOM_RATIO_CHANGE = "camera-zoom-ratio-change";
 
     static create(gameCamera: Camera, mapSizeInPixel: Size) {
-        let cameraController = gameCamera.addComponent(CameraController);
+        let cameraController = gameCamera.getComponent(CameraController);
+        if (!cameraController) {
+            cameraController = gameCamera.addComponent(CameraController);
+        }
         cameraController.mapSizeInPixel = mapSizeInPixel;
         cameraController.forceUpdateMovementArea();
         cameraController.forceUpdateCameraBounds();

@@ -20,8 +20,16 @@ const tmp1_v3 = new Vec3();
 const tmp2_v3 = new Vec3();
 const HALF_v2 = new Vec2(0.5, 0.5);
 
+enum MapType {
+    Orthogonal,
+    Hexagonal,
+    Hex2Stagger,
+    Isometric,
+}
+
 @ccclass('PathFindingDemo')
 export class PathFindingDemo extends tnt.SceneBase<PathFindingDemoOptions> {
+
 
     tiledMapProxy: tnt.tmx.TiledMapProxy = null;
     tiledMapGesture: tnt.tmx.TiledMapGesture = null;
@@ -48,35 +56,42 @@ export class PathFindingDemo extends tnt.SceneBase<PathFindingDemoOptions> {
 
     // 是否跟随角色
     isFollowPlayer = false;
-    onEnterTransitionFinished(sceneName?: string): void {
+
+    mapType: MapType = null;
+    heuristic: (...args) => number;
+
+    onEnterTransitionStart(sceneName?: string): void {
+
+        this.initGUI();
+
         this.gameCamera = tnt.componentUtils.findComponent("Camera", Camera, this.scene);
 
         this.tiledMap = tnt.componentUtils.findComponent("map", TiledMap, this.scene);
 
-        this.loader.load("tiled-map-example#map/map_hexagonal_y", TiledMapAsset, (err, asset) => {
-            // this.loader.load("tiled-map-example#map/map", TiledMapAsset, (err, asset) => {
-            if (err) {
-                console.log(`PathFindingDemo-> `, err);
-                return;
-            }
-            this.tiledMap.tmxAsset = asset;
-            this.onInit();
+        this.heuristic = tnt.pf.AStarBinaryHeap.manhattan;
 
-        });
+        this.updateMap(MapType.Orthogonal, true);
+
+    }
+    onEnterTransitionFinished(sceneName?: string): void {
+
     }
 
     onExitTransitionStart(sceneName?: string): void {
         // 关闭手势
         this.tiledMapGesture.disable();
+        tnt.gui.destroy();
     }
 
     onInit() {
 
         // 使用了摄像机需要把自动裁剪关闭
         this.tiledMap.enableCulling = false;
-        this.tiledMapProxy = new tnt.tmx.TiledMapProxy(this.tiledMap);
+        this.tiledMapProxy = tnt.tmx.TiledMapProxy.create(this.tiledMap);
         this.cameraController = CameraController.create(this.gameCamera, this.tiledMapProxy.mapSizeInPixel);
-        this.tiledMapGesture = new tnt.tmx.TiledMapGesture(this.tiledMapProxy, this.gameCamera, {
+
+
+        this.tiledMapGesture = tnt.tmx.TiledMapGesture.create(this.tiledMapProxy, this.gameCamera, {
             getCameraTargetZoomRatio: () => {
                 return this.cameraController.zoomRatio;
             },
@@ -98,16 +113,14 @@ export class PathFindingDemo extends tnt.SceneBase<PathFindingDemoOptions> {
             },
             clickTile: (tileCoords: Vec2) => {
                 let start = this.tiledMapProxy.pixelToTileCoords(this.player.node.position.x, this.player.node.position.y);
-                let grids = this.pathFinder.search(start, tileCoords, (node1: tnt.pf.GridNode, node2: tnt.pf.GridNode) => {
-                    var d1 = node2.x - node1.x
-                    var d2 = node2.y - node1.y
-                    return Math.sqrt(d1 * d1 + d2 * d2);
-                }
-                );
+                let grids = this.pathFinder.search(start, tileCoords, this.heuristic);
                 this.isFollowPlayer && this.cameraController.follow(this.player.node);
                 console.log(`路径 `, JSON.parse(JSON.stringify(grids)));
                 this.player.moveByRoad(grids);
 
+                if (!grids.length) {
+                    return;
+                }
                 let startGridNode = this.pathFinder.createGridNode(start.x, start.y, 0);
                 let copyGrids = [...grids];
                 copyGrids.unshift(startGridNode);
@@ -131,10 +144,11 @@ export class PathFindingDemo extends tnt.SceneBase<PathFindingDemoOptions> {
         // 启用手势
         this.tiledMapGesture.enable(this.node);
 
-        this.initGUI();
     }
     initEvents() {
-        tnt.eventMgr.on(TiledMapEvents.PLAYER_MOVE_END, this.onPlayerMoveEndListener, this);
+        if (!tnt.eventMgr.hasEventListener(TiledMapEvents.PLAYER_MOVE_END, this.onPlayerMoveEndListener, this)) {
+            tnt.eventMgr.on(TiledMapEvents.PLAYER_MOVE_END, this.onPlayerMoveEndListener, this);
+        }
     }
 
     async initGUI() {
@@ -144,9 +158,9 @@ export class PathFindingDemo extends tnt.SceneBase<PathFindingDemoOptions> {
             });
         });
 
-        let guiWindow = await tnt.gui.create("Debug", new Size(320, 640));
+        let guiWindow = await tnt.gui.create("Debug", new Size(240, 640));
 
-        guiWindow
+        guiWindow.left()
             .addCheckbox("Follow", (isChecked) => {
                 this.followPlayer(isChecked);
             }, false)
@@ -160,8 +174,76 @@ export class PathFindingDemo extends tnt.SceneBase<PathFindingDemoOptions> {
                 return this.screenCoord;
             })
 
+        guiWindow
+            .addGroup("Map")
+            .addToggle("Orthogonal", (isChecked) => {
+                // 正交地图
+                this.updateMap(MapType.Orthogonal, isChecked);
+            }, true)
+            .addToggle("Hexagonal", (isChecked) => {
+                // 六角
+                this.updateMap(MapType.Hexagonal, isChecked);
+            }, false)
+            .addToggle("Hex2Stagger", (isChecked) => {
+                // 六角交错模拟45度交错
+                this.updateMap(MapType.Hex2Stagger, isChecked);
+            }, false).justWidget().setGUIEnable(false)
+            .addToggle("Isometric", (isChecked) => {
+                // 45度地图
+                this.updateMap(MapType.Isometric, isChecked);
+            }, false).justWidget().setGUIEnable(false)
+        guiWindow
+            .addGroup("PathFinding")
+            .addToggle("Manhattan", (isChecked) => {
+                isChecked && (this.heuristic = tnt.pf.AStarBinaryHeap.manhattan);
+            }, true)
+            .addToggle("Hexagonal", (isChecked) => {
+
+                isChecked && (this.heuristic = tnt.pf.AStarBinaryHeap.hexagonal);
+            }, false)
+            .addToggle("Euclidean", (isChecked) => {
+                isChecked && (this.heuristic = tnt.pf.AStarBinaryHeap.euclidean);
+            }, false)
+
+
 
     }
+
+    updateMap(mapType: MapType, isChecked: boolean) {
+        if (!isChecked) {
+            return;
+        }
+        if (this.mapType == mapType) {
+            return;
+        }
+        this.mapType = mapType;
+
+        if (this.player) {
+            this.debugPathGraphics.clear();
+            this.player.stopMove();
+        }
+
+        let mapNameMap = {
+            [MapType.Orthogonal]: "map",
+            [MapType.Hexagonal]: "map_hexagonal_y",
+            [MapType.Hex2Stagger]: "",
+            [MapType.Isometric]: "",
+        }
+        let mapName = mapNameMap[mapType];
+        if (!mapName) {
+            return;
+        }
+        this.loader.load(`tiled-map-example#map/${mapName}`, TiledMapAsset, (err, asset) => {
+            // this.loader.load("tiled-map-example#map/map", TiledMapAsset, (err, asset) => {
+            if (err) {
+                console.log(`PathFindingDemo-> `, err);
+                return;
+            }
+            this.tiledMap.tmxAsset = asset;
+            this.onInit();
+        });
+    }
+
     initRole() {
 
         let role = tnt.componentUtils.findNode("role", this.scene);
@@ -169,8 +251,11 @@ export class PathFindingDemo extends tnt.SceneBase<PathFindingDemoOptions> {
         let players = this.tiledMap.getObjectGroup("players");
         let spawnPoint = players.getObject("SpawnPoint");
         role.position = new Vec3(spawnPoint.x, spawnPoint.y);
-
-        this.player = role.addComponent(Player);
+        if (!this.player) {
+            this.player = role.addComponent(Player);
+        }
+        this.player.position = role.position.copyAsVec2();
+        this.player.syncPosition();
     }
     initAStar() {
         let grids = [];
@@ -183,32 +268,63 @@ export class PathFindingDemo extends tnt.SceneBase<PathFindingDemoOptions> {
         })
         this.grids = grids;
 
-        let wall: tnt.pf.IWall = {
-            isWall: (weight) => {
-                return weight > 0;
-            }
+
+        let routeGraph: tnt.pf.RouteGraph = null;
+
+        switch (this.mapType) {
+            case MapType.Orthogonal:
+            case MapType.Isometric:
+
+                routeGraph = new tnt.pf.RouteGraphNormal(false)
+                break;
+
+            case MapType.Hexagonal:
+                {
+                    let staggerX = this.tiledMap._mapInfo.getStaggerAxis() === 0;
+                    let staggerEven = this.tiledMap._mapInfo.getStaggerIndex() === 1;
+                    routeGraph = new tnt.pf.RouteGraphHexagonal(staggerX, staggerEven);
+                }
+                break;
+            case MapType.Hex2Stagger:
+
+                {
+                    let staggerX = this.tiledMap._mapInfo.getStaggerAxis() === 0;
+                    let staggerEven = this.tiledMap._mapInfo.getStaggerIndex() === 1;
+                    routeGraph = new tnt.pf.RouteGraphStaggered(staggerX, staggerEven);
+                }
+
+                break;
+            default:
+                break;
         }
 
-        // 坐标转换
-        let coordinateTransform: tnt.pf.ICoordinateTransform = {
-            gridToWorld: (grid: Readonly<Vec2>) => {
-                let pixel = this.tiledMapProxy.tileToPixelCoords(grid.x, grid.y, HALF_v2);
-                tmp1_v3.set(pixel.x, pixel.y);
-                let worldPosition = this.gameCamera.screenToWorld(tmp1_v3, tmp1_v3)
-                pixel.set(worldPosition.x, worldPosition.y);
-                return pixel;
-            },
-            gridToPixel: (grid: Readonly<Vec2>) => {
-                let pixel = this.tiledMapProxy.tileToPixelCoords(grid.x, grid.y, HALF_v2);
-                return pixel;
+
+
+        if (!this.pathFinder) {
+            let wall: tnt.pf.IWall = {
+                isWall: (weight) => {
+                    return weight > 0;
+                }
             }
+
+            // 坐标转换
+            let coordinateTransform: tnt.pf.ICoordinateTransform = {
+                gridToWorld: (grid: Readonly<Vec2>) => {
+                    let pixel = this.tiledMapProxy.tileToPixelCoords(grid.x, grid.y, HALF_v2);
+                    tmp1_v3.set(pixel.x, pixel.y);
+                    let worldPosition = this.gameCamera.screenToWorld(tmp1_v3, tmp1_v3)
+                    pixel.set(worldPosition.x, worldPosition.y);
+                    return pixel;
+                },
+                gridToPixel: (grid: Readonly<Vec2>) => {
+                    let pixel = this.tiledMapProxy.tileToPixelCoords(grid.x, grid.y, HALF_v2);
+                    return pixel;
+                }
+            }
+            this.pathFinder = new tnt.pf.AStarBinaryHeap(coordinateTransform, wall, routeGraph, this.grids);
+        } else {
+            this.pathFinder.updateRouteGraph(routeGraph, this.grids);
         }
-
-        // this.pathFinder = new AStarBinaryHeap(coordinateTransform, wall, new tnt.pf.RouteGraphNormal(false), this.grids);
-
-        let staggerX = this.tiledMap._mapInfo.getStaggerAxis() === 0;
-        let staggerEven = this.tiledMap._mapInfo.getStaggerIndex() === 1;
-        this.pathFinder = new tnt.pf.AStarBinaryHeap(coordinateTransform, wall, new tnt.pf.RouteGraphHexagonal(staggerX, staggerEven), this.grids);
 
     }
     setAnchorPointZero(node: Node) {
@@ -232,6 +348,8 @@ export class PathFindingDemo extends tnt.SceneBase<PathFindingDemoOptions> {
 
     }
     initDebugGraphics() {
+        this.debugGridGraphics?.clear();
+        this.debugPathGraphics?.clear();
         this.debugGridGraphics = new DebugGraphics(this.tiledMap.node);
         this.debugPathGraphics = new DebugGraphics(this.tiledMap.node);
 
@@ -241,6 +359,12 @@ export class PathFindingDemo extends tnt.SceneBase<PathFindingDemoOptions> {
         this.debugGridGraphics.setColor(Color.fromHEX(color(), "#B3B3B3"));
         // this.debugGridGraphics.setColor(Color.RED);
         this.debugGridGraphics.setLineWidth(3);
+
+
+        if (this.mapType != MapType.Orthogonal) {
+            return;
+        }
+
         const ANCHOR = new Vec2(0, 1);
         for (let i = 1; i < width; i++) {
             let start = this.tiledMapProxy.tileToPixelCoords(i, 0, ANCHOR);

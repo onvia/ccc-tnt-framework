@@ -10,12 +10,14 @@ declare global {
         TiledMapProxy: typeof TiledMapProxy;
     }
 
-    namespace tnt{
+    namespace tnt {
         namespace tmx {
             type TiledMapProxy = InstanceType<typeof TiledMapProxy>;
         }
     }
 }
+
+const weakMap = new WeakMap<TiledMap, TiledMapProxy>();
 
 @ccclass('TiledMapProxy')
 class TiledMapProxy implements IOrientation {
@@ -24,16 +26,39 @@ class TiledMapProxy implements IOrientation {
     mapSize: Readonly<Size> = null; //
     mapSizeInPixel: Readonly<Size> = null;
 
+    static create(map: TiledMap | Node) {
+        let tiledMap: TiledMap = null;
+        if (map instanceof TiledMap) {
+            tiledMap = map;
+        } else if (map instanceof Node) {
+            tiledMap = map.getComponent(TiledMap);
+        }
+
+        let tiledMapProxy: TiledMapProxy = null;
+        if (weakMap.has(tiledMap)) {
+            tiledMapProxy = weakMap.get(tiledMap);
+            tiledMapProxy.onCtor(tiledMap);
+        } else {
+            tiledMapProxy = new TiledMapProxy(tiledMap);
+            weakMap.set(tiledMap, tiledMapProxy);
+        }
+        return tiledMapProxy;
+    }
+
     private _orientationAdapter: tnt.tmx.OrientationAdapter = null;
     public get orientationAdapter(): tnt.tmx.OrientationAdapter {
         return this._orientationAdapter;
     }
 
-    constructor(map: TiledMap | Node) {
-        if (map instanceof TiledMap) {
-            this.tiledMap = map;
-        } else if (map instanceof Node) {
-            this.tiledMap = map.getComponent(TiledMap);
+    constructor(tiledMap: TiledMap | Node) {
+        this.onCtor(tiledMap);
+    }
+
+    private onCtor(tiledMap: TiledMap | Node) {
+        if (tiledMap instanceof TiledMap) {
+            this.tiledMap = tiledMap;
+        } else if (tiledMap instanceof Node) {
+            this.tiledMap = tiledMap.getComponent(TiledMap);
         }
         if (!this.tiledMap) {
             throw new Error("tiledMap is null");
@@ -68,7 +93,6 @@ class TiledMapProxy implements IOrientation {
             this._orientationAdapter.init();
         }
     }
-
     init(): void {
 
     }
