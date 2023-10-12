@@ -30,4 +30,9 @@ export class GUIBase<Options extends GUIBaseOptions> extends tnt.UIItem<Options>
         this.showNodeByName("disable", !enable);
         return this.parentGroup;
     }
+
+    updateValue(arg1: any, arg2?: any, arg3?: any, arg4?: any) {
+
+        throw new Error('[updateValue] Method not implemented.');
+    }
 }

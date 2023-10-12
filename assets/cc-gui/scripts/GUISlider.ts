@@ -8,8 +8,9 @@ const { prefabUrl, node, sprite, editBox, slider } = tnt._decorator;
 declare global {
     interface GUISliderOptions extends GUIBaseOptions {
         defaultValue?: number;
+        minValue?: number;
         maxValue?: number;
-        callback?: Runnable1<number>;
+        callback?: Runnable2<number, number>;
     }
 }
 
@@ -33,11 +34,11 @@ export class GUISlider extends GUIBase<GUISliderOptions> {
     @editBox("EditBox")
     editBox: EditBox = null;
 
-
     protected onStart(): void {
         super.onStart();
 
         this.options.maxValue = this.options.maxValue || 1;
+        this.options.minValue = this.options.minValue || 0;
         this.options.defaultValue = this.options.defaultValue || 1;
 
         this.registerEditBoxDidEnd(this.editBox, this.onEditDidEnded);
@@ -57,7 +58,7 @@ export class GUISlider extends GUIBase<GUISliderOptions> {
 
             this.slider.node.uiTransform.width = Math.min(120, this.node.uiTransform.width - width);
             this.scheduleOnce(() => {
-                this.setProgress(clamp01(this.options.defaultValue / this.options.maxValue));
+                this.setProgress(clamp01((this.options.defaultValue - this.options.minValue) / (this.options.maxValue - this.options.minValue)));
             });
         });
 
@@ -68,19 +69,34 @@ export class GUISlider extends GUIBase<GUISliderOptions> {
     setProgress(progress: number) {
         let value = clamp01(progress);
         this.slider.progress = value;
-        this.editBox.string = "" + (value * this.options.maxValue).toFixed(2);
+        this.editBox.string = "" + (this.options.minValue + value * (this.options.maxValue - this.options.minValue)).toFixed(2);
+    }
+
+    setValue(value: number) {
+        let progress = clamp01((value - this.options.minValue) / (this.options.maxValue - this.options.minValue));
+        this.slider.progress = progress;
+        this.options.callback?.(progress, value);
+    }
+
+    updateValue(value: any, progress?: any, arg3?: any, arg4?: any) {
+        if (typeof value != 'undefined') {
+            this.setValue(value);
+        }
+        if (typeof progress != "undefined") {
+            this.setProgress(progress);
+        }
     }
 
     onSliderCallback(slider: Slider) {
         const progress = slider.progress;
-        this.editBox.string = "" + (progress * this.options.maxValue).toFixed(2);
-        this.options.callback && this.options.callback(progress);
+        let value = (this.options.minValue + progress * (this.options.maxValue - this.options.minValue)).toFixed(2);
+        this.editBox.string = "" + value;
+        this.options.callback && this.options.callback(progress, Number(value));
     }
 
     onEditDidEnded(editBox: EditBox) {
         const value = Number(editBox.string);
-        this.options.callback?.(value);
-        this.slider.progress = value / this.options.maxValue;
+        this.setValue(value);
     }
 
     onSizeChanged() {

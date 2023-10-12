@@ -60,6 +60,7 @@ export class PathFindingDemo extends tnt.SceneBase<PathFindingDemoOptions> {
     mapType: MapType = null;
     heuristic: (...args) => number;
 
+    
     onEnterTransitionStart(sceneName?: string): void {
 
         this.initGUI();
@@ -92,6 +93,7 @@ export class PathFindingDemo extends tnt.SceneBase<PathFindingDemoOptions> {
 
 
         this.tiledMapGesture = tnt.tmx.TiledMapGesture.create(this.tiledMapProxy, this.gameCamera, {
+            minZoomRatio: 0.5,
             getCameraTargetZoomRatio: () => {
                 return this.cameraController.zoomRatio;
             },
@@ -173,6 +175,12 @@ export class PathFindingDemo extends tnt.SceneBase<PathFindingDemoOptions> {
             .addItem("ScreenXY", () => {
                 return this.screenCoord;
             })
+            .addSlider("Zoom", {
+                defaultValue: 1, minValue: 0.5, maxValue: 3,
+                callback: (progress, value) => {
+                    this.cameraController.forceZoomRatio(value);
+                }
+            }).justWidget();
 
         guiWindow
             .addGroup("Map")

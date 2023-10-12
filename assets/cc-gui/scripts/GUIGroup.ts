@@ -27,6 +27,8 @@ export class GUIGroup<Options extends GUIGroupOptions> extends GUITable<Options>
         super.onStart();
         this.isFold = this.options.isFold ?? this.isFold;
         this.registerNodeTouchEvent(this.arrow, this.onClickArrow, this);
+        this.registerNodeTouchEvent(this.nameLabel.node, this.onClickArrow, this);
+
         this.setFold(this.isFold);
     }
 

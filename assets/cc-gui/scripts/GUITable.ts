@@ -141,7 +141,7 @@ export class GUITable<Options extends GUITableOptions> extends tnt.UIItem<Option
         return this;
     }
 
-    addSlider(name: string, options: { defaultValue?: number, maxValue?: number, callback?: Runnable1<number> }) {
+    addSlider(name: string, options: { defaultValue?: number, minValue?: number, maxValue?: number, callback?: Runnable2<number, number> }) {
 
         let ui = this.addUISync(GUISlider, this.content, { name, ...options });
         ui.parentGroup = this;
@@ -154,7 +154,10 @@ export class GUITable<Options extends GUITableOptions> extends tnt.UIItem<Option
 
     }
 
-    justWidget() {
+    justWidget(obj?: { widget: GUIBase<any> }) {
+        if (obj) {
+            obj.widget = this._justWidget;
+        }
         return this._justWidget;
     }
 

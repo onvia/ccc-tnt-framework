@@ -51,7 +51,7 @@ class TiledMapGesture implements ITouch, IMouse {
         return this.cameraOptions.minZoomRatio || 1;
     }
     private get maxZoomRatio() {
-        return this.cameraOptions.minZoomRatio || 3;
+        return this.cameraOptions.maxZoomRatio || 3;
     }
     private get increaseRate() {
         return this.cameraOptions.increaseRate || 10000;
@@ -213,6 +213,10 @@ class TiledMapGesture implements ITouch, IMouse {
 
     onTouchCancel(event: EventTouch) {
         this.onTouchEnded(event);
+    }
+
+    onMouseDown(event: EventMouse) {
+
     }
     onMouseWheel(event: EventMouse) {
         let gameCamera = this.gameCamera;

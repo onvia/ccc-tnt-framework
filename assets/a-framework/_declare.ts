@@ -49,14 +49,14 @@ declare global {
     }
 
     interface ITouch {
-        onTouchBegan?(event: EventTouch);
+        onTouchBegan(event: EventTouch);
         onTouchMoved?(event: EventTouch);
         onTouchEnded?(event: EventTouch);
         onTouchCancel?(event: EventTouch);
     }
 
     interface IMouse {
-        onMouseDown?(event: EventMouse);
+        onMouseDown(event: EventMouse);
         onMouseUp?(event: EventMouse);
         onMouseWheel?(event: EventMouse);
 

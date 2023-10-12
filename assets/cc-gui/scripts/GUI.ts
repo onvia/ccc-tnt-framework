@@ -8,6 +8,10 @@ declare global {
     interface ITNT {
         gui: GUI;
     }
+
+    export namespace gui {
+
+    }
 }
 @ccclass('GUI')
 class GUI {
