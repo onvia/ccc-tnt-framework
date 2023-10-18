@@ -11,7 +11,7 @@ export class VMItem extends tnt.UIItem implements IVMItem {
     }
 
     updateItem(data: any, index: number, ...args: any[]) {
-        this.setLabelText("Label", `${data.name} ${index}`);
+        this.setLabelText("Label", `${data ? data.name : "none"} ${index}`);
     }
 }
 

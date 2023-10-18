@@ -26,6 +26,9 @@ const builtInSymbols = new Set(
 
 const arrayInstrumentations = createArrayInstrumentations()
 
+// 通过方法修改数组的数据
+const arrayChangedByMethods = new WeakSet();
+
 function createArrayInstrumentations() {
     const instrumentations: Record<string, Function> = {}
     arrayMethods.forEach(key => {
@@ -36,7 +39,9 @@ function createArrayInstrumentations() {
 
             let oldValue = this.slice();
             const proto: any = Reflect.getPrototypeOf(this);
+            arrayChangedByMethods.add(raw);
             const result = proto[key].apply(this, args);
+            arrayChangedByMethods.delete(raw);
             _trigger(dep, TriggerOpTypes.SET, name, this, oldValue);
             return result
         }
@@ -68,7 +73,10 @@ function set(target, key: PropertyKey, newValue, receiver?: any) {
     let oldValue = target[key];
     const _isObject = isObject(newValue);
     const _isArray = isArray(target);
-    const hadKey = _isArray && isIntegerKey(key) ? Number(key) < target.length : hasOwn(target, key);
+    const _isIntegerKey = isIntegerKey(key);
+    const hadKey = _isArray && _isIntegerKey ? Number(key) < target.length : hasOwn(target, key);
+    const _needTriggerArrayChanged = _isArray && ((!arrayChangedByMethods.has(target) && (key === 'length' || _isIntegerKey))); // 需要执行数组修改
+    const _oldArray = _needTriggerArrayChanged && target.slice();
     const res = Reflect.set(target, key, newValue, receiver);
     if (!hadKey) {
         if (_isObject) {
@@ -77,14 +85,20 @@ function set(target, key: PropertyKey, newValue, receiver?: any) {
         }
         _trigger(target, TriggerOpTypes.ADD, key, newValue, oldValue);
     } else if (hasChanged(newValue, oldValue)) {
-        // TODO：对数组进行特殊处理 length
-        if (_isArray && key === 'length') {
-
-        }
         _trigger(target, TriggerOpTypes.SET, key, newValue, oldValue);
     }
 
+    if (_needTriggerArrayChanged) {
+        _triggerArrayChanged(target, _oldArray);
+    }
+
     return res;
+}
+function _triggerArrayChanged(target, oldArray) {
+    const raw = target; // rawMap.get(target);
+    const dep = rawDepsMap.get(raw);
+    const name = rawNameMap.get(raw);
+    _trigger(dep, TriggerOpTypes.SET, name, target, oldArray);
 }
 function ownKeys(target) {
     return Reflect.ownKeys(target);
