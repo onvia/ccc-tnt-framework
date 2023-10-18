@@ -9,8 +9,8 @@ if (cc['settings']) {
     }
 
     if (CC_DEBUG) {
-        if (assets?.projectBundles?.includes("cc-gui")) {
-            assets.preloadBundles = assets.preloadBundles.concat([{ bundle: "cc-gui" }]);
-        }
+        cc.game.once(cc.Game.EVENT_POST_PROJECT_INIT, () => {
+            cc.assetManager.loadBundle("cc-gui")
+        })
     }
 }

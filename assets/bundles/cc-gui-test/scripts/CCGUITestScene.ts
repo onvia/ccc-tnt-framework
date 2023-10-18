@@ -22,6 +22,11 @@ export class CCGUITestScene extends tnt.SceneBase<CCGUITestSceneOptions> {
 
 
     async addDebugWindow() {
+        await new Promise<void>((resolve, reject) => {
+            tnt.resourcesMgr.loadBundle("cc-gui", () => {
+                resolve();
+            });
+        });
 
         let testProgress = 0;
         let guiWindow = await tnt.gui.create("Debug", new Size(360, 9999));

@@ -60,7 +60,7 @@ export class PathFindingDemo extends tnt.SceneBase<PathFindingDemoOptions> {
     mapType: MapType = null;
     heuristic: (...args) => number;
 
-    
+
     onEnterTransitionStart(sceneName?: string): void {
 
         this.initGUI();
@@ -427,6 +427,9 @@ export class PathFindingDemo extends tnt.SceneBase<PathFindingDemoOptions> {
 
     cacheLocation: Vec2 = new Vec2();
     protected update(dt: number): void {
+        if (!this.tiledMapGesture) {
+            return;
+        }
         if (this.cacheLocation.equals(this.tiledMapGesture.location)) {
             return;
         }
