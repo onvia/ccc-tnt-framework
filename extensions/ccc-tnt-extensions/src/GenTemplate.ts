@@ -15,7 +15,7 @@ export class GenTemplate {
 
     async checkUpdate() {
         // 自动检查更新
-        
+
         console.log(`[TNT] 检查更新。`);
         let versionPath = path.join(Editor.Project.path, "assets", framework, "tnt-version.json");
         let tntPath = path.join(Editor.Project.path, "assets", framework, "TNT.ts");
@@ -34,8 +34,9 @@ export class GenTemplate {
             let remoteVersion = lastRelease.data.tag_name;
             let result = this._versionCompareHandle(remoteVersion, localVersionConfig.version);
             if (result > 0) {
+                let isBeta = remoteVersion.toLowerCase().includes('beta') || remoteVersion.toLowerCase().includes('alpha');
                 // 更新
-                console.log(`[TNT] 框架发现新版本。当前版本： ${localVersionConfig.version}，新版本： ${remoteVersion}`);
+                console.log(`[TNT] 框架发现新版本${isBeta ? "（测试版）" : ""}。当前版本： ${localVersionConfig.version}，新版本： ${remoteVersion}`);
             } else {
                 console.log(`[TNT] 框架无更新。`);
             }
@@ -71,7 +72,7 @@ export class GenTemplate {
                 'repo': config.repo,
             });
             // 查找 框架 压缩包
-            let asset = lastRelease.data.assets.find((asset)=>{
+            let asset = lastRelease.data.assets.find((asset) => {
                 return asset.name === tntAsset;
             });
             // lastRelease.data.tag_name
@@ -185,7 +186,7 @@ export class GenTemplate {
     }
 
     digitization(tag: string) {
-        if (tag.toLowerCase().includes('beta')) {
+        if (tag.toLowerCase().includes('beta') || tag.toLowerCase().includes('alpha')) {
             return 1;
         }
         if (tag.toLowerCase().includes('release') || tag == '') {
