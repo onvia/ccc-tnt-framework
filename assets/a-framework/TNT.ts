@@ -1,14 +1,15 @@
 
 
-import { profiler, EffectAsset, game, Input, input } from "cc";
+import { profiler, EffectAsset, game, Input, input, Node, find, Canvas, director, Widget, UITransform, Layers } from "cc";
 
 declare global {
 
     interface ITbl { }
-    interface IGame { }
+    interface IGame { createPersistRootNode2D(name: string): Node; }
     interface IUtils { }
     interface ITmx { }
     interface IPathFinding { }
+    interface IPlatform { }
 
     interface ITNT {
         options: IStartupOptions;
@@ -29,9 +30,9 @@ declare global {
 
         pf: IPathFinding;
 
-        startup(options?: IStartupOptions);
-        enableTimer();
+        platform: IPlatform;
 
+        startup(options?: IStartupOptions);
 
         /** TNT 框架初始化完成事件 */
         readonly EVENT_TNT_INITD;
@@ -124,6 +125,38 @@ function defineTNTOptions(options?: IStartupOptions) {
             return _debug;
         },
     });
+}
+
+tnt.game.createPersistRootNode2D = function (name: string) {
+    let canvasName = `${name}-Canvas`;
+    let canvasNode = find(canvasName);
+    if (!canvasNode) {
+        canvasNode = new Node();
+        canvasNode.addComponent(Canvas);
+        let widget = canvasNode.addComponent(Widget);
+        widget.bottom = 0;
+        widget.top = 0;
+        widget.right = 0;
+        widget.left = 0;
+        widget.isAlignLeft = true;
+        widget.isAlignRight = true;
+        widget.isAlignTop = true;
+        widget.isAlignBottom = true;
+
+        let canvas = find("Canvas");
+        canvasNode.position = canvas.position.clone();
+        canvasNode.name = canvasName;
+        director.addPersistRootNode(canvasNode);
+    }
+    let node = find(name, canvasNode);
+    if (!node) {
+        node = new Node();
+        node.layer = Layers.Enum.UI_2D;
+        node.name = name;
+        node.addComponent(UITransform);
+        node.parent = canvasNode;
+    }
+    return node;
 }
 
 export { };

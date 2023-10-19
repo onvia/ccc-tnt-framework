@@ -1,5 +1,5 @@
 
-import { Component, Node, macro, _decorator, assetManager } from "cc";
+import { Component, Node, macro, _decorator, assetManager, Color } from "cc";
 import { startupOptions } from "./StartupConfig";
 import { KeyBoardListener } from "./listeners/KeyBoardListener";
 import { SceneConfig } from "./SceneConfig";
@@ -43,6 +43,7 @@ export class Launcher extends Component {
             // 启动
             this.onLaunch();
         });
+
     }
 
     async onLaunch() {
@@ -66,6 +67,7 @@ export class Launcher extends Component {
         }
         // 显示开始按钮
         this.btnQuickStart.active = true;
+
     }
 
     async parseUrl() {
