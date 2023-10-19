@@ -25,7 +25,7 @@ interface CameraOptions {
     getCameraCurrentPosition(): Vec3; // 
     updateCameraPosition(position: Vec3);
     updateCameraZoomRatio(zoomRatio: number);
-    clickTile(tileCoords: Vec2);
+    touchEnd(worldPosition: Vec2);
 }
 
 const tmp1_v3 = new Vec3();
@@ -36,10 +36,9 @@ const tmp5_v3 = new Vec3();
 const tmp1_v2 = new Vec2();
 const tmp2_v2 = new Vec2();
 
-const weakMap = new WeakMap<tnt.tmx.TiledMapProxy, TiledMapGesture>();
+const weakMap = new WeakMap<Camera, TiledMapGesture>();
 @ccclass('TiledMapGesture')
 class TiledMapGesture implements ITouch, IMouse {
-    public tiledMapProxy: tnt.tmx.TiledMapProxy = null;
     public gameCamera: Camera = null;
     private cameraOptions: CameraOptions = null;
     private touchIDArray: number[] = [];
@@ -61,25 +60,25 @@ class TiledMapGesture implements ITouch, IMouse {
     private CACHE_ENABLE_MULTI_TOUCH = -1;
 
 
-    static create(tiledMapProxy: tnt.tmx.TiledMapProxy, camera: Camera, options: CameraOptions) {
+    static create(camera: Camera, options: CameraOptions) {
         let tiledMapGesture: TiledMapGesture = null
-        if (weakMap.has(tiledMapProxy)) {
-            tiledMapGesture = weakMap.get(tiledMapProxy);
+        if (weakMap.has(camera)) {
+            tiledMapGesture = weakMap.get(camera);
 
-            tiledMapGesture.onCtor(tiledMapProxy, camera, options);
+            tiledMapGesture.onCtor(camera, options);
         } else {
 
-            tiledMapGesture = new TiledMapGesture(tiledMapProxy, camera, options);
-            weakMap.set(tiledMapProxy, tiledMapGesture);
+            tiledMapGesture = new TiledMapGesture(camera, options);
+            weakMap.set(camera, tiledMapGesture);
         }
         return tiledMapGesture;
     }
 
-    constructor(tiledMapProxy: tnt.tmx.TiledMapProxy, camera: Camera, options: CameraOptions) {
-        this.onCtor(tiledMapProxy, camera, options);
+    constructor(camera: Camera, options: CameraOptions) {
+        this.onCtor(camera, options);
     }
-    onCtor(tiledMapProxy: tnt.tmx.TiledMapProxy, camera: Camera, options: CameraOptions) {
-        this.tiledMapProxy = tiledMapProxy;
+    onCtor(camera: Camera, options: CameraOptions) {
+        
 
         this.gameCamera = camera;
         this.cameraOptions = options;
@@ -186,9 +185,9 @@ class TiledMapGesture implements ITouch, IMouse {
             realPos.z = 0;
             let targetPos = gameCamera.node.parent.uiTransform.convertToNodeSpaceAR(realPos, tmp3_v3);
 
-            console.log("TiledMapGesture-> screenPos:" + screenPos.toString());
-            console.log("TiledMapGesture-> realPos:" + realPos.toString());
-            console.log("TiledMapGesture-> targetPos:" + targetPos.toString());
+            // console.log("TiledMapGesture-> screenPos:" + screenPos.toString());
+            // console.log("TiledMapGesture-> realPos:" + realPos.toString());
+            // console.log("TiledMapGesture-> targetPos:" + targetPos.toString());
             this.smooth(targetPos, scale);
         }
     }
@@ -197,12 +196,9 @@ class TiledMapGesture implements ITouch, IMouse {
             if (this.deltaXY.x < 3 && this.deltaXY.y < 3) {
                 let location = event.getLocation();
                 tmp1_v3.set(location.x, location.y);
-                this.gameCamera.screenToWorld(tmp1_v3, tmp2_v3);
                 let worldPosition = this.gameCamera.screenToWorld(tmp1_v3, tmp2_v3);
-                let tileCoords = this.tiledMapProxy.worldToTileCoords(worldPosition.x, worldPosition.y);
-                if (this.tiledMapProxy.isSafe(tileCoords)) {
-                    this.cameraOptions.clickTile(tileCoords);
-                }
+                tmp1_v2.set(worldPosition.x,worldPosition.y);
+                this.cameraOptions.touchEnd(tmp1_v2);
             }
         } else {
             // 停止传递事件

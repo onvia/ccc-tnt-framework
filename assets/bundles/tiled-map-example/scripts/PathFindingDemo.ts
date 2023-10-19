@@ -92,7 +92,7 @@ export class PathFindingDemo extends tnt.SceneBase<PathFindingDemoOptions> {
         this.cameraController = CameraController.create(this.gameCamera, this.tiledMapProxy.mapSizeInPixel);
 
 
-        this.tiledMapGesture = tnt.tmx.TiledMapGesture.create(this.tiledMapProxy, this.gameCamera, {
+        this.tiledMapGesture = tnt.tmx.TiledMapGesture.create(this.gameCamera, {
             minZoomRatio: 0.5,
             getCameraTargetZoomRatio: () => {
                 return this.cameraController.zoomRatio;
@@ -113,20 +113,23 @@ export class PathFindingDemo extends tnt.SceneBase<PathFindingDemoOptions> {
             updateCameraZoomRatio: (zoomRatio: number) => {
                 this.cameraController.forceZoomRatio(zoomRatio);
             },
-            clickTile: (tileCoords: Vec2) => {
-                let start = this.tiledMapProxy.pixelToTileCoords(this.player.node.position.x, this.player.node.position.y);
-                let grids = this.pathFinder.search(start, tileCoords, this.heuristic);
-                this.isFollowPlayer && this.cameraController.follow(this.player.node);
-                console.log(`路径 `, JSON.parse(JSON.stringify(grids)));
-                this.player.moveByRoad(grids);
+            touchEnd: (worldPosition: Vec2) => {
+                let tileCoords = this.tiledMapProxy.worldToTileCoords(worldPosition.x, worldPosition.y);
+                if (this.tiledMapProxy.isSafe(tileCoords)) {
+                    let start = this.tiledMapProxy.pixelToTileCoords(this.player.node.position.x, this.player.node.position.y);
+                    let grids = this.pathFinder.search(start, tileCoords, this.heuristic);
+                    this.isFollowPlayer && this.cameraController.follow(this.player.node);
+                    console.log(`路径 `, JSON.parse(JSON.stringify(grids)));
+                    this.player.moveByRoad(grids);
 
-                if (!grids.length) {
-                    return;
+                    if (!grids.length) {
+                        return;
+                    }
+                    let startGridNode = this.pathFinder.createGridNode(start.x, start.y, 0);
+                    let copyGrids = [...grids];
+                    copyGrids.unshift(startGridNode);
+                    this.debugPathGraphics?.drawPath(copyGrids);
                 }
-                let startGridNode = this.pathFinder.createGridNode(start.x, start.y, 0);
-                let copyGrids = [...grids];
-                copyGrids.unshift(startGridNode);
-                this.debugPathGraphics?.drawPath(copyGrids);
             },
         });
 
