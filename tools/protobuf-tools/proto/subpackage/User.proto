@@ -1,0 +1,13 @@
+syntax = "proto3";
+package account;
+import "Player.proto";
+
+message C2S_User {
+    uint32 username = 1;   
+    string password = 2;
+}
+
+message S2C_User {
+    uint32 time = 1;
+    Player player = 2;
+}

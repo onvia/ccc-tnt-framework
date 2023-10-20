@@ -1,5 +1,6 @@
 import { Component, js, Label, Button, Layout, ProgressBar, EditBox, Sprite, Graphics, RichText, Toggle, _decorator, Widget, Slider, ScrollView } from "cc";
 import { DEV, EDITOR } from "cc/env";
+import { __net } from "../network/Net";
 
 /**
  * 装饰器相关功能，用于添加组件、插件等装饰器。
@@ -302,7 +303,8 @@ let __decorator = {
         }
     },
     _registerPlugins: _registerPlugins,
-
+    _net: __net,
+    
     /**
      * UI 的预制体路径装饰器
      * @param prefabUrl 可根据情况使用不同的资源路径

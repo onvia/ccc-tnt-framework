@@ -1,0 +1,15 @@
+syntax = "proto3";
+package account;
+
+enum ID{
+    ID_C2S_Player = 1007;
+    ID_S2C_Player = 1008; 
+}
+
+
+message Player {
+    uint32  id = 1;         //唯一ID  首次登录时设置为0，由服务器分配
+    string  name = 2;       //显示名字
+    uint32  enterTime = 3;  //登录时间
+}
+
