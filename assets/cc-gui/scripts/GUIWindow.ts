@@ -1,4 +1,4 @@
-import { _decorator, Node, Label, Event, Sprite, Mask, ScrollView, Size, widgetManager, view, Vec3, director, Director } from "cc";
+import { _decorator, Node, Label, Event, Sprite, Mask, ScrollView, Size, widgetManager, view, Vec3, director, Director, sys } from "cc";
 import { GUIGroup } from "./GUIGroup";
 
 const { ccclass } = _decorator;
@@ -26,8 +26,8 @@ export class GUIWindow extends GUIGroup<GUIWindowGroupOptions> {
     protected dragArea: Sprite = null;
 
     private get maxHeight() {
-        let visibleSize = view.getVisibleSize();
-        return visibleSize.height - 10;
+        const safeArea = sys.getSafeAreaRect();
+        return safeArea.height - 10;
     }
 
     private _isLeft = false;
@@ -38,8 +38,8 @@ export class GUIWindow extends GUIGroup<GUIWindowGroupOptions> {
         if (!this.options.size) {
             this.options.size = new Size(200, 300);
         }
-        let visibleSize = view.getVisibleSize();
-        this.options.size.width = Math.max(Math.min(this.options.size.width, visibleSize.width - 2), 200)
+        const safeArea = sys.getSafeAreaRect();
+        this.options.size.width = Math.max(Math.min(this.options.size.width, safeArea.width - 2), 200)
         this.options.size.height = Math.max(Math.min(this.options.size.height, this.maxHeight), 300)
         this.node.uiTransform.width = this.options.size.width;
         this.node.uiTransform.height = this.maxHeight; //this.options.size.height;
@@ -57,11 +57,10 @@ export class GUIWindow extends GUIGroup<GUIWindowGroupOptions> {
             },
         });
 
-
         if (this._isLeft) {
-            this.node.x = -visibleSize.width * 0.5 + this.node.uiTransform.width * 0.5;
+            this.node.x = -safeArea.width * 0.5 + this.node.uiTransform.width * 0.5;
         } else {
-            this.node.x = visibleSize.width * 0.5 - this.node.uiTransform.width * 0.5;
+            this.node.x = safeArea.width * 0.5 - this.node.uiTransform.width * 0.5;
         }
     }
 
