@@ -46,25 +46,25 @@ export class DemoVMNormal extends tnt.SceneBase implements IMVVMObject {
         // 监听数据 data
         tnt.vm.observe(this);
 
-        // this.testEvent();
-        // this.testLabel();
-        // this.testSprite();
-        // this.testProgressBar();
+        this.testEvent();
+        this.testLabel();
+        this.testSprite();
+        this.testProgressBar();
         this.testFor();
-        // this.testNodeActive();
+        this.testNodeActive();
 
 
-        // // 修改数据
-        // this.schedule(() => {
-        //     this.data.icon = this.data2.icon.random();
-        //     this.data.diamond = math.randomRangeInt(10, 9999);
-        //     this.data.color = new Color(math.randomRangeInt(0, 255), math.randomRangeInt(0, 255), math.randomRangeInt(0, 255), 255);
-        // }, 1);
+        // 修改数据
+        this.schedule(() => {
+            this.data.icon = this.data2.icon.random();
+            this.data.diamond = math.randomRangeInt(10, 9999);
+            this.data.color = new Color(math.randomRangeInt(0, 255), math.randomRangeInt(0, 255), math.randomRangeInt(0, 255), 255);
+        }, 1);
 
-        // this.schedule(() => {
-        //     this.data.gold = 199;
-        //     this.data.array[0].age = 99;
-        // }, 15, 999, 0.5);
+        this.schedule(() => {
+            this.data.gold = 199;
+            this.data.array[0].age = 99;
+        }, 15, 999, 0.5);
     }
 
     testEvent() {
