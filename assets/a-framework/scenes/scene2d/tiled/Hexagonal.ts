@@ -225,6 +225,25 @@ class Hexagonal extends tnt.tmx.OrientationAdapter {
 
         return new Vec2(pixelX, pixelY);
     }
+
+    tileToScreenPolygon(x: number, y: number) {
+        let p = this.hexParams;
+        let topRight = this.tileToPixelCoords(x, y);
+        let polygon: Vec2[] = [];
+        for (let i = 0; i < 8; i++) {
+            polygon[i] = new Vec2();
+        }
+        polygon[0] = Vec2.add(polygon[0], topRight, new Vec2(0, p.tileHeight - p.sideOffsetY));
+        polygon[1] = Vec2.add(polygon[1], topRight, new Vec2(0, p.sideOffsetY));
+        polygon[2] = Vec2.add(polygon[2], topRight, new Vec2(p.sideOffsetX, 0));
+        polygon[3] = Vec2.add(polygon[3], topRight, new Vec2(p.tileWidth - p.sideOffsetX, 0));
+        polygon[4] = Vec2.add(polygon[4], topRight, new Vec2(p.tileWidth, p.sideOffsetY));
+        polygon[5] = Vec2.add(polygon[5], topRight, new Vec2(p.tileWidth, p.tileHeight - p.sideOffsetY));
+        polygon[6] = Vec2.add(polygon[6], topRight, new Vec2(p.tileWidth - p.sideOffsetX, p.tileHeight));
+        polygon[7] = Vec2.add(polygon[7], topRight, new Vec2(p.sideOffsetX, p.tileHeight));
+
+        return polygon;
+    }
 }
 tnt.tmx.Hexagonal = Hexagonal;
 export { };
