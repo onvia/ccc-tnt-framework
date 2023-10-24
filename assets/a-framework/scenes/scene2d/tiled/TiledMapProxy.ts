@@ -1,5 +1,5 @@
 
-import { _decorator, Node, TiledMap, Size, Vec2, IVec2Like, TiledLayer } from 'cc';
+import { _decorator, Node, TiledMap, Size, Vec2, IVec2Like, TiledLayer, Rect } from 'cc';
 import { IOrientation } from './_InterfaceTiledMap';
 const { ccclass } = _decorator;
 
@@ -198,8 +198,11 @@ class TiledMapProxy implements IOrientation {
         return this.orientationAdapter.hitTest(worldPos);
     }
 
-    isSafe(tiledCoords: Vec2) {
-        return this.orientationAdapter.isSafe(tiledCoords);
+    isSafe(position: Vec2): boolean;
+    isSafe(x: number, y: number): boolean;
+    isSafe(xOrPos: number | Vec2, y?: number): boolean;
+    isSafe(xOrPos: number | Vec2, y?: number): boolean {
+        return this.orientationAdapter.isSafe(xOrPos, y);
     }
 
     //遍历图层的图块
@@ -270,7 +273,10 @@ class TiledMapProxy implements IOrientation {
      */
     private _queryFloodFillRegion(origin: Vec2, match: (x: number, y: number) => boolean, handle?: (x: number, y: number) => void) {
         const queryTiles: Vec2[] = [];
-        if (!match(origin.x, origin.y)) {
+        let _match = (x: number, y: number) => {
+            return this.isSafe(x, y) && match(x, y);
+        }
+        if (!_match(origin.x, origin.y)) {
             return queryTiles;
         }
         let tiledMap = this.tiledMap;
@@ -294,23 +300,27 @@ class TiledMapProxy implements IOrientation {
             const startOfLine: number = currentPoint.y * width;
             // Seek as far left as we can
             let left: number = currentPoint.x;
-            while (left > 0 && match(left - 1, currentPoint.y)) {
+            while (left > 0 && _match(left - 1, currentPoint.y)) {
                 --left;
                 processedCells[indexOffset + startOfLine + left] = true;
             }
             // Seek as far right as we can
             let right: number = currentPoint.x;
-            while (right < width && match(right + 1, currentPoint.y)) {
+            while (right < width && _match(right + 1, currentPoint.y)) {
                 ++right;
                 processedCells[indexOffset + startOfLine + right] = true;
             }
 
             // // Add cells between left and right to the region
             // fillRegion += new QRegion(left, currentPoint.y, right - left + 1, 1);
+            // let rect = new Rect(left, currentPoint.y, right - left + 1, 1);
+            // console.log(`TiledMapProxy-> `, JSON.stringify(rect));
+
 
             let startX = left;
             let endX = right + 1;
             const y = currentPoint.y;
+
             for (let x = startX; x < endX; x++) {
                 const idx = x + y * width;
 
@@ -355,7 +365,7 @@ class TiledMapProxy implements IOrientation {
 
                 for (let x = left; x <= right; ++x) {
                     const index: number = y * width + x;
-                    if (!processedCells[indexOffset + index] && match(x, y)) {
+                    if (!processedCells[indexOffset + index] && _match(x, y)) {
                         // Do not add the cell to the queue if an adjacent cell was added.
                         if (!adjacentCellAdded) {
                             fillPositions.push(new Vec2(x, y));
@@ -402,6 +412,9 @@ class TiledMapProxy implements IOrientation {
         return queryTiles;
     }
 
+    public boundingRect(x: number, y: number, width: number, height: number): Rect {
+        return this.orientationAdapter.boundingRect(x, y, width, height);
+    }
 }
 
 tnt.tmx.TiledMapProxy = TiledMapProxy;

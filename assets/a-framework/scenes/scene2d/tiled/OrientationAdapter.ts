@@ -1,5 +1,5 @@
 
-import { _decorator, TiledMap, UITransform, TiledLayer, Vec2, Size, Vec3 } from 'cc';
+import { _decorator, TiledMap, UITransform, TiledLayer, Vec2, Size, Vec3, Rect } from 'cc';
 import { IOrientation } from './_InterfaceTiledMap';
 const { ccclass, property } = _decorator;
 
@@ -97,8 +97,19 @@ abstract class OrientationAdapter implements IOrientation {
         return false;
     }
 
-    public isSafe(tiledCoords: Vec2): boolean {
-        return tiledCoords.x >= 0 && tiledCoords.y >= 0 && tiledCoords.x < this.mapSize.width && tiledCoords.y < this.mapSize.height;
+    isSafe(position: Vec2): boolean;
+    isSafe(x: number, y: number): boolean;
+    isSafe(xOrPos: number | Vec2, y?: number): boolean;
+    isSafe(xOrPos: number | Vec2, y?: number): boolean {
+        let x = 0;
+        if (typeof y === 'undefined') {
+            let pos = (xOrPos as Vec2);
+            x = pos.x;
+            y = pos.y;
+        } else {
+            x = xOrPos as number;
+        }
+        return x >= 0 && y >= 0 && x < this.mapSize.width && y < this.mapSize.height;
     }
 
 
@@ -125,6 +136,8 @@ abstract class OrientationAdapter implements IOrientation {
         }
         this._isCheckPassed = true;
     }
+
+    public abstract boundingRect(x: number, y: number, width: number, height: number): Rect;
 }
 
 tnt.tmx.OrientationAdapter = OrientationAdapter;

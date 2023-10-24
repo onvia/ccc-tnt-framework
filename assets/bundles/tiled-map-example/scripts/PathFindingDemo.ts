@@ -1,6 +1,5 @@
 import { _decorator, Node, Camera, TiledMap, TiledMapAsset, Vec3, UITransform, Color, color, Vec2, Toggle, Size } from "cc";
 import CameraController, { CameraState } from "../../../a-framework/scenes/scene2d/tiled/controller/CameraController";
-import { DebugGraphics } from "./DebugGraphics";
 import { Player } from "./Player";
 import { TiledMapEvents } from "./TiledMapEvents";
 
@@ -37,8 +36,8 @@ export class PathFindingDemo extends tnt.SceneBase<PathFindingDemoOptions> {
     gameCamera: Camera = null;
     tiledMap: TiledMap = null;
 
-    debugPathGraphics: DebugGraphics = null;
-    debugGridGraphics: DebugGraphics = null;
+    debugPathGraphics: tnt.game.DebugGraphics = null;
+    debugGridGraphics: tnt.game.DebugGraphics = null;
 
     player: Player = null;
 
@@ -361,8 +360,12 @@ export class PathFindingDemo extends tnt.SceneBase<PathFindingDemoOptions> {
     initDebugGraphics() {
         this.debugGridGraphics?.clear();
         this.debugPathGraphics?.clear();
-        this.debugGridGraphics = new DebugGraphics(this.tiledMap.node);
-        this.debugPathGraphics = new DebugGraphics(this.tiledMap.node);
+        if (!this.debugGridGraphics) {
+            this.debugGridGraphics = new tnt.game.DebugGraphics(this.tiledMap.node);
+        }
+        if (!this.debugPathGraphics) {
+            this.debugPathGraphics = new tnt.game.DebugGraphics(this.tiledMap.node);
+        }
 
         let mapSize = this.tiledMapProxy.mapSize;
         let width = mapSize.width;

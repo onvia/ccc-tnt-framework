@@ -1,5 +1,5 @@
 
-import { _decorator, TiledMap, Vec2, Size } from 'cc';
+import { _decorator, TiledMap, Vec2, Size, Rect } from 'cc';
 const { ccclass } = _decorator;
 
 /**
@@ -74,6 +74,7 @@ const offsetsStaggerY = [new Vec2(0, 0), new Vec2(-1, 1), new Vec2(0, 1), new Ve
 
 @ccclass('Hexagonal')
 class Hexagonal extends tnt.tmx.OrientationAdapter {
+
     tiledMap: TiledMap = null;
     tileSize: Readonly<Size> = null;
     mapSize: Readonly<Size> = null;
@@ -225,7 +226,35 @@ class Hexagonal extends tnt.tmx.OrientationAdapter {
 
         return new Vec2(pixelX, pixelY);
     }
+    public boundingRect(x: number, y: number, width: number, height: number): Rect {
+        let p = this.hexParams;
+        let topLeft = this.tileToPixelCoords(x, y);
+        let _width: number;
+        let _height: number;
 
+        if (p.staggerX) {
+            _width = width * p.columnWidth + p.sideOffsetX;
+            _height = height * (p.tileHeight + p.sideLengthY);
+
+            if (width > 1) {
+                height += p.rowHeight;
+                if (p.doStaggerX(x)) {
+                    topLeft.y -= p.rowHeight;
+                }
+            }
+        } else {
+            _width = width * (p.tileWidth + p.sideLengthX);
+            _height = height * p.rowHeight + p.sideOffsetY;
+
+            if (height > 1) {
+                width += p.columnWidth;
+                if (p.doStaggerY(y)) {
+                    topLeft.x -= p.columnWidth;
+                }
+            }
+        }
+        return new Rect(topLeft.x, topLeft.y, _width, _height);
+    }
     tileToScreenPolygon(x: number, y: number) {
         let p = this.hexParams;
         let topRight = this.tileToPixelCoords(x, y);
@@ -245,5 +274,5 @@ class Hexagonal extends tnt.tmx.OrientationAdapter {
         return polygon;
     }
 }
-tnt.tmx.Hexagonal = Hexagonal;
+tnt.tmx.Hexagonal = Hexagonal; 
 export { };

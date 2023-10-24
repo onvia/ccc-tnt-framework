@@ -10,6 +10,7 @@ declare global {
 
     }
 }
+
 const FLIPPED_MASK = (~(0x80000000 | 0x40000000 | 0x20000000 | 0x10000000)) >>> 0;
 // @ts-ignore
 TiledLayer.prototype._updateTileForGID = function (gidAndFlags, x: number, y: number): void {
@@ -33,11 +34,10 @@ TiledLayer.prototype._updateTileForGID = function (gidAndFlags, x: number, y: nu
         this.tiles[idx] = 0 as unknown;
     }
     this._cullingDirty = true;
-
+    // 下一帧更新
     director.once(Director.EVENT_BEFORE_COMMIT, () => {
         this.markForUpdateRenderData();
     });
-    // this.node.once(Node.);
 }
 function setAnchorPointZero(node: Node) {
     let uiTransform = node.getComponent(UITransform);
@@ -51,9 +51,24 @@ const tmp1_v3 = new Vec3();
 const tmp2_v3 = new Vec3();
 const HALF_v2 = new Vec2(0.5, 0.5);
 
+enum MapType {
+    Orthogonal,
+    Isometric,
+    HexagonXOdd, // 六角 X 奇数
+    HexagonXEven, // 六角 X 偶数
+    HexagonYOdd, // 六角 Y 奇数
+    HexagonYEven, // 六角 Y 偶数
+    StaggerXOdd,
+    StaggerXEven,
+    StaggerYOdd,
+    StaggerYEven,
+
+}
+
 @ccclass('FloodFillDemo')
 export class FloodFillDemo extends tnt.SceneBase<FloodFillDemoOptions> {
 
+    debugGraphics: tnt.game.DebugGraphics = null;
 
     tiledMapProxy: tnt.tmx.TiledMapProxy = null;
     tiledMapGesture: tnt.tmx.TiledMapGesture = null;
@@ -65,23 +80,16 @@ export class FloodFillDemo extends tnt.SceneBase<FloodFillDemoOptions> {
     worldCoord = "0,0";
     tiledCoord = "0,0";
     screenCoord = "0,0";
+    mapType: MapType = null;
 
     onEnterTransitionStart(sceneName?: string): void {
-
         this.initGUI();
 
         this.gameCamera = tnt.componentUtils.findComponent("Camera", Camera, this.scene);
 
         this.tiledMap = tnt.componentUtils.findComponent("map", TiledMap, this.scene);
 
-        this.loader.load(`flood-fill#map/map_hexagonal_x`, TiledMapAsset, (err, asset) => {
-            if (err) {
-                console.log(`FloodFillDemo-> `, err);
-                return;
-            }
-            this.tiledMap.tmxAsset = asset;
-            this.onInit();
-        });
+        this.updateMap(MapType.Orthogonal, true);
     }
     onExitTransitionStart(sceneName?: string): void {
         // 关闭手势
@@ -131,6 +139,19 @@ export class FloodFillDemo extends tnt.SceneBase<FloodFillDemoOptions> {
         // 启用手势
         this.tiledMapGesture.enable(this.node);
 
+        this.initDebugGraphics();
+
+        let testRect = this.tiledMapProxy.boundingRect(0, 0, 2, 1)
+        this.debugGraphics.clear();
+        this.debugGraphics.rect(0, 0, this.tiledMapProxy.mapSizeInPixel.width, this.tiledMapProxy.mapSizeInPixel.height);
+
+
+        this.debugGraphics.rect(testRect.x, testRect.y, testRect.width, testRect.height);
+        console.log(`FloodFillDemo->${MapType[this.mapType]} cocos-creator mapSizeInPixel `, this.tiledMapProxy.mapSizeInPixel.toString());
+        console.log(`FloodFillDemo->${MapType[this.mapType]} test Rect `, testRect.toString());
+        
+        
+
     }
     async initGUI() {
         await new Promise<void>((resolve, reject) => {
@@ -157,19 +178,88 @@ export class FloodFillDemo extends tnt.SceneBase<FloodFillDemoOptions> {
                     this.cameraController.forceZoomRatio(value);
                 }
             })
+
+
+        let mapGroup = guiWindow.addGroup("Map");
+        // MapType.Orthogonal
+
+        for (const key in MapType) {
+            // 正则判断 key  是否是数字
+
+            if (/^\d+$/.test(key)) {
+                if (Object.prototype.hasOwnProperty.call(MapType, key)) {
+                    const element = MapType[key];
+                    mapGroup.addToggle(element, (isChecked) => {
+                        this.updateMap(key as any as number, isChecked);
+                    }, key === MapType[MapType.Orthogonal]);
+                }
+            }
+        }
+        // .addToggle("Orthogonal", (isChecked) => {
+        //     // 正交地图
+        //     this.updateMap(MapType.Orthogonal, isChecked);
+        // }, true)
+        // .addToggle("Hexagonal", (isChecked) => {
+        //     // 六角
+        //     this.updateMap(MapType.Hexagonal, isChecked);
+        // }, false)
+        // .addToggle("Hex2Stagger", (isChecked) => {
+        //     // 六角交错模拟45度交错
+        //     this.updateMap(MapType.Hex2Stagger, isChecked);
+        // }, false).justWidget().setGUIEnable(false)
+        // .addToggle("Isometric", (isChecked) => {
+        //     // 45度地图
+        //     this.updateMap(MapType.Isometric, isChecked);
+        // }, false).justWidget().setGUIEnable(false)
     }
 
+
+    updateMap(mapType: MapType, isChecked: boolean) {
+        if (!isChecked) {
+            return;
+        }
+        if (this.mapType == mapType) {
+            return;
+        }
+        this.mapType = mapType;
+        let mapNameMap = {
+            [MapType.Orthogonal]: "map_orthogonal",
+            [MapType.Isometric]: "map_isometric",
+            [MapType.HexagonXOdd]: "map_hexagon_x_odd", // 六角 X 奇数
+            [MapType.HexagonXEven]: "map_hexagon_x_even", // 六角 X 偶数
+            [MapType.HexagonYOdd]: "map_hexagon_y_odd", // 六角 Y 奇数
+            [MapType.HexagonYEven]: "map_hexagon_y_even", // 六角 Y 偶数
+            [MapType.StaggerXOdd]: "map_hexagon2stagger_x_odd",
+            [MapType.StaggerXEven]: "map_hexagon2stagger_x_even",
+            [MapType.StaggerYOdd]: "map_hexagon2stagger_y_odd",
+            [MapType.StaggerYEven]: "map_hexagon2stagger_y_even",
+        }
+        let mapName = mapNameMap[mapType];
+        if (!mapName) {
+            return;
+        }
+        this.loader.load(`flood-fill#map/${mapName}`, TiledMapAsset, (err, asset) => {
+            if (err) {
+                console.log(`FloodFillDemo-> `, err);
+                return;
+            }
+            this.tiledMap.tmxAsset = asset;
+            this.onInit();
+        });
+    }
 
     async onClickTile(worldPosition: Vec2) {
         let tileCoords = this.tiledMapProxy.worldToTileCoords(worldPosition.x, worldPosition.y);
         if (this.tiledMapProxy.isSafe(tileCoords)) {
-            
+
             let layer = this.tiledMap.getLayer("layer");
             let barrier = this.tiledMap.getLayer("barrier");
             // let gid = layer.getTileGIDAt(tileCoords.x, tileCoords.y);
             // layer.setTileGIDAt(3, tileCoords.x, tileCoords.y)
 
             await this.tiledMapProxy.performFloodFillRegion(tileCoords, (x, y) => {
+                // console.log(`FloodFillDemo-> `, JSON.stringify({ x, y }));
+
                 let gid = barrier.getTileGIDAt(x, y);
                 return gid === 0;
             }, (x, y) => {
@@ -209,6 +299,16 @@ export class FloodFillDemo extends tnt.SceneBase<FloodFillDemoOptions> {
         this.tiledCoord = `${tilePos.x},${tilePos.y}`;
         this.screenCoord = `${Math.round(location.x)},${Math.round(location.y)}`;
 
+    }
+
+    initDebugGraphics() {
+        this.debugGraphics?.clear();
+        if (!this.debugGraphics) {
+            this.debugGraphics = new tnt.game.DebugGraphics(this.tiledMap.node);
+            // this.debugGraphics.setColor(Color.fromHEX(color(), "#B3B3B3"));
+            this.debugGraphics.setColor(Color.RED);
+            this.debugGraphics.setLineWidth(3);
+        }
     }
 
 

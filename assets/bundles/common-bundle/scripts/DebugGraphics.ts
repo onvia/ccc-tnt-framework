@@ -1,6 +1,18 @@
-import { _decorator, Node, Graphics, Vec3, Color } from "cc";
+import { _decorator, Node, Graphics, Vec3, Color, game } from "cc";
 
 const { ccclass, property } = _decorator;
+
+declare global {
+    interface IGame {
+        DebugGraphics: typeof DebugGraphics;
+    }
+    namespace tnt {
+        namespace game {
+            type DebugGraphics = InstanceType<typeof DebugGraphics>;
+        }
+    }
+
+}
 
 @ccclass('DebugGraphics')
 export class DebugGraphics {
@@ -44,12 +56,12 @@ export class DebugGraphics {
         this.graphics.stroke();
     }
 
-    ellipse(cx, cy, rx, ry) {
+    ellipse(cx: number, cy: number, rx: number, ry: number) {
         this.graphics.ellipse(cx, cy, rx, ry);
         this.graphics.stroke();
     }
-    rect(cx, cy, rx, ry) {
-        this.graphics.rect(cx, cy, rx, ry);
+    rect(x: number, y: number, w: number, h: number) {
+        this.graphics.rect(x, y, w, h);
         this.graphics.stroke();
     }
 
@@ -75,3 +87,6 @@ export class DebugGraphics {
     }
 
 }
+
+
+tnt.game.DebugGraphics = DebugGraphics;
