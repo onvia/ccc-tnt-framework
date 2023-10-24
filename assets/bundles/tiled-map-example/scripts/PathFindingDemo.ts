@@ -113,7 +113,7 @@ export class PathFindingDemo extends tnt.SceneBase<PathFindingDemoOptions> {
             updateCameraZoomRatio: (zoomRatio: number) => {
                 this.cameraController.forceZoomRatio(zoomRatio);
             },
-            touchEnd: (worldPosition: Vec2) => {
+            onClick: (worldPosition: Vec2) => {
                 let tileCoords = this.tiledMapProxy.worldToTileCoords(worldPosition.x, worldPosition.y);
                 if (this.tiledMapProxy.isSafe(tileCoords)) {
                     let start = this.tiledMapProxy.pixelToTileCoords(this.player.node.position.x, this.player.node.position.y);

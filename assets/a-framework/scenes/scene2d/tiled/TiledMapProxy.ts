@@ -207,6 +207,201 @@ class TiledMapProxy implements IOrientation {
         this.orientationAdapter.forEachTiles(layer, callback);
     }
 
+    /**
+     * 根据位置获取 index
+     *
+     * @param {*} position
+     * @return {*} 
+     * @memberof TiledMapProxy
+     */
+    tileCoordsToIndex(position: IVec2Like) {
+        let mapSize = this.mapSize;
+        var idx = Math.floor(position.x) + Math.floor(position.y) * mapSize.width;
+        return idx;
+    }
+
+    /**
+     * 根据 index 获取位置
+     *
+     * @param {number} index
+     * @return {*} 
+     * @memberof TiledMapProxy
+     */
+    indexToTileCoords(index: number) {
+        let mapSize = this.mapSize;
+        let x = index % mapSize.width;
+        let y = Math.floor(index / mapSize.width);
+        return new Vec2(x, y);
+    }
+
+    /**
+     * 查询洪水填充区域
+     *
+     * @param {Vec2} origin 
+     * @param {(x: number, y: number) => boolean} match
+     * @return {*} 
+     * @memberof TiledMapProxy
+     */
+    queryFloodFillRegion(origin: Vec2, match: (x: number, y: number) => boolean) {
+        return this._queryFloodFillRegion(origin, match);
+    }
+
+    /**
+     * 执行洪水填充处理
+     *
+     * @param {Vec2} origin 
+     * @param {(x: number, y: number) => boolean} match
+     * @param {(x: number, y: number) => Promise<void>} [handle]
+     * @return {*} 
+     * @memberof TiledMapProxy
+     */
+    performFloodFillRegion(origin: Vec2, match: (x: number, y: number) => boolean, handle: (x: number, y: number) => void) {
+        this._queryFloodFillRegion(origin, match, handle);
+    }
+
+    /**
+     * 查询洪水填充区域
+     *
+     * @param {Vec2} origin 
+     * @param {(x: number, y: number) => boolean} match
+     * @param {(x: number, y: number) => Promise<void>} [handle]
+     * @return {*} 
+     * @memberof TiledMapProxy
+     */
+    private _queryFloodFillRegion(origin: Vec2, match: (x: number, y: number) => boolean, handle?: (x: number, y: number) => void) {
+        const queryTiles: Vec2[] = [];
+        if (!match(origin.x, origin.y)) {
+            return queryTiles;
+        }
+        let tiledMap = this.tiledMap;
+        const queryIds: Set<number> = new Set();
+        const mapSize = tiledMap.getMapSize();
+        const width: number = mapSize.width;
+        const height: number = mapSize.height;
+        const indexOffset: number = 0;
+        let isStaggered = tiledMap._mapInfo.orientation == 1; // 是否是交错地图
+        // Create a queue to hold cells that need filling
+        const fillPositions: Vec2[] = [origin];
+        // Create an array that will store which cells have been processed
+        // This is faster than checking if a given cell is in the region/list
+        const processedCells: boolean[] = Array.from({ length: width * height }, () => false);
+
+
+        // Loop through queued positions and fill them, while at the same time
+        // checking adjacent positions to see if they should be added
+        while (fillPositions.length > 0) {
+            const currentPoint = fillPositions.shift();
+            const startOfLine: number = currentPoint.y * width;
+            // Seek as far left as we can
+            let left: number = currentPoint.x;
+            while (left > 0 && match(left - 1, currentPoint.y)) {
+                --left;
+                processedCells[indexOffset + startOfLine + left] = true;
+            }
+            // Seek as far right as we can
+            let right: number = currentPoint.x;
+            while (right < width && match(right + 1, currentPoint.y)) {
+                ++right;
+                processedCells[indexOffset + startOfLine + right] = true;
+            }
+
+            // // Add cells between left and right to the region
+            // fillRegion += new QRegion(left, currentPoint.y, right - left + 1, 1);
+
+            let startX = left;
+            let endX = right + 1;
+            const y = currentPoint.y;
+            for (let x = startX; x < endX; x++) {
+                const idx = x + y * width;
+
+                if (!queryIds.has(idx)) {
+                    queryIds.add(idx);
+                    if (!!handle) {
+                        handle(x, y);
+                    } else {
+                        queryTiles.push(new Vec2(x, y));
+                    }
+                }
+            }
+
+
+            let leftColumnIsStaggered: boolean = false;
+            let rightColumnIsStaggered: boolean = false;
+
+            const StaggerX = 0;
+            const StaggerY = 1;
+            let staggerAxis = tiledMap._mapInfo.getStaggerAxis();
+            let staggerIndex = tiledMap._mapInfo.getStaggerIndex();
+            // For hexagonal maps with a staggered Y-axis, we may need to extend the search range
+            if (isStaggered) {
+                if (staggerAxis === StaggerY) {
+                    const rowIsStaggered: boolean = !!((currentPoint.y & 1) ^ staggerIndex);
+                    if (rowIsStaggered) {
+                        right = Math.min(right + 1, width);
+                    } else {
+                        left = Math.max(left - 1, 0);
+                    }
+                } else {
+                    leftColumnIsStaggered = !!(((left) & 1) ^ staggerIndex);
+                    rightColumnIsStaggered = !!(((right) & 1) ^ staggerIndex);
+                }
+            }
+
+
+            // Loop between left and right and check if cells above or below need
+            // to be added to the queue.
+            const findFillPositions = (left: number, right: number, y: number) => {
+                let adjacentCellAdded: boolean = false;
+
+                for (let x = left; x <= right; ++x) {
+                    const index: number = y * width + x;
+                    if (!processedCells[indexOffset + index] && match(x, y)) {
+                        // Do not add the cell to the queue if an adjacent cell was added.
+                        if (!adjacentCellAdded) {
+                            fillPositions.push(new Vec2(x, y));
+                            adjacentCellAdded = true;
+                        }
+                    } else {
+                        adjacentCellAdded = false;
+                    }
+                    processedCells[indexOffset + index] = true;
+                }
+            };
+
+            if (currentPoint.y > 0) {
+                let _left: number = left;
+                let _right: number = right;
+                if (isStaggered && staggerAxis === StaggerX) {
+                    if (!leftColumnIsStaggered) {
+                        _left = Math.max(left - 1, 0);
+                    }
+                    if (!rightColumnIsStaggered) {
+                        _right = Math.min(right + 1, width);
+                    }
+                }
+
+                findFillPositions(_left, _right, currentPoint.y - 1);
+            }
+
+            if (currentPoint.y < height) {
+                let _left: number = left;
+                let _right: number = right;
+
+                if (isStaggered && staggerAxis === StaggerX) {
+                    if (leftColumnIsStaggered) {
+                        _left = Math.max(left - 1, 0);
+                    }
+                    if (rightColumnIsStaggered) {
+                        _right = Math.min(right + 1, width);
+                    }
+                }
+
+                findFillPositions(_left, _right, currentPoint.y + 1);
+            }
+        }
+        return queryTiles;
+    }
+
 }
 
 tnt.tmx.TiledMapProxy = TiledMapProxy;

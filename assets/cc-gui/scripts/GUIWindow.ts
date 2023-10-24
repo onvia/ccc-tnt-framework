@@ -109,9 +109,10 @@ export class GUIWindow extends GUIGroup<GUIWindowGroupOptions> {
         let oldEnableScroll = this.scrollView.enabled;
         this.scrollView.enabled = showScrollBar;
 
-
+        this.node.active = false;
+        this.node.active = true;
         this.scheduleOnce(() => {
-            if (oldEnableScroll != showScrollBar && showScrollBar) {
+            if ((oldEnableScroll != showScrollBar && showScrollBar) || !showScrollBar) {
                 this.scrollView.scrollToTop();
             }
         });

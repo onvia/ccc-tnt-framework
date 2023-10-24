@@ -25,7 +25,7 @@ interface CameraOptions {
     getCameraCurrentPosition(): Vec3; // 
     updateCameraPosition(position: Vec3);
     updateCameraZoomRatio(zoomRatio: number);
-    touchEnd(worldPosition: Vec2);
+    onClick(worldPosition: Vec2);
 }
 
 const tmp1_v3 = new Vec3();
@@ -198,7 +198,7 @@ class TiledMapGesture implements ITouch, IMouse {
                 tmp1_v3.set(location.x, location.y);
                 let worldPosition = this.gameCamera.screenToWorld(tmp1_v3, tmp2_v3);
                 tmp1_v2.set(worldPosition.x,worldPosition.y);
-                this.cameraOptions.touchEnd(tmp1_v2);
+                this.cameraOptions.onClick(tmp1_v2);
             }
         } else {
             // 停止传递事件
