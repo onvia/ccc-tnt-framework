@@ -8,40 +8,44 @@ declare global {
 
     interface ITmx {
         TiledMapProxy: typeof TiledMapProxy;
+
     }
 
     namespace tnt {
         namespace tmx {
             type TiledMapProxy = InstanceType<typeof TiledMapProxy>;
+            interface MapInfo {
+                orientation: number,
+                tileSize: Size,
+                mapSize: Size,
+
+                staggerAxis: number,
+                staggerIndex: number,
+                hexSideLength: number,
+            }
         }
     }
-}
 
-const weakMap = new WeakMap<TiledMap, TiledMapProxy>();
+}
+const weakMap = new WeakMap<Node, TiledMapProxy>();
 
 @ccclass('TiledMapProxy')
 class TiledMapProxy implements IOrientation {
-    tiledMap: TiledMap = null;
     tileSize: Readonly<Size> = null; //瓷砖的大小 
     mapSize: Readonly<Size> = null; //
     mapSizeInPixel: Readonly<Size> = null;
-
-    static create(map: TiledMap | Node) {
-        let tiledMap: TiledMap = null;
-        if (map instanceof TiledMap) {
-            tiledMap = map;
-        } else if (map instanceof Node) {
-            tiledMap = map.getComponent(TiledMap);
-        }
+    mapInfo: tnt.tmx.MapInfo = null;
+    mapRoot: Node = null;
+    static create(mapRoot: Node, mapInfo: tnt.tmx.MapInfo) {
 
         let tiledMapProxy: TiledMapProxy = null;
-        if (weakMap.has(tiledMap)) {
-            tiledMapProxy = weakMap.get(tiledMap);
-            tiledMapProxy.onCtor(tiledMap);
+        if (weakMap.has(mapRoot)) {
+            tiledMapProxy = weakMap.get(mapRoot);
         } else {
-            tiledMapProxy = new TiledMapProxy(tiledMap);
-            weakMap.set(tiledMap, tiledMapProxy);
+            tiledMapProxy = new TiledMapProxy();
+            weakMap.set(mapRoot, tiledMapProxy);
         }
+        tiledMapProxy.onCtor(mapRoot, mapInfo);
         return tiledMapProxy;
     }
 
@@ -50,24 +54,16 @@ class TiledMapProxy implements IOrientation {
         return this._orientationAdapter;
     }
 
-    constructor(tiledMap: TiledMap | Node) {
-        this.onCtor(tiledMap);
-    }
 
-    private onCtor(tiledMap: TiledMap | Node) {
-        if (tiledMap instanceof TiledMap) {
-            this.tiledMap = tiledMap;
-        } else if (tiledMap instanceof Node) {
-            this.tiledMap = tiledMap.getComponent(TiledMap);
-        }
-        if (!this.tiledMap) {
-            throw new Error("tiledMap is null");
-        }
-        this.tileSize = this.tiledMap.getTileSize();
-        this.mapSize = this.tiledMap.getMapSize();
+    private onCtor(mapRoot: Node, mapInfo: tnt.tmx.MapInfo) {
+
+        this.mapInfo = mapInfo;
+        this.mapRoot = mapRoot;
+        this.tileSize = mapInfo.tileSize;
+        this.mapSize = mapInfo.mapSize;
 
 
-        let orientation = this.tiledMap.getMapOrientation();
+        let orientation = mapInfo.orientation;
 
         switch (orientation) {
             case 0: // ORTHO
@@ -86,7 +82,8 @@ class TiledMapProxy implements IOrientation {
 
         this.computeMapSizeInPixel();
         if (this._orientationAdapter) {
-            this._orientationAdapter.tiledMap = this.tiledMap;
+            this._orientationAdapter.mapInfo = this.mapInfo;
+            this._orientationAdapter.mapRoot = this.mapRoot;
             this._orientationAdapter.tileSize = this.tileSize;
             this._orientationAdapter.mapSize = this.mapSize;
             this._orientationAdapter.mapSizeInPixel = this.mapSizeInPixel;
@@ -98,7 +95,7 @@ class TiledMapProxy implements IOrientation {
     }
 
     private computeMapSizeInPixel() {
-        let orientation = this.tiledMap.getMapOrientation();
+        let orientation = this.mapInfo.orientation;
         let widthPixel = 0;
         let heightPixel = 0;
         let offset = 0;
@@ -111,8 +108,8 @@ class TiledMapProxy implements IOrientation {
                 break;
             case 1: // HEX
                 {
-                    let staggerAxis = this.tiledMap._mapInfo.getStaggerAxis()
-                    let sideLength = this.tiledMap._mapInfo.getHexSideLength();
+                    let staggerAxis = this.mapInfo.staggerAxis;
+                    let sideLength = this.mapInfo.hexSideLength;
 
                     switch (staggerAxis) {
                         case 1: // StaggerAxis.STAGGERAXIS_Y
@@ -290,13 +287,12 @@ class TiledMapProxy implements IOrientation {
         if (!_match(origin.x, origin.y)) {
             return queryTiles;
         }
-        let tiledMap = this.tiledMap;
         const queryIds: Set<number> = new Set();
-        const mapSize = tiledMap.getMapSize();
+        const mapSize = this.mapInfo.mapSize;
         const width: number = mapSize.width;
         const height: number = mapSize.height;
         const indexOffset: number = 0;
-        let isStaggered = tiledMap._mapInfo.orientation == 1; // 是否是交错地图
+        let isStaggered = this.mapInfo.orientation == 1; // 是否是交错地图
         // Create a queue to hold cells that need filling
         const fillPositions: Vec2[] = [origin];
         // Create an array that will store which cells have been processed
@@ -351,8 +347,8 @@ class TiledMapProxy implements IOrientation {
 
             const StaggerX = 0;
             const StaggerY = 1;
-            let staggerAxis = tiledMap._mapInfo.getStaggerAxis();
-            let staggerIndex = tiledMap._mapInfo.getStaggerIndex();
+            let staggerAxis = this.mapInfo.staggerAxis;
+            let staggerIndex = this.mapInfo.staggerIndex;
             // For hexagonal maps with a staggered Y-axis, we may need to extend the search range
             if (isStaggered) {
                 if (staggerAxis === StaggerY) {

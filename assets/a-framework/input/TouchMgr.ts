@@ -7,19 +7,22 @@ declare global {
 }
 
 type LongPressCallBack = (count: number) => void;
+const useCaptureMap: WeakMap<ITouch, boolean> = new WeakMap();
+
 export class TouchMgr {
 
     private _longPressMap: Map<string, LongPress> = new Map();
 
-    on(target: ITouch, node?: Node) {
+    on(target: ITouch, node?: Node, useCapture: boolean = false) {
         if (typeof node == "undefined") {
             //@ts-ignore
             node = target.node;
         }
-        target.onTouchBegan && node.on(Node.EventType.TOUCH_START, target.onTouchBegan, target);
-        target.onTouchMoved && node.on(Node.EventType.TOUCH_MOVE, target.onTouchMoved, target);
-        target.onTouchEnded && node.on(Node.EventType.TOUCH_END, target.onTouchEnded, target);
-        target.onTouchCancel && node.on(Node.EventType.TOUCH_CANCEL, target.onTouchCancel, target);
+        useCaptureMap.set(target, useCapture)
+        target.onTouchBegan && node.on(Node.EventType.TOUCH_START, target.onTouchBegan, target, useCapture);
+        target.onTouchMoved && node.on(Node.EventType.TOUCH_MOVE, target.onTouchMoved, target, useCapture);
+        target.onTouchEnded && node.on(Node.EventType.TOUCH_END, target.onTouchEnded, target, useCapture);
+        target.onTouchCancel && node.on(Node.EventType.TOUCH_CANCEL, target.onTouchCancel, target, useCapture);
     }
 
     off(target: ITouch, node?: Node) {
@@ -27,11 +30,11 @@ export class TouchMgr {
             //@ts-ignore
             node = target.node;
         }
-
-        target.onTouchBegan && node.off(Node.EventType.TOUCH_START, target.onTouchBegan, target);
-        target.onTouchMoved && node.off(Node.EventType.TOUCH_MOVE, target.onTouchMoved, target);
-        target.onTouchEnded && node.off(Node.EventType.TOUCH_END, target.onTouchEnded, target);
-        target.onTouchCancel && node.off(Node.EventType.TOUCH_CANCEL, target.onTouchCancel, target);
+        let useCapture = useCaptureMap.get(target);
+        target.onTouchBegan && node.off(Node.EventType.TOUCH_START, target.onTouchBegan, target, useCapture);
+        target.onTouchMoved && node.off(Node.EventType.TOUCH_MOVE, target.onTouchMoved, target, useCapture);
+        target.onTouchEnded && node.off(Node.EventType.TOUCH_END, target.onTouchEnded, target, useCapture);
+        target.onTouchCancel && node.off(Node.EventType.TOUCH_CANCEL, target.onTouchCancel, target, useCapture);
     }
 
 

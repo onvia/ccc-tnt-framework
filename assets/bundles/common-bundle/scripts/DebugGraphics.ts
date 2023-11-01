@@ -25,6 +25,7 @@ export class DebugGraphics {
 
     onCtor(parent: Node) {
         let node = new Node();
+        node.name = 'DebugGraphics';
         node.parent = parent;
         node.position = new Vec3();
         this.graphics = node.getComponent(Graphics);

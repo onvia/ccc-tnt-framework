@@ -4,7 +4,7 @@ import { TiledMap, math, TiledLayer } from "cc";
 
 export interface IOrientation {
 
-    tiledMap: TiledMap;
+    // tiledMap: TiledMap;
     tileSize: Readonly<math.Size>;
     mapSize: Readonly<math.Size>;
     mapSizeInPixel: Readonly<math.Size>;

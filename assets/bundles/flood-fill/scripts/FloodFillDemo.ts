@@ -101,7 +101,14 @@ export class FloodFillDemo extends tnt.SceneBase<FloodFillDemoOptions> {
 
         // 使用了摄像机需要把自动裁剪关闭
         this.tiledMap.enableCulling = false;
-        this.tiledMapProxy = tnt.tmx.TiledMapProxy.create(this.tiledMap);
+        this.tiledMapProxy = tnt.tmx.TiledMapProxy.create(this.tiledMap.node, {
+            orientation: this.tiledMap._mapInfo.getOrientation(),
+            tileSize: this.tiledMap.getTileSize(),
+            mapSize: this.tiledMap.getMapSize(),
+            staggerAxis: this.tiledMap._mapInfo.getStaggerAxis(),
+            staggerIndex: this.tiledMap._mapInfo.getStaggerIndex(),
+            hexSideLength: this.tiledMap._mapInfo.getHexSideLength(),
+        });
         this.cameraController = CameraController.create(this.gameCamera, this.tiledMapProxy.mapSizeInPixel);
 
 
@@ -137,7 +144,7 @@ export class FloodFillDemo extends tnt.SceneBase<FloodFillDemoOptions> {
 
 
         // 启用手势
-        this.tiledMapGesture.enable(this.node);
+        this.tiledMapGesture.enable(this.node, true);
 
         this.initDebugGraphics();
 
@@ -149,8 +156,8 @@ export class FloodFillDemo extends tnt.SceneBase<FloodFillDemoOptions> {
         this.debugGraphics.rect(testRect.x, testRect.y, testRect.width, testRect.height);
         console.log(`FloodFillDemo->${MapType[this.mapType]} cocos-creator mapSizeInPixel `, this.tiledMapProxy.mapSizeInPixel.toString());
         console.log(`FloodFillDemo->${MapType[this.mapType]} test Rect `, testRect.toString());
-        
-        
+
+
 
     }
     async initGUI() {
@@ -284,7 +291,7 @@ export class FloodFillDemo extends tnt.SceneBase<FloodFillDemoOptions> {
         tmp2_v3.set(location.x, location.y);
         let worldPosition = this.gameCamera.screenToWorld(tmp1_v3, tmp1_v3);
 
-        let posInNode = this.screenToNode(tmp2_v3, this.tiledMapProxy.tiledMap.node, tmp2_v3);
+        let posInNode = this.screenToNode(tmp2_v3, this.tiledMapProxy.mapRoot, tmp2_v3);
 
         tmp1_v2.set(posInNode.x, posInNode.y);
         tmp2_v2.set(worldPosition.x, worldPosition.y);

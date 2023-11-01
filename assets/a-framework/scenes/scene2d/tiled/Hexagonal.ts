@@ -37,19 +37,19 @@ class HexParams {
     columnWidth: number = 0;
     rowHeight: number = 0;
 
-    initWithTiledMap(tiledMap: TiledMap) {
-        let tileSize = tiledMap.getTileSize();
+    initWithTiledMap(mapInfo: tnt.tmx.MapInfo) {
+        let tileSize = mapInfo.tileSize;
         this.tileWidth = tileSize.width & ~1;
         this.tileHeight = tileSize.height & ~1;
-        this.staggerX = tiledMap._mapInfo.getStaggerAxis() === 0;
-        this.staggerEven = tiledMap._mapInfo.getStaggerIndex() === 1;
+        this.staggerX = mapInfo.staggerAxis === 0;
+        this.staggerEven = mapInfo.staggerIndex === 1;
 
-        if (tiledMap._mapInfo.orientation === 1) {
+        if (mapInfo.orientation === 1) {
             if (this.staggerX) {
-                this.sideLengthX = tiledMap._mapInfo.getHexSideLength();
+                this.sideLengthX = mapInfo.hexSideLength;
             }
             else {
-                this.sideLengthY = tiledMap._mapInfo.getHexSideLength();
+                this.sideLengthY = mapInfo.hexSideLength;
             }
         }
 
@@ -75,7 +75,6 @@ const offsetsStaggerY = [new Vec2(0, 0), new Vec2(-1, 1), new Vec2(0, 1), new Ve
 @ccclass('Hexagonal')
 class Hexagonal extends tnt.tmx.OrientationAdapter {
 
-    tiledMap: TiledMap = null;
     tileSize: Readonly<Size> = null;
     mapSize: Readonly<Size> = null;
     mapSizeInPixel: Readonly<Size> = null;
@@ -84,7 +83,7 @@ class Hexagonal extends tnt.tmx.OrientationAdapter {
 
     init() {
         this.hexParams = new HexParams();
-        this.hexParams.initWithTiledMap(this.tiledMap);
+        this.hexParams.initWithTiledMap(this.mapInfo);
     }
 
     pixelToTileCoords(position: Vec2): Vec2;
@@ -261,6 +260,7 @@ class Hexagonal extends tnt.tmx.OrientationAdapter {
         let polygon: Vec2[] = [];
         for (let i = 0; i < 8; i++) {
             polygon[i] = new Vec2();
+
         }
         polygon[0] = Vec2.add(polygon[0], topRight, new Vec2(0, p.tileHeight - p.sideOffsetY));
         polygon[1] = Vec2.add(polygon[1], topRight, new Vec2(0, p.sideOffsetY));
