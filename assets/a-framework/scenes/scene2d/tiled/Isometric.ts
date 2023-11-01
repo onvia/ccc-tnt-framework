@@ -1,5 +1,5 @@
 
-import { _decorator, UITransform, Vec2 } from 'cc';
+import { _decorator, UITransform, Vec2, Rect } from 'cc';
 
 const { ccclass, property } = _decorator;
 
@@ -83,6 +83,19 @@ class Isometric extends tnt.tmx.OrientationAdapter {
         return new Vec2(pixelX, pixelY);
     }
 
+    public boundingRect(x: number, y: number, width: number, height: number): Rect {
+        const tileWidth = this.tileSize.width;
+        const tileHeight = this.tileSize.height;
+
+        const originX = this.mapSize.height * tileWidth / 2;
+
+        const _x = x - (y + height) * tileWidth / 2 + originX;
+        const _y = x + y * tileHeight / 2;
+        const side = height + width;
+        const _width = side * tileWidth / 2;
+        const _height = side * tileHeight / 2;
+        return new Rect(_x, _y, _width, _height);
+    }
 }
 
 tnt.tmx.Isometric = Isometric;

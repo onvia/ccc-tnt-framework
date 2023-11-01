@@ -1,5 +1,5 @@
 
-import { _decorator, Node, Vec2, Vec3, EventTouch, EventMouse, Camera, misc, macro } from 'cc';
+import { _decorator, Node, Vec2, Vec3, Event, EventTouch, Touch, EventMouse, Camera, misc, macro, Component, Size } from 'cc';
 const { ccclass } = _decorator;
 
 
@@ -16,6 +16,7 @@ declare global {
     }
 }
 
+
 interface CameraOptions {
     minZoomRatio?: number; // 最小缩放系数 默认 1
     maxZoomRatio?: number; // 最大缩放系数 默认 3
@@ -25,7 +26,7 @@ interface CameraOptions {
     getCameraCurrentPosition(): Vec3; // 
     updateCameraPosition(position: Vec3);
     updateCameraZoomRatio(zoomRatio: number);
-    touchEnd(worldPosition: Vec2);
+    onClick(worldPosition: Vec2);
 }
 
 const tmp1_v3 = new Vec3();
@@ -36,9 +37,10 @@ const tmp5_v3 = new Vec3();
 const tmp1_v2 = new Vec2();
 const tmp2_v2 = new Vec2();
 
-const weakMap = new WeakMap<Camera, TiledMapGesture>();
+
+const touchWeakMap = new WeakMap();
 @ccclass('TiledMapGesture')
-class TiledMapGesture implements ITouch, IMouse {
+class TiledMapGesture extends Component implements ITouch, IMouse {
     public gameCamera: Camera = null;
     private cameraOptions: CameraOptions = null;
     private touchIDArray: number[] = [];
@@ -56,51 +58,52 @@ class TiledMapGesture implements ITouch, IMouse {
         return this.cameraOptions.increaseRate || 10000;
     }
 
-    private touchNode: Node = null;
+    private mapRoot: Node = null;
     private CACHE_ENABLE_MULTI_TOUCH = -1;
 
+    private enableZoom: boolean = false;
+    public cancelInnerEvents: boolean = true; // 设置在滑动时是否取消内部节点的事件
+    private isDoCancelInnerEvents: boolean = false;
 
     static create(camera: Camera, options: CameraOptions) {
-        let tiledMapGesture: TiledMapGesture = null
-        if (weakMap.has(camera)) {
-            tiledMapGesture = weakMap.get(camera);
-
-            tiledMapGesture.onCtor(camera, options);
-        } else {
-
-            tiledMapGesture = new TiledMapGesture(camera, options);
-            weakMap.set(camera, tiledMapGesture);
+        let tiledMapGesture = camera.getComponent(TiledMapGesture);
+        if (!tiledMapGesture) {
+            tiledMapGesture = camera.addComponent(TiledMapGesture);
         }
+        tiledMapGesture.gameCamera = camera;
+        tiledMapGesture.cameraOptions = options;
         return tiledMapGesture;
     }
 
-    constructor(camera: Camera, options: CameraOptions) {
-        this.onCtor(camera, options);
-    }
-    onCtor(camera: Camera, options: CameraOptions) {
-        
 
-        this.gameCamera = camera;
-        this.cameraOptions = options;
-    }
 
-    enable(touchNode: Node) {
+    /**
+     *
+     *
+     * @param {Node} mapRoot
+     * @param {boolean} enableZoom
+     * @return {*} 
+     * @memberof TiledMapGesture
+     */
+    enable(mapRoot: Node, enableZoom: boolean) {
         if (this.CACHE_ENABLE_MULTI_TOUCH != -1) {
             return;
         }
         this.CACHE_ENABLE_MULTI_TOUCH = macro.ENABLE_MULTI_TOUCH ? 1 : 0;
         macro.ENABLE_MULTI_TOUCH = true;
+        this.enableZoom = enableZoom;
 
-        this.touchNode = touchNode;
-        tnt.mouse.on(this, touchNode);
-        tnt.touch.on(this, touchNode);
+        this.mapRoot = mapRoot;
+        tnt.touch.on(this, mapRoot, true);
+        tnt.mouse.on(this, mapRoot, true);
+
     }
     disable() {
         if (this.CACHE_ENABLE_MULTI_TOUCH != -1) {
             macro.ENABLE_MULTI_TOUCH = !!this.CACHE_ENABLE_MULTI_TOUCH;
         }
-        tnt.mouse.off(this, this.touchNode);
-        tnt.touch.off(this, this.touchNode);
+        tnt.mouse.off(this, this.mapRoot);
+        tnt.touch.off(this, this.mapRoot);
     }
 
     onTouchBegan(event: EventTouch) {
@@ -108,14 +111,15 @@ class TiledMapGesture implements ITouch, IMouse {
         // 单点
         if (allTouches.length === 1) {
             console.log(`TiledMapGesture-> 单点`);
+            touchWeakMap.set(allTouches[0], false);
             this.touchIDArray.push(event.getID());
 
             this.deltaXY.set(0, 0);
+            this._stopPropagationIfTargetIsMe(event);
             return;
         }
         // 停止传递事件
         event.propagationStopped = true;
-
 
         // 多点触摸
         if (allTouches.length >= 2) {
@@ -126,6 +130,7 @@ class TiledMapGesture implements ITouch, IMouse {
 
                 if (find === undefined) {
                     this.touchIDArray.push(touch.getID());
+                    touchWeakMap.set(touch, false);
                 }
             });
         }
@@ -147,9 +152,14 @@ class TiledMapGesture implements ITouch, IMouse {
             this.deltaXY.y += Math.abs(delta.y);
 
             this.cameraOptions.updateCameraPosition(tmp1_v3);
+
+            this._onCancelInnerEvents(event, event.touch);
             return;
         }
 
+        if (!this.enableZoom) {
+            return;
+        }
         // 停止传递事件
         event.propagationStopped = true;
         let gameCamera = this.gameCamera;
@@ -161,8 +171,8 @@ class TiledMapGesture implements ITouch, IMouse {
             });
             let touch1 = touches[0];
             let touch2 = touches[1];
-            let touchPoint1 = touch1.getLocation();
-            let touchPoint2 = touch2.getLocation();
+            let touchPoint1 = touch1.getUILocation(tmp1_v2);
+            let touchPoint2 = touch2.getUILocation(tmp2_v2);
             let delta1 = touch1.getDelta();
             let delta2 = touch2.getDelta();
             let distance: Vec2 = touchPoint1.subtract(touchPoint2);
@@ -178,7 +188,7 @@ class TiledMapGesture implements ITouch, IMouse {
 
 
             // 这里使用第一个手指的位置作为缩放锚点
-            let location = event.getStartLocation();
+            let location = event.getUIStartLocation();
             let realPos = tmp1_v3;
             let screenPos: Vec3 = tmp2_v3.set(location.x, location.y, 0);
             gameCamera.screenToWorld(screenPos, realPos);
@@ -189,22 +199,34 @@ class TiledMapGesture implements ITouch, IMouse {
             // console.log("TiledMapGesture-> realPos:" + realPos.toString());
             // console.log("TiledMapGesture-> targetPos:" + targetPos.toString());
             this.smooth(targetPos, scale);
+            this.onCancelInnerEvents(event);
         }
+
+        // 停止传递事件
+        event.propagationStopped = true;
     }
     onTouchEnded(event: EventTouch) {
+        if (event.simulate) {
+            return;
+        }
         if (this.touchIDArray.length === 1) {
             if (this.deltaXY.x < 3 && this.deltaXY.y < 3) {
                 let location = event.getLocation();
                 tmp1_v3.set(location.x, location.y);
                 let worldPosition = this.gameCamera.screenToWorld(tmp1_v3, tmp2_v3);
-                tmp1_v2.set(worldPosition.x,worldPosition.y);
-                this.cameraOptions.touchEnd(tmp1_v2);
+                tmp1_v2.set(worldPosition.x, worldPosition.y);
+                this.cameraOptions.onClick(tmp1_v2);
             }
+            this._onStopPropagation(event);
         } else {
-            // 停止传递事件
-            event.propagationStopped = true;
+            if (this.enableZoom) {
+                this._onStopPropagation(event);
+            }
+            // // 停止传递事件
+            // event.propagationStopped = true;
         }
         this.touchIDArray.length = 0;
+        this.isDoCancelInnerEvents = false;
     }
 
     onTouchCancel(event: EventTouch) {
@@ -246,6 +268,84 @@ class TiledMapGesture implements ITouch, IMouse {
     onMouseMove(event: EventMouse) {
         this.location = event.getLocation();
     }
+
+    protected update(dt: number): void {
+    }
+    //#region ----------------------------不阻止内部节点的触摸事件-------------------------------------------------
+    onCancelInnerEvents(event: EventTouch) {
+
+        // Do not prevent touch events in inner nodes
+        if (!this.cancelInnerEvents) {
+            return;
+        }
+        if (this.isDoCancelInnerEvents) {
+            return;
+        }
+        let allTouches = event.getTouches();
+        this.isDoCancelInnerEvents = true;
+
+        let touch1 = allTouches[0];
+        let touch2 = allTouches[1];
+        // 这里分开发送事件，否则会有一个不生效
+        this._onCancelInnerEvents(event, touch1, false);
+        this.scheduleOnce(() => {
+            this._onCancelInnerEvents(event, touch2, false);
+        });
+    }
+
+    private _onCancelInnerEvents(event: EventTouch, touch: Touch, checkDistance = true) {
+        if (!this.cancelInnerEvents) {
+            return;
+        }
+
+        const deltaMove = touch.getUILocation(tmp1_v2);
+        deltaMove.subtract(touch.getUIStartLocation(tmp2_v2));
+        //FIXME: touch move delta should be calculated by DPI.
+        if (deltaMove.length() > 7 || !checkDistance) {
+
+            let _touchMoved = touchWeakMap.get(touch);
+            if (!_touchMoved && event.target !== this.mapRoot) {
+                // Simulate touch cancel for target node
+                let cancelEvent = new EventTouch(event.getTouches(), event.bubbles, Node.EventType.TOUCH_CANCEL);
+                // cancelEvent.type = Node.EventType.TOUCH_CANCEL;
+                cancelEvent.touch = touch; //event.touch;
+                cancelEvent.simulate = true;
+                event.target.dispatchEvent(cancelEvent);
+                // this._touchMoved = true;
+                touchWeakMap.set(touch, true);
+                return true;
+            }
+        }
+        return false;
+    }
+    _onStopPropagation(event: EventTouch) {
+        let isAnyTouchMoved = false;
+        let touches = event.getTouches();
+        for (let i = 0; i < touches.length; i++) {
+            const touch = touches[i];
+            let _touchMoved = touchWeakMap.get(touch);
+            if (_touchMoved == true) {
+                isAnyTouchMoved = true;
+                break;
+            }
+        }
+        if (isAnyTouchMoved) {
+            event.propagationStopped = true;
+        } else {
+            this._stopPropagationIfTargetIsMe(event);
+        }
+    }
+    protected _stopPropagationIfTargetIsMe(event: Event) {
+        if (event.eventPhase === Event.AT_TARGET && event.target === this.mapRoot) {
+            event.propagationStopped = true;
+        }
+    }
+
+
+    //#endregion ----------------------------不阻止内部节点的触摸事件-------------------------------------------------
+
+
+
 }
 
 tnt.tmx.TiledMapGesture = TiledMapGesture;

@@ -1,5 +1,5 @@
 
-import { Vec2, _decorator, } from 'cc';
+import { Rect, Vec2, _decorator, } from 'cc';
 const { ccclass, property } = _decorator;
 
 
@@ -18,6 +18,7 @@ declare global {
 
 @ccclass('Orthogonal')
 class Orthogonal extends tnt.tmx.OrientationAdapter {
+
     init(): void {
     }
 
@@ -66,7 +67,12 @@ class Orthogonal extends tnt.tmx.OrientationAdapter {
 
         return new Vec2(pixelX, pixelY);
     }
-
+    
+    public boundingRect(x: number, y: number, width: number, height: number): Rect {
+        const tileWidth = this.tileSize.width;
+        const tileHeight = this.tileSize.height;
+        return new Rect(x * tileWidth, y * tileHeight, width * tileWidth, height * tileHeight);
+    }
 }
 
 tnt.tmx.Orthogonal = Orthogonal;

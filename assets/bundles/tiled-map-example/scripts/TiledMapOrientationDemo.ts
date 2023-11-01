@@ -71,7 +71,14 @@ export class TiledMapOrientationDemo extends tnt.SceneBase implements ITouch, IM
         this.tiledMap.node.active = true;
 
         this.layer = this.tiledMap.getLayer("layer");
-        this.tiledMapProxy = new tnt.tmx.TiledMapProxy(this.tiledMap);
+        this.tiledMapProxy = tnt.tmx.TiledMapProxy.create(this.tiledMap.node, {
+            orientation: this.tiledMap.getMapOrientation(),
+            tileSize: this.tiledMap.getTileSize(),
+            mapSize: this.tiledMap.getMapSize(),
+            staggerAxis: this.tiledMap._mapInfo.getStaggerAxis(),
+            staggerIndex: this.tiledMap._mapInfo.getStaggerIndex(),
+            hexSideLength: this.tiledMap._mapInfo.getHexSideLength()
+        });
 
         let mapBg = this.find("map_bg", null, this.scene);
         mapBg.uiTransform.setContentSize(this.tiledMap.node.uiTransform.contentSize);

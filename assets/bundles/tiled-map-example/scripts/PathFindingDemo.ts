@@ -1,6 +1,5 @@
 import { _decorator, Node, Camera, TiledMap, TiledMapAsset, Vec3, UITransform, Color, color, Vec2, Toggle, Size } from "cc";
 import CameraController, { CameraState } from "../../../a-framework/scenes/scene2d/tiled/controller/CameraController";
-import { DebugGraphics } from "./DebugGraphics";
 import { Player } from "./Player";
 import { TiledMapEvents } from "./TiledMapEvents";
 
@@ -37,8 +36,8 @@ export class PathFindingDemo extends tnt.SceneBase<PathFindingDemoOptions> {
     gameCamera: Camera = null;
     tiledMap: TiledMap = null;
 
-    debugPathGraphics: DebugGraphics = null;
-    debugGridGraphics: DebugGraphics = null;
+    debugPathGraphics: tnt.game.DebugGraphics = null;
+    debugGridGraphics: tnt.game.DebugGraphics = null;
 
     player: Player = null;
 
@@ -88,7 +87,14 @@ export class PathFindingDemo extends tnt.SceneBase<PathFindingDemoOptions> {
 
         // 使用了摄像机需要把自动裁剪关闭
         this.tiledMap.enableCulling = false;
-        this.tiledMapProxy = tnt.tmx.TiledMapProxy.create(this.tiledMap);
+        this.tiledMapProxy = tnt.tmx.TiledMapProxy.create(this.tiledMap.node, {
+            orientation: this.tiledMap._mapInfo.getOrientation(),
+            tileSize: this.tiledMap.getTileSize(),
+            mapSize: this.tiledMap.getMapSize(),
+            staggerAxis: this.tiledMap._mapInfo.getStaggerAxis(),
+            staggerIndex: this.tiledMap._mapInfo.getStaggerIndex(),
+            hexSideLength: this.tiledMap._mapInfo.getHexSideLength(),
+        });
         this.cameraController = CameraController.create(this.gameCamera, this.tiledMapProxy.mapSizeInPixel);
 
 
@@ -113,7 +119,7 @@ export class PathFindingDemo extends tnt.SceneBase<PathFindingDemoOptions> {
             updateCameraZoomRatio: (zoomRatio: number) => {
                 this.cameraController.forceZoomRatio(zoomRatio);
             },
-            touchEnd: (worldPosition: Vec2) => {
+            onClick: (worldPosition: Vec2) => {
                 let tileCoords = this.tiledMapProxy.worldToTileCoords(worldPosition.x, worldPosition.y);
                 if (this.tiledMapProxy.isSafe(tileCoords)) {
                     let start = this.tiledMapProxy.pixelToTileCoords(this.player.node.position.x, this.player.node.position.y);
@@ -147,7 +153,7 @@ export class PathFindingDemo extends tnt.SceneBase<PathFindingDemoOptions> {
 
 
         // 启用手势
-        this.tiledMapGesture.enable(this.node);
+        this.tiledMapGesture.enable(this.node, true);
 
     }
     initEvents() {
@@ -361,8 +367,12 @@ export class PathFindingDemo extends tnt.SceneBase<PathFindingDemoOptions> {
     initDebugGraphics() {
         this.debugGridGraphics?.clear();
         this.debugPathGraphics?.clear();
-        this.debugGridGraphics = new DebugGraphics(this.tiledMap.node);
-        this.debugPathGraphics = new DebugGraphics(this.tiledMap.node);
+        if (!this.debugGridGraphics) {
+            this.debugGridGraphics = new tnt.game.DebugGraphics(this.tiledMap.node);
+        }
+        if (!this.debugPathGraphics) {
+            this.debugPathGraphics = new tnt.game.DebugGraphics(this.tiledMap.node);
+        }
 
         let mapSize = this.tiledMapProxy.mapSize;
         let width = mapSize.width;
@@ -398,7 +408,7 @@ export class PathFindingDemo extends tnt.SceneBase<PathFindingDemoOptions> {
         tmp2_v3.set(location.x, location.y);
         let worldPosition = this.gameCamera.screenToWorld(tmp1_v3, tmp1_v3);
 
-        let posInNode = this.screenToNode(tmp2_v3, this.tiledMapProxy.tiledMap.node, tmp2_v3);
+        let posInNode = this.screenToNode(tmp2_v3, this.tiledMapProxy.mapRoot, tmp2_v3);
 
         tmp1_v2.set(posInNode.x, posInNode.y);
         tmp2_v2.set(worldPosition.x, worldPosition.y);
