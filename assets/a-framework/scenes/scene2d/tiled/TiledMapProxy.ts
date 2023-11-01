@@ -213,13 +213,24 @@ class TiledMapProxy implements IOrientation {
     /**
      * 根据位置获取 index
      *
-     * @param {*} position
-     * @return {*} 
+     * @param {Vec2} position
+     * @return {*}  {number}
      * @memberof TiledMapProxy
      */
-    tileCoordsToIndex(position: IVec2Like) {
+    tileCoordsToIndex(position: Vec2): number;
+    tileCoordsToIndex(x: number, y: number): number;
+    tileCoordsToIndex(xOrPos: number | Vec2, y?: number): number;
+    tileCoordsToIndex(xOrPos: number | Vec2, y?: number): number {
+        let x = 0;
+        if (typeof y === 'undefined') {
+            let pos = (xOrPos as Vec2);
+            x = pos.x;
+            y = pos.y;
+        } else {
+            x = xOrPos as number;
+        }
         let mapSize = this.mapSize;
-        var idx = Math.floor(position.x) + Math.floor(position.y) * mapSize.width;
+        let idx = Math.floor(x) + Math.floor(y) * mapSize.width;
         return idx;
     }
 
