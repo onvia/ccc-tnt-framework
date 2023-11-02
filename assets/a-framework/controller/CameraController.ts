@@ -6,18 +6,35 @@ let tmp2_v3 = new Vec3();
 let tmp1_v2 = new Vec2();
 let tmpCameraPos_v3 = new Vec3();
 
-export enum CameraState {
+
+declare global {
+    interface ITNT {
+        CameraController: typeof CameraController;
+    }
+
+    namespace tnt {
+        type CameraController = InstanceType<typeof CameraController>;
+
+        namespace CameraController {
+            type CameraState = CameraStateEnum;
+        }
+    }
+}
+
+
+enum CameraStateEnum {
     Free,
     Follow,
     MoveTo,
 }
-Enum(CameraState);
+Enum(CameraStateEnum);
 
 @ccclass
 @requireComponent(Camera)
-export default class CameraController extends Component {
+class CameraController extends Component {
 
-    static readonly EVENT_CAMERA_ZOOM_RATIO_CHANGE = "camera-zoom-ratio-change";
+    public static readonly CameraState = CameraStateEnum;
+    public static readonly EVENT_CAMERA_ZOOM_RATIO_CHANGE = "camera-zoom-ratio-change";
 
     static create(gameCamera: Camera, mapSizeInPixel: Size) {
         let cameraController = gameCamera.getComponent(CameraController);
@@ -43,8 +60,8 @@ export default class CameraController extends Component {
     public offset: Vec3 = new Vec3(); // 偏移值
 
     // 摄像机状态
-    @property({ type: CameraState })
-    public cameraState: CameraState = CameraState.Free;
+    @property({ type: CameraStateEnum })
+    public cameraState: CameraStateEnum = CameraStateEnum.Free;
 
     public mapSizeInPixel: Size = null;
     protected _gapZoom = 0;
@@ -168,10 +185,10 @@ export default class CameraController extends Component {
     protected _followNode: Node = null;
 
 
-    @property({ visible() { return this.cameraState === CameraState.Follow } })
+    @property({ visible() { return this.cameraState === CameraStateEnum.Follow } })
     public limit: Vec3 = new Vec3();
 
-    @property({ type: Node, visible() { return this.cameraState === CameraState.Follow } })
+    @property({ type: Node, visible() { return this.cameraState === CameraStateEnum.Follow } })
     public get followNode(): Node {
         return this._followNode;
     }
@@ -193,10 +210,12 @@ export default class CameraController extends Component {
 
 
     public forceZoomRatio(value: number) {
+        this._preZoomRatio = this.cameraZoomRatio;
         this.zoomRatio = value;
         this.cameraZoomRatio = value;
         this._visualZoomRatio = value;
         this.forceUpdateMovementArea();
+        this.forceUpdateCameraBounds();
     }
 
     public forcePosition(value: Vec3) {
@@ -219,7 +238,7 @@ export default class CameraController extends Component {
     }
 
     public moveTo(position: Vec3, zoomRatioOrCb?: number | (() => void), callback?: () => void) {
-        this.cameraState = CameraState.MoveTo;
+        this.cameraState = CameraStateEnum.MoveTo;
         this.position = position;
         if (callback) {
             this.moveEndCallback = callback;
@@ -235,7 +254,7 @@ export default class CameraController extends Component {
 
     public follow(target: Node) {
         this.followNode = target;
-        this.cameraState = CameraState.Follow;
+        this.cameraState = CameraStateEnum.Follow;
     }
 
     protected computeZoomRatio(dt) {
@@ -279,7 +298,7 @@ export default class CameraController extends Component {
         if (!this.isMoveToDone) {
             if (Math.abs(curPosition.x - this.visualPosition.x) < 1 && Math.abs(curPosition.y - this.visualPosition.y) < 1) {
                 this.isMoveToDone = true;
-                this.cameraState = CameraState.Free;
+                this.cameraState = CameraStateEnum.Free;
                 this.moveEndCallback?.();
             }
         }
@@ -322,16 +341,16 @@ export default class CameraController extends Component {
     protected _computePosition(dt) {
         let position = null;
         switch (this.cameraState) {
-            case CameraState.Free:
+            case CameraStateEnum.Free:
                 let curPosition = this.camera.node.position;
                 tmpCameraPos_v3.x = curPosition.x;
                 tmpCameraPos_v3.y = curPosition.y;
                 position = tmpCameraPos_v3;
                 break;
-            case CameraState.MoveTo:
+            case CameraStateEnum.MoveTo:
                 position = this.computePositionForMoveTo(dt);
                 break;
-            case CameraState.Follow:
+            case CameraStateEnum.Follow:
                 position = this.computePositionForFollow(dt);
                 break;
 
@@ -387,12 +406,9 @@ export default class CameraController extends Component {
     }
     protected updateCameraBounds() {
 
-        let _center = this._center;
-        tmp1_v3 = this.cameraUITransform.convertToWorldSpaceAR(Vec3.ZERO, tmp1_v3);
-        _center.set(tmp1_v3.x, tmp1_v3.y);
         if (this._preZoomRatio == this.cameraZoomRatio) {
             // 更新位置
-            this.cameraBounds.center = _center;
+            this._updateCameraCenter();
             return;
         }
         this.forceUpdateCameraBounds();
@@ -402,7 +418,15 @@ export default class CameraController extends Component {
         // 摄像机视图
         this.cameraBounds.width = this.cameraWidth;
         this.cameraBounds.height = this.cameraHeight;
-        this.cameraBounds.center = this._center; // 先设置大小再设置位置
+        this._updateCameraCenter(); // 先设置大小再设置位置
+    }
+
+    private _updateCameraCenter() {
+        let _center = this._center;
+        tmp1_v3 = this.cameraUITransform.convertToWorldSpaceAR(Vec3.ZERO, tmp1_v3);
+        _center.set(tmp1_v3.x, tmp1_v3.y);
+        // 更新位置
+        this.cameraBounds.center = _center;
     }
     onEnable() {
         this.isJustEnable = true;
@@ -458,3 +482,5 @@ export default class CameraController extends Component {
     //     this.targetParentUITransform = null;
     // }
 }
+
+tnt.CameraController = CameraController;

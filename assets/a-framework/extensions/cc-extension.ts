@@ -5,7 +5,7 @@ if (!EDITOR) {
     if (!Node.prototype["__$cc-extension$__"]) {
         Node.prototype["__$cc-extension$__"] = true;
 
-        var componentMap = {
+        let componentMap = {
             "graphics": Graphics,
             "label": Label,
             "richText": RichText,

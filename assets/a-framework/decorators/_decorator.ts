@@ -120,14 +120,14 @@ function CommonPropertyDecorator(attrName: string, _classAttrs: Record<string, a
             name: key,
         }, obj || {});
 
-        var base = js.getSuper(target.constructor);
+        let base = js.getSuper(target.constructor);
         (base === Object || base === Object || base === Component) && (base = null);
         if (base) {
 
             let parent = checkClassTag(base.prototype);
             !_extends[_className] && (_extends[_className] = parent);
 
-            var _super = js.getSuper(base);
+            let _super = js.getSuper(base);
             let superIdx = 1;
             while (_super) {
                 if (_super === Object || _super === Object || _super === Component) {
@@ -620,7 +620,7 @@ let __decorator = {
 
     //         // 修复 使用类装饰器之后 导致 node.getComponent(组件基类) 返回值 为空的情况
     //         // 代表性示例为 UIMgr 需要获取 UIViewBase 
-    //         var base = js.getSuper(constructor);
+    //         let base = js.getSuper(constructor);
     //         base === CCObject && (base = null);
     //         if(base){
     //             // @ts-ignore

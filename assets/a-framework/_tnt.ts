@@ -23,30 +23,12 @@ import "./assets-manager/LoaderMgr";
 import "./assets-manager/ResourcesMgr";
 import "./scenes/SceneMgr";
 import "./scenes/scene2d/ui/UIMgr";
-import "./mgrs/AudioMgr";
-import "./mgrs/DragDropMgr";
-import "./mgrs/PoolMgr";
-import "./mgrs/CaptureMgr";
-import "./mgrs/LayerMgr";
-import "./mgrs/PanelMgr";
-import "./mgrs/RenderTextureMgr";
-import "./mgrs/StorageMgr";
-import "./mgrs/TimerMgr";
-import "./input/KeyboardMgr";
-import "./input/MouseMgr";
-import "./input/TouchMgr";
-import "./utils/BezierUtils";
-import "./utils/Mathf";
-import "./utils/StringUtils";
-import "./utils/TransformUtils";
-import "./utils/ComponentUtils";
-import "./utils/TimeUtils";
-import "./utils/TweenUtils";
-import "./utils/DebugUtils";
-import "./utils/FunctionUtils";
-import "./task/TaskMgr";
-import "./task/LoadingTaskQueue";
+import "./mgrs/_mgrs";
+import "./input/_input";
+import "./utils/_utils";
+import "./task/_task";
 import "./mvvm/_mvvm";
+import "./controller/_controller";
 
 
 import "./hot-update/_hot-update"

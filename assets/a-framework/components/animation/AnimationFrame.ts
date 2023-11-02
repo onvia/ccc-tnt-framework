@@ -153,7 +153,7 @@ export default class AnimationFrame extends tnt.AnimationBase {
       * @param timescale 
       */
     playRepeat(name, count, listener?: Runnable, timescale?: number) {
-        var oldAnim = this.animationName;
+        let oldAnim = this.animationName;
 
         this.play(name, true, timescale);
 

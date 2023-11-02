@@ -106,9 +106,9 @@ class CaptureMgr {
         // 现在只能对单个节点进行截图
         // TODO 对节点树进行截图
         let trans = node.getComponent(UITransform);
-        var width = trans.width;
-        var height = trans.height;
-        var worldPos = node.getWorldPosition();
+        let width = trans.width;
+        let height = trans.height;
+        let worldPos = node.getWorldPosition();
         let rect = new Rect(Math.ceil(worldPos.x - width * trans.anchorX), Math.ceil(worldPos.y - height * trans.anchorY), width, height);
 
         // 拷贝一个 节点出来专门用作截图

@@ -89,7 +89,7 @@ class UIWindowBase<Options = any> extends tnt.UIBase<Options> implements ILoader
 
     /** 移除显示监听 */
     public removeShowListener(func: Runnable) {
-        var index = this._showListeners.indexOf(func);
+        let index = this._showListeners.indexOf(func);
         if (index > -1) {
             this._showListeners.splice(index, 1);
         }
@@ -97,7 +97,7 @@ class UIWindowBase<Options = any> extends tnt.UIBase<Options> implements ILoader
 
     /** 移除关闭监听 */
     public removeCloseListener(func: Runnable) {
-        var index = this._closeListeners.indexOf(func);
+        let index = this._closeListeners.indexOf(func);
         if (index > -1) {
             this._closeListeners.splice(index, 1);
         }
@@ -105,7 +105,7 @@ class UIWindowBase<Options = any> extends tnt.UIBase<Options> implements ILoader
 
     /** 移除将要关闭监听 */
     public removeWillCloseListener(func: Runnable) {
-        var index = this._willCloseListeners.indexOf(func);
+        let index = this._willCloseListeners.indexOf(func);
         if (index > -1) {
             this._willCloseListeners.splice(index, 1);
         }

@@ -1,5 +1,4 @@
 import { _decorator, Node, Camera, TiledMap, TiledMapAsset, Vec3, UITransform, Color, color, Vec2, Toggle, Size, TiledLayer, director, Director, __private, Rect } from "cc";
-import CameraController from "../../../a-framework/scenes/scene2d/tiled/controller/CameraController";
 
 const { ccclass } = _decorator;
 const { node, sprite, button } = tnt._decorator;
@@ -75,7 +74,7 @@ export class FloodFillDemo extends tnt.SceneBase<FloodFillDemoOptions> {
 
     gameCamera: Camera = null;
     tiledMap: TiledMap = null;
-    cameraController: CameraController = null;
+    cameraController: tnt.CameraController = null;
 
     worldCoord = "0,0";
     tiledCoord = "0,0";
@@ -109,8 +108,7 @@ export class FloodFillDemo extends tnt.SceneBase<FloodFillDemoOptions> {
             staggerIndex: this.tiledMap._mapInfo.getStaggerIndex(),
             hexSideLength: this.tiledMap._mapInfo.getHexSideLength(),
         });
-        this.cameraController = CameraController.create(this.gameCamera, this.tiledMapProxy.mapSizeInPixel);
-
+        this.cameraController = tnt.CameraController.create(this.gameCamera, this.tiledMapProxy.mapSizeInPixel);
 
         this.tiledMapGesture = tnt.tmx.TiledMapGesture.create(this.gameCamera, {
             minZoomRatio: 0.5,
@@ -170,6 +168,7 @@ export class FloodFillDemo extends tnt.SceneBase<FloodFillDemoOptions> {
         let guiWindow = await tnt.gui.create("Debug", new Size(240, 640));
 
         guiWindow.left()
+            .addItem("Mouse wheel/Two finger scaling")
             .addItem("TileXY", () => {
                 return this.tiledCoord;
             })

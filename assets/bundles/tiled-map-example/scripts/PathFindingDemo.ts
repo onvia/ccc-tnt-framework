@@ -1,5 +1,4 @@
 import { _decorator, Node, Camera, TiledMap, TiledMapAsset, Vec3, UITransform, Color, color, Vec2, Toggle, Size } from "cc";
-import CameraController, { CameraState } from "../../../a-framework/scenes/scene2d/tiled/controller/CameraController";
 import { Player } from "./Player";
 import { TiledMapEvents } from "./TiledMapEvents";
 
@@ -44,7 +43,7 @@ export class PathFindingDemo extends tnt.SceneBase<PathFindingDemoOptions> {
     // A* 寻路
     pathFinder: tnt.pf.IPathFinder = null;
 
-    cameraController: CameraController = null;
+    cameraController: tnt.CameraController = null;
 
     // 所有的格子
     grids: number[][] = [];
@@ -95,7 +94,7 @@ export class PathFindingDemo extends tnt.SceneBase<PathFindingDemoOptions> {
             staggerIndex: this.tiledMap._mapInfo.getStaggerIndex(),
             hexSideLength: this.tiledMap._mapInfo.getHexSideLength(),
         });
-        this.cameraController = CameraController.create(this.gameCamera, this.tiledMapProxy.mapSizeInPixel);
+        this.cameraController = tnt.CameraController.create(this.gameCamera, this.tiledMapProxy.mapSizeInPixel);
 
 
         this.tiledMapGesture = tnt.tmx.TiledMapGesture.create(this.gameCamera, {
@@ -360,7 +359,7 @@ export class PathFindingDemo extends tnt.SceneBase<PathFindingDemoOptions> {
         if (follow) {
             this.cameraController.follow(this.player.node);
         } else {
-            this.cameraController.cameraState = CameraState.Free;
+            this.cameraController.cameraState = tnt.CameraController.CameraState.Free;
         }
 
     }

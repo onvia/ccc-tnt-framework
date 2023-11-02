@@ -207,7 +207,7 @@ class HitTest {
         }
 
         // 通用版本
-        var { width, height } = texture, gfxTexture = texture.getGFXTexture(), gfxDevice = texture['_getGFXDevice'](), bufferViews = [],
+        let { width, height } = texture, gfxTexture = texture.getGFXTexture(), gfxDevice = texture['_getGFXDevice'](), bufferViews = [],
             region = new gfx.BufferTextureCopy(), buffer = new Uint8Array(width * height * 4);
         // region.texOffset.x = region.texOffset.y = 0;
         region.texExtent.width = width;

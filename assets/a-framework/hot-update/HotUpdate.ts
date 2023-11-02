@@ -42,13 +42,13 @@ class HotUpdate {
         // Return true if the verification passed, otherwise return false
         this.assetsMgr.setVerifyCallback((path: string, asset: native.ManifestAsset) => {
             // When asset is compressed, we don't need to check its md5, because zip file have been deleted.
-            var compressed = asset.compressed;
+            let compressed = asset.compressed;
             // Retrieve the correct md5 value.
-            var expectedMD5 = asset.md5;
+            let expectedMD5 = asset.md5;
             // asset.path is relative path and path is absolute.
-            var relativePath = asset.path;
+            let relativePath = asset.path;
             // The size of asset file, but this value could be absent.
-            var size = asset.size;
+            let size = asset.size;
 
             if (compressed) {
                 //"Verification passed : " + relativePath;
@@ -65,7 +65,7 @@ class HotUpdate {
         }
 
 
-        var localManifest = this.assetsMgr.getLocalManifest();
+        let localManifest = this.assetsMgr.getLocalManifest();
         console.log('【热更新】热更资源存放路径: ' + this.storagePath);
         console.log('【热更新】本地资源配置路径: ' + this.manifestUrl);
         console.log('【热更新】本地包地址: ' + localManifest.getPackageUrl());
@@ -167,8 +167,8 @@ class HotUpdate {
     private _onUpdateFinished() {
         this.assetsMgr.setEventCallback(null);
 
-        var searchPaths = native.fileUtils.getSearchPaths();
-        var newPaths = this.assetsMgr.getLocalManifest().getSearchPaths();
+        let searchPaths = native.fileUtils.getSearchPaths();
+        let newPaths = this.assetsMgr.getLocalManifest().getSearchPaths();
 
         console.log(`SearchPaths: ${JSON.stringify(newPaths)}`);
 
@@ -197,11 +197,11 @@ class HotUpdate {
 
         this.listener.onVersionInfo(versionA, versionB);
 
-        var vA = versionA.split('.');
-        var vB = versionB.split('.');
-        for (var i = 0; i < vA.length; ++i) {
-            var a = parseInt(vA[i]);
-            var b = parseInt(vB[i] || '0');
+        let vA = versionA.split('.');
+        let vB = versionB.split('.');
+        for (let i = 0; i < vA.length; ++i) {
+            let a = parseInt(vA[i]);
+            let b = parseInt(vB[i] || '0');
             if (a === b) {
                 continue;
             }
