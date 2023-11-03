@@ -18,7 +18,7 @@ class RouteGraphHexagonal extends RouteGraph {
 }
 
 /** 六角地图模拟45度交错地图 */
-class RouteGraphStaggered extends RouteGraph {
+class RouteGraphStaggeredByHex extends RouteGraph {
     staggerX: boolean = false;
     staggerEven: boolean = false;
     constructor(staggerX: boolean, staggerEven: boolean) {
@@ -52,14 +52,14 @@ class RouteGraphNormal extends RouteGraph {
 declare global {
     interface IPathFinding {
         RouteGraphHexagonal: typeof RouteGraphHexagonal;
-        RouteGraphStaggered: typeof RouteGraphStaggered;
+        RouteGraphStaggeredByHex: typeof RouteGraphStaggeredByHex;
         RouteGraphNormal: typeof RouteGraphNormal;
     }
 
     namespace tnt {
         namespace pf {
             type RouteGraphHexagonal = InstanceType<typeof RouteGraphHexagonal>;
-            type RouteGraphStaggered = InstanceType<typeof RouteGraphStaggered>;
+            type RouteGraphStaggered = InstanceType<typeof RouteGraphStaggeredByHex>;
             type RouteGraphNormal = InstanceType<typeof RouteGraphNormal>;
         }
     }
@@ -67,7 +67,7 @@ declare global {
 
 
 tnt.pf.RouteGraphHexagonal = RouteGraphHexagonal;
-tnt.pf.RouteGraphStaggered = RouteGraphStaggered;
+tnt.pf.RouteGraphStaggeredByHex = RouteGraphStaggeredByHex;
 tnt.pf.RouteGraphNormal = RouteGraphNormal;
 
 export { };

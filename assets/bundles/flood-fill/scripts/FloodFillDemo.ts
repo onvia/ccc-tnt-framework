@@ -57,10 +57,10 @@ enum MapType {
     HexagonXEven, // 六角 X 偶数
     HexagonYOdd, // 六角 Y 奇数
     HexagonYEven, // 六角 Y 偶数
-    StaggerXOdd,
-    StaggerXEven,
-    StaggerYOdd,
-    StaggerYEven,
+    StaggerXOddByHex,
+    StaggerXEvenByHex,
+    StaggerYOddByHex,
+    StaggerYEvenByHex,
 
 }
 
@@ -98,6 +98,9 @@ export class FloodFillDemo extends tnt.SceneBase<FloodFillDemoOptions> {
 
     onInit() {
 
+        this.tiledMap._layers.forEach((layer) => {
+            layer.node.position = new Vec3();
+        });
         // 使用了摄像机需要把自动裁剪关闭
         this.tiledMap.enableCulling = false;
         this.tiledMapProxy = tnt.tmx.TiledMapProxy.create(this.tiledMap.node, {
@@ -138,6 +141,12 @@ export class FloodFillDemo extends tnt.SceneBase<FloodFillDemoOptions> {
         // 地图锚点 设置为 [0,0]
         this.tiledMap._layers.forEach((layer) => {
             setAnchorPointZero(layer.node);
+            if (this.mapType == MapType.HexagonXOdd || this.mapType == MapType.StaggerXOddByHex) {
+                layer.node.y = this.tiledMapProxy.tileSize.height / 2;
+            }
+            if (this.mapType == MapType.HexagonYEven || this.mapType == MapType.StaggerYEvenByHex) {
+                layer.node.x = this.tiledMapProxy.tileSize.width / 2;
+            }
         });
 
 
@@ -196,27 +205,11 @@ export class FloodFillDemo extends tnt.SceneBase<FloodFillDemoOptions> {
                 if (Object.prototype.hasOwnProperty.call(MapType, key)) {
                     const element = MapType[key];
                     mapGroup.addToggle(element, (isChecked) => {
-                        this.updateMap(key as any as number, isChecked);
+                        this.updateMap(parseInt(key), isChecked);
                     }, key === MapType[MapType.Orthogonal]);
                 }
             }
         }
-        // .addToggle("Orthogonal", (isChecked) => {
-        //     // 正交地图
-        //     this.updateMap(MapType.Orthogonal, isChecked);
-        // }, true)
-        // .addToggle("Hexagonal", (isChecked) => {
-        //     // 六角
-        //     this.updateMap(MapType.Hexagonal, isChecked);
-        // }, false)
-        // .addToggle("Hex2Stagger", (isChecked) => {
-        //     // 六角交错模拟45度交错
-        //     this.updateMap(MapType.Hex2Stagger, isChecked);
-        // }, false).justWidget().setGUIEnable(false)
-        // .addToggle("Isometric", (isChecked) => {
-        //     // 45度地图
-        //     this.updateMap(MapType.Isometric, isChecked);
-        // }, false).justWidget().setGUIEnable(false)
     }
 
 
@@ -235,10 +228,10 @@ export class FloodFillDemo extends tnt.SceneBase<FloodFillDemoOptions> {
             [MapType.HexagonXEven]: "map_hexagon_x_even", // 六角 X 偶数
             [MapType.HexagonYOdd]: "map_hexagon_y_odd", // 六角 Y 奇数
             [MapType.HexagonYEven]: "map_hexagon_y_even", // 六角 Y 偶数
-            [MapType.StaggerXOdd]: "map_hexagon2stagger_x_odd",
-            [MapType.StaggerXEven]: "map_hexagon2stagger_x_even",
-            [MapType.StaggerYOdd]: "map_hexagon2stagger_y_odd",
-            [MapType.StaggerYEven]: "map_hexagon2stagger_y_even",
+            [MapType.StaggerXOddByHex]: "map_hexagon2stagger_x_odd",
+            [MapType.StaggerXEvenByHex]: "map_hexagon2stagger_x_even",
+            [MapType.StaggerYOddByHex]: "map_hexagon2stagger_y_odd",
+            [MapType.StaggerYEvenByHex]: "map_hexagon2stagger_y_even",
         }
         let mapName = mapNameMap[mapType];
         if (!mapName) {

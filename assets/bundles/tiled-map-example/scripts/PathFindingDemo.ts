@@ -20,11 +20,31 @@ const HALF_v2 = new Vec2(0.5, 0.5);
 
 enum MapType {
     Orthogonal,
-    Hexagonal,
-    Hex2Stagger,
     Isometric,
+    HexagonXOdd, // 六角 X 奇数
+    HexagonXEven, // 六角 X 偶数
+    HexagonYOdd, // 六角 Y 奇数
+    HexagonYEven, // 六角 Y 偶数
+    StaggerXOddByHex,
+    StaggerXEvenByHex,
+    StaggerYOddByHex,
+    StaggerYEvenByHex,
+
 }
 
+// enum MapType {
+//     Orthogonal,
+//     Isometric,
+//     HexagonXOdd, // 六角 X 奇数
+//     HexagonXEven, // 六角 X 偶数
+//     HexagonYOdd, // 六角 Y 奇数
+//     HexagonYEven, // 六角 Y 偶数
+//     StaggerXOdd,
+//     StaggerXEven,
+//     StaggerYOdd,
+//     StaggerYEven,
+
+// }
 @ccclass('PathFindingDemo')
 export class PathFindingDemo extends tnt.SceneBase<PathFindingDemoOptions> {
 
@@ -84,6 +104,9 @@ export class PathFindingDemo extends tnt.SceneBase<PathFindingDemoOptions> {
 
     onInit() {
 
+        this.tiledMap._layers.forEach((layer) => {
+            layer.node.position = new Vec3();
+        });
         // 使用了摄像机需要把自动裁剪关闭
         this.tiledMap.enableCulling = false;
         this.tiledMapProxy = tnt.tmx.TiledMapProxy.create(this.tiledMap.node, {
@@ -142,6 +165,12 @@ export class PathFindingDemo extends tnt.SceneBase<PathFindingDemoOptions> {
         // 地图锚点 设置为 [0,0]
         this.tiledMap._layers.forEach((layer) => {
             this.setAnchorPointZero(layer.node);
+            if (this.mapType == MapType.HexagonXOdd || this.mapType == MapType.StaggerXOddByHex) {
+                layer.node.y = this.tiledMapProxy.tileSize.height / 2;
+            }
+            if (this.mapType == MapType.HexagonYEven || this.mapType == MapType.StaggerYEvenByHex) {
+                layer.node.x = this.tiledMapProxy.tileSize.width / 2;
+            }
         });
 
 
@@ -190,24 +219,22 @@ export class PathFindingDemo extends tnt.SceneBase<PathFindingDemoOptions> {
                 }
             }).justWidget();
 
-        guiWindow
+        let mapGroup = guiWindow
             .addGroup("Map")
-            .addToggle("Orthogonal", (isChecked) => {
-                // 正交地图
-                this.updateMap(MapType.Orthogonal, isChecked);
-            }, true)
-            .addToggle("Hexagonal", (isChecked) => {
-                // 六角
-                this.updateMap(MapType.Hexagonal, isChecked);
-            }, false)
-            .addToggle("Hex2Stagger", (isChecked) => {
-                // 六角交错模拟45度交错
-                this.updateMap(MapType.Hex2Stagger, isChecked);
-            }, false).justWidget().setGUIEnable(false)
-            .addToggle("Isometric", (isChecked) => {
-                // 45度地图
-                this.updateMap(MapType.Isometric, isChecked);
-            }, false).justWidget().setGUIEnable(false)
+
+
+        for (const key in MapType) {
+            // 正则判断 key  是否是数字
+
+            if (/^\d+$/.test(key)) {
+                if (Object.prototype.hasOwnProperty.call(MapType, key)) {
+                    const element = MapType[key];
+                    mapGroup.addToggle(element, (isChecked) => {
+                        this.updateMap(parseInt(key), isChecked);
+                    }, key === MapType[MapType.Orthogonal]);
+                }
+            }
+        }
         guiWindow
             .addGroup("PathFinding")
             .addToggle("Manhattan", (isChecked) => {
@@ -220,9 +247,6 @@ export class PathFindingDemo extends tnt.SceneBase<PathFindingDemoOptions> {
             .addToggle("Euclidean", (isChecked) => {
                 isChecked && (this.heuristic = tnt.pf.AStarBinaryHeap.euclidean);
             }, false)
-
-
-
     }
 
     updateMap(mapType: MapType, isChecked: boolean) {
@@ -240,16 +264,22 @@ export class PathFindingDemo extends tnt.SceneBase<PathFindingDemoOptions> {
         }
 
         let mapNameMap = {
-            [MapType.Orthogonal]: "map",
-            [MapType.Hexagonal]: "map_hexagonal_y",
-            [MapType.Hex2Stagger]: "",
-            [MapType.Isometric]: "",
+            [MapType.Orthogonal]: "map_orthogonal",
+            [MapType.Isometric]: "map_isometric",
+            [MapType.HexagonXOdd]: "map_hexagon_x_odd", // 六角 X 奇数
+            [MapType.HexagonXEven]: "map_hexagon_x_even", // 六角 X 偶数
+            [MapType.HexagonYOdd]: "map_hexagon_y_odd", // 六角 Y 奇数
+            [MapType.HexagonYEven]: "map_hexagon_y_even", // 六角 Y 偶数
+            [MapType.StaggerXOddByHex]: "map_hexagon2stagger_x_odd",
+            [MapType.StaggerXEvenByHex]: "map_hexagon2stagger_x_even",
+            [MapType.StaggerYOddByHex]: "map_hexagon2stagger_y_odd",
+            [MapType.StaggerYEvenByHex]: "map_hexagon2stagger_y_even",
         }
         let mapName = mapNameMap[mapType];
         if (!mapName) {
             return;
         }
-        this.loader.load(`tiled-map-example#map/${mapName}`, TiledMapAsset, (err, asset) => {
+        this.loader.load(`tiled-map-example#map/path-map/${mapName}`, TiledMapAsset, (err, asset) => {
             // this.loader.load("tiled-map-example#map/map", TiledMapAsset, (err, asset) => {
             if (err) {
                 console.log(`PathFindingDemo-> `, err);
@@ -294,19 +324,24 @@ export class PathFindingDemo extends tnt.SceneBase<PathFindingDemoOptions> {
                 routeGraph = new tnt.pf.RouteGraphNormal(false)
                 break;
 
-            case MapType.Hexagonal:
+            case MapType.HexagonXEven:
+            case MapType.HexagonXOdd:
+            case MapType.HexagonYEven:
+            case MapType.HexagonYOdd:
                 {
                     let staggerX = this.tiledMap._mapInfo.getStaggerAxis() === 0;
                     let staggerEven = this.tiledMap._mapInfo.getStaggerIndex() === 1;
                     routeGraph = new tnt.pf.RouteGraphHexagonal(staggerX, staggerEven);
                 }
                 break;
-            case MapType.Hex2Stagger:
-
+            case MapType.StaggerXEvenByHex:
+            case MapType.StaggerXOddByHex:
+            case MapType.StaggerYEvenByHex:
+            case MapType.StaggerYOddByHex:
                 {
                     let staggerX = this.tiledMap._mapInfo.getStaggerAxis() === 0;
                     let staggerEven = this.tiledMap._mapInfo.getStaggerIndex() === 1;
-                    routeGraph = new tnt.pf.RouteGraphStaggered(staggerX, staggerEven);
+                    routeGraph = new tnt.pf.RouteGraphStaggeredByHex(staggerX, staggerEven);
                 }
 
                 break;
