@@ -8,7 +8,6 @@
   "userData": {
     "isBundle": true,
     "priority": 20,
-    "bundleName": "framework",
-    "bundleConfigID": "auto_d17Y4cDmtHr6eWLP2876ru"
+    "bundleName": "framework"
   }
 }

@@ -3,6 +3,7 @@
     "__type__": "cc.SceneAsset",
     "_name": "TiledMapOrientationDemo",
     "_objFlags": 0,
+    "__editorExtras__": {},
     "_native": "",
     "scene": {
       "__id__": 1
@@ -12,6 +13,7 @@
     "__type__": "cc.Scene",
     "_name": "TiledMapOrientationDemo",
     "_objFlags": 0,
+    "__editorExtras__": {},
     "_parent": null,
     "_children": [
       {
@@ -64,6 +66,7 @@
     "__type__": "cc.Node",
     "_name": "Main Camera",
     "_objFlags": 0,
+    "__editorExtras__": {},
     "_parent": {
       "__id__": 1
     },
@@ -108,6 +111,7 @@
     "__type__": "cc.Camera",
     "_name": "",
     "_objFlags": 0,
+    "__editorExtras__": {},
     "node": {
       "__id__": 2
     },
@@ -143,6 +147,8 @@
     "_screenScale": 1,
     "_visibility": 9437184,
     "_targetTexture": null,
+    "_postProcess": null,
+    "_usePostProcess": false,
     "_cameraType": -1,
     "_trackingType": 0,
     "_id": "7dWQTpwS5LrIHnc1zAPUtf"
@@ -151,6 +157,7 @@
     "__type__": "cc.Node",
     "_name": "GameCanvas",
     "_objFlags": 0,
+    "__editorExtras__": {},
     "_parent": {
       "__id__": 1
     },
@@ -208,6 +215,7 @@
     "__type__": "cc.Node",
     "_name": "Camera",
     "_objFlags": 0,
+    "__editorExtras__": {},
     "_parent": {
       "__id__": 4
     },
@@ -255,6 +263,7 @@
     "__type__": "cc.UITransform",
     "_name": "",
     "_objFlags": 0,
+    "__editorExtras__": {},
     "node": {
       "__id__": 5
     },
@@ -276,6 +285,7 @@
     "__type__": "cc.Camera",
     "_name": "",
     "_objFlags": 0,
+    "__editorExtras__": {},
     "node": {
       "__id__": 5
     },
@@ -285,7 +295,7 @@
     "_priority": 1073741822,
     "_fov": 45,
     "_fovAxis": 0,
-    "_orthoHeight": 383.00945829750646,
+    "_orthoHeight": 374.35983263598325,
     "_near": 1,
     "_far": 1000,
     "_color": {
@@ -311,6 +321,8 @@
     "_screenScale": 1,
     "_visibility": 1083179008,
     "_targetTexture": null,
+    "_postProcess": null,
+    "_usePostProcess": false,
     "_cameraType": -1,
     "_trackingType": 0,
     "_id": "99TGW2cmpCp7hFlWt4mOY4"
@@ -319,6 +331,7 @@
     "__type__": "cc.Node",
     "_name": "GameRoot",
     "_objFlags": 0,
+    "__editorExtras__": {},
     "_parent": {
       "__id__": 4
     },
@@ -370,6 +383,7 @@
     "__type__": "cc.Node",
     "_name": "map_bg",
     "_objFlags": 0,
+    "__editorExtras__": {},
     "_parent": {
       "__id__": 8
     },
@@ -478,6 +492,7 @@
     "__type__": "cc.Node",
     "_name": "map",
     "_objFlags": 0,
+    "__editorExtras__": {},
     "_parent": {
       "__id__": 8
     },
@@ -525,6 +540,7 @@
     "__type__": "cc.UITransform",
     "_name": "",
     "_objFlags": 0,
+    "__editorExtras__": {},
     "node": {
       "__id__": 12
     },
@@ -546,6 +562,7 @@
     "__type__": "cc.TiledMap",
     "_name": "",
     "_objFlags": 0,
+    "__editorExtras__": {},
     "node": {
       "__id__": 12
     },
@@ -560,6 +577,7 @@
     "__type__": "cc.UITransform",
     "_name": "",
     "_objFlags": 0,
+    "__editorExtras__": {},
     "node": {
       "__id__": 8
     },
@@ -581,6 +599,7 @@
     "__type__": "cc.UITransform",
     "_name": "",
     "_objFlags": 0,
+    "__editorExtras__": {},
     "node": {
       "__id__": 4
     },
@@ -602,6 +621,7 @@
     "__type__": "cc.Canvas",
     "_name": "",
     "_objFlags": 0,
+    "__editorExtras__": {},
     "node": {
       "__id__": 4
     },
@@ -617,6 +637,7 @@
     "__type__": "cc.Widget",
     "_name": "",
     "_objFlags": 0,
+    "__editorExtras__": {},
     "node": {
       "__id__": 4
     },
@@ -646,6 +667,7 @@
     "__type__": "cc.Node",
     "_name": "Canvas",
     "_objFlags": 0,
+    "__editorExtras__": {},
     "_parent": {
       "__id__": 1
     },
@@ -703,6 +725,7 @@
     "__type__": "cc.Node",
     "_name": "Camera",
     "_objFlags": 0,
+    "__editorExtras__": {},
     "_parent": {
       "__id__": 19
     },
@@ -747,6 +770,7 @@
     "__type__": "cc.Camera",
     "_name": "",
     "_objFlags": 0,
+    "__editorExtras__": {},
     "node": {
       "__id__": 20
     },
@@ -756,7 +780,7 @@
     "_priority": 1073741824,
     "_fov": 45,
     "_fovAxis": 0,
-    "_orthoHeight": 383.00945829750646,
+    "_orthoHeight": 374.35983263598325,
     "_near": 1,
     "_far": 2000,
     "_color": {
@@ -782,6 +806,8 @@
     "_screenScale": 1,
     "_visibility": 33554432,
     "_targetTexture": null,
+    "_postProcess": null,
+    "_usePostProcess": false,
     "_cameraType": -1,
     "_trackingType": 0,
     "_id": "61FLO+ZnJC56KDMOEo6TpM"
@@ -790,6 +816,7 @@
     "__type__": "cc.Node",
     "_name": "UIContent",
     "_objFlags": 0,
+    "__editorExtras__": {},
     "_parent": {
       "__id__": 19
     },
@@ -844,6 +871,7 @@
     "__type__": "cc.Node",
     "_name": "Label",
     "_objFlags": 0,
+    "__editorExtras__": {},
     "_parent": {
       "__id__": 22
     },
@@ -891,6 +919,7 @@
     "__type__": "cc.UITransform",
     "_name": "",
     "_objFlags": 0,
+    "__editorExtras__": {},
     "node": {
       "__id__": 23
     },
@@ -912,6 +941,7 @@
     "__type__": "cc.Label",
     "_name": "",
     "_objFlags": 0,
+    "__editorExtras__": {},
     "node": {
       "__id__": 23
     },
@@ -930,7 +960,7 @@
     "_string": "说明：Cocos Creator 3.8.0（本框架发布时最高版本） 以及之前的版本 六角交错地图宽高计算有误，图层渲染有误，\n\n本代码中的计算方法正确，如果出现错误，请检查地图是否进行特殊处理，\n\n特殊处理方式：\n      栅格轴方向：X  栅格类型：奇数  \n      向上移动半个图块高度\n\n      栅格轴方向：Y  栅格类型：偶数  \n      向右移动半个图块宽度",
     "_horizontalAlign": 0,
     "_verticalAlign": 1,
-    "_actualFontSize": 18,
+    "_actualFontSize": 17,
     "_fontSize": 20,
     "_fontFamily": "Arial",
     "_lineHeight": 32,
@@ -950,6 +980,7 @@
     "__type__": "cc.UITransform",
     "_name": "",
     "_objFlags": 0,
+    "__editorExtras__": {},
     "node": {
       "__id__": 22
     },
@@ -971,6 +1002,7 @@
     "__type__": "cc.Widget",
     "_name": "",
     "_objFlags": 0,
+    "__editorExtras__": {},
     "node": {
       "__id__": 22
     },
@@ -1000,6 +1032,7 @@
     "__type__": "cc.SafeArea",
     "_name": "",
     "_objFlags": 0,
+    "__editorExtras__": {},
     "node": {
       "__id__": 22
     },
@@ -1011,6 +1044,7 @@
     "__type__": "cc.UITransform",
     "_name": "",
     "_objFlags": 0,
+    "__editorExtras__": {},
     "node": {
       "__id__": 19
     },
@@ -1032,6 +1066,7 @@
     "__type__": "cc.Canvas",
     "_name": "",
     "_objFlags": 0,
+    "__editorExtras__": {},
     "node": {
       "__id__": 19
     },
@@ -1047,6 +1082,7 @@
     "__type__": "cc.Widget",
     "_name": "",
     "_objFlags": 0,
+    "__editorExtras__": {},
     "node": {
       "__id__": 19
     },
@@ -1089,8 +1125,11 @@
     "octree": {
       "__id__": 37
     },
-    "lightProbeInfo": {
+    "skin": {
       "__id__": 38
+    },
+    "lightProbeInfo": {
+      "__id__": 39
     },
     "bakedWithStationaryMainLight": false,
     "bakedWithHighpLightmap": false
@@ -1220,6 +1259,12 @@
     "_depth": 8
   },
   {
+    "__type__": "cc.SkinInfo",
+    "_enabled": true,
+    "_blurRadius": 0.01,
+    "_sssIntensity": 3
+  },
+  {
     "__type__": "cc.LightProbeInfo",
     "_giScale": 1,
     "_giSamples": 1024,
@@ -1228,6 +1273,7 @@
     "_showProbe": true,
     "_showWireframe": true,
     "_showConvex": false,
-    "_data": null
+    "_data": null,
+    "_lightProbeSphereVolume": 1
   }
 ]
