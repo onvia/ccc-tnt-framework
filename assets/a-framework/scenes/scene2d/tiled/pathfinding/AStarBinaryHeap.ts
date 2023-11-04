@@ -80,7 +80,7 @@ class BinaryHeap {
 
             if (childRIndex < length) {
                 let childR = this.heap[childRIndex];
-                var childRScore = this.scoreFunc(childR);
+                let childRScore = this.scoreFunc(childR);
                 if (childRScore < (swap === null ? elemScore : childLScore)) {
                     swap = childRIndex;
                 }
@@ -199,8 +199,8 @@ export class AStarBinaryHeap implements tnt.pf.IPathFinder {
 
     // 曼哈顿距离
     public static manhattan(node1: tnt.pf.GridNode, node2: tnt.pf.GridNode) {
-        var d1 = Math.abs(node2.x - node1.x);
-        var d2 = Math.abs(node2.y - node1.y);
+        let d1 = Math.abs(node2.x - node1.x);
+        let d2 = Math.abs(node2.y - node1.y);
         return (d1 + d2);
     }
 

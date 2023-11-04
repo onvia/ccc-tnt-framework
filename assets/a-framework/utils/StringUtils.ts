@@ -17,7 +17,7 @@ class GStringUtils {
      * print: hello_world,I like to write in typescript
      */
     format_0(str: string, ...args) {
-        var result = str;
+        let result = str;
 
         if (args.length > 0) {
             let isObject = typeof (args[0]) == "object";
@@ -52,8 +52,8 @@ class GStringUtils {
                 }
 
                 // // 通过 key 替换数据
-                // for (var key in args) {
-                //     var reg = new RegExp("(%{" + key + "})", "g");
+                // for (let key in args) {
+                //     let reg = new RegExp("(%{" + key + "})", "g");
                 //     result = result.replace(reg, args[key]);
                 // }
             } else {
@@ -187,7 +187,7 @@ class GStringUtils {
 
     /** [value:pad2]  补位参数2: 1 显示为 01   参数 3: 1 显示为 001 */
     pad(value, fd: number) {
-        var len = value.toString().length;
+        let len = value.toString().length;
         while (len < fd) {
             value = "0" + value;
             len++;
@@ -278,8 +278,8 @@ class GStringUtils {
     stringLen(str: string) {
         ///<summary>获得字符串实际长度，中文2，英文1</summary>
         ///<param name="str">要获得长度的字符串</param>
-        var realLength = 0, len = str.length, charCode = -1;
-        for (var i = 0; i < len; i++) {
+        let realLength = 0, len = str.length, charCode = -1;
+        for (let i = 0; i < len; i++) {
             charCode = str.charCodeAt(i);
             if (charCode >= 0 && charCode <= 128)
                 realLength += 1;
@@ -289,14 +289,14 @@ class GStringUtils {
         return realLength;
     }
     md5(bit = 16 | 32) {
-        var sMessage = this;
+        let sMessage = this;
 
         function RotateLeft(lValue, iShiftBits) {
             return (lValue << iShiftBits) | (lValue >>> (32 - iShiftBits));
         }
 
         function AddUnsigned(lX, lY) {
-            var lX4, lY4, lX8, lY8, lResult;
+            let lX4, lY4, lX8, lY8, lResult;
             lX8 = (lX & 0x80000000);
             lY8 = (lY & 0x80000000);
             lX4 = (lX & 0x40000000);
@@ -346,14 +346,14 @@ class GStringUtils {
         }
 
         function ConvertToWordArray(sMessage) {
-            var lWordCount;
-            var lMessageLength = sMessage.length;
-            var lNumberOfWords_temp1 = lMessageLength + 8;
-            var lNumberOfWords_temp2 = (lNumberOfWords_temp1 - (lNumberOfWords_temp1 % 64)) / 64;
-            var lNumberOfWords = (lNumberOfWords_temp2 + 1) * 16;
-            var lWordArray = Array(lNumberOfWords - 1);
-            var lBytePosition = 0;
-            var lByteCount = 0;
+            let lWordCount;
+            let lMessageLength = sMessage.length;
+            let lNumberOfWords_temp1 = lMessageLength + 8;
+            let lNumberOfWords_temp2 = (lNumberOfWords_temp1 - (lNumberOfWords_temp1 % 64)) / 64;
+            let lNumberOfWords = (lNumberOfWords_temp2 + 1) * 16;
+            let lWordArray = Array(lNumberOfWords - 1);
+            let lBytePosition = 0;
+            let lByteCount = 0;
             while (lByteCount < lMessageLength) {
                 lWordCount = (lByteCount - (lByteCount % 4)) / 4;
                 lBytePosition = (lByteCount % 4) * 8;
@@ -369,7 +369,7 @@ class GStringUtils {
         }
 
         function WordToHex(lValue) {
-            var WordToHexValue = "",
+            let WordToHexValue = "",
                 WordToHexValue_temp = "",
                 lByte, lCount;
             for (lCount = 0; lCount <= 3; lCount++) {
@@ -379,21 +379,21 @@ class GStringUtils {
             }
             return WordToHexValue;
         }
-        var x = Array();
-        var k, AA, BB, CC, DD, a, b, c, d
-        var S11 = 7,
+        let x = Array();
+        let k, AA, BB, CC, DD, a, b, c, d
+        let S11 = 7,
             S12 = 12,
             S13 = 17,
             S14 = 22;
-        var S21 = 5,
+        let S21 = 5,
             S22 = 9,
             S23 = 14,
             S24 = 20;
-        var S31 = 4,
+        let S31 = 4,
             S32 = 11,
             S33 = 16,
             S34 = 23;
-        var S41 = 6,
+        let S41 = 6,
             S42 = 10,
             S43 = 15,
             S44 = 21;
@@ -500,9 +500,9 @@ class GBase64 {
 
     // public method for encoding
     public encode(input) {
-        var output = "";
-        var chr1, chr2, chr3, enc1, enc2, enc3, enc4;
-        var i = 0;
+        let output = "";
+        let chr1, chr2, chr3, enc1, enc2, enc3, enc4;
+        let i = 0;
 
         input = this._utf8_encode(input);
 
@@ -532,10 +532,10 @@ class GBase64 {
 
     // public method for decoding
     public decode(input) {
-        var output = "";
-        var chr1, chr2, chr3;
-        var enc1, enc2, enc3, enc4;
-        var i = 0;
+        let output = "";
+        let chr1, chr2, chr3;
+        let enc1, enc2, enc3, enc4;
+        let i = 0;
 
         input = input.replace(/[^A-Za-z0-9\+\/\=]/g, "");
 
@@ -570,11 +570,11 @@ class GBase64 {
     // private method for UTF-8 encoding
     private _utf8_encode(string) {
         string = string.replace(/\r\n/g, "\n");
-        var utftext = "";
+        let utftext = "";
 
-        for (var n = 0; n < string.length; n++) {
+        for (let n = 0; n < string.length; n++) {
 
-            var c = string.charCodeAt(n);
+            let c = string.charCodeAt(n);
 
             if (c < 128) {
                 utftext += String.fromCharCode(c);
@@ -594,12 +594,12 @@ class GBase64 {
 
     // private method for UTF-8 decoding
     private _utf8_decode(utftext) {
-        var string = "";
-        var i = 0;
-        var c = 0;
-        var c1 = 0;
-        var c2 = 0;
-        var c3 = 0;
+        let string = "";
+        let i = 0;
+        let c = 0;
+        let c1 = 0;
+        let c2 = 0;
+        let c3 = 0;
         while (i < utftext.length) {
 
             c = utftext.charCodeAt(i);

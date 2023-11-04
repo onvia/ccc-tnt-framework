@@ -1,0 +1,23 @@
+syntax = "proto3";
+package cs;
+
+
+// 打包数据
+message Pack {
+  uint32 id = 1;
+  bytes data = 2;
+}
+
+enum ID{
+    ID_C2S_User = 1000;
+    ID_S2C_User = 1001;
+    ID_C2S_Bag_GetInfo = 1002;
+    ID_S2C_Bag_GetInfo = 1003;    
+}
+
+enum RET {
+  RET_ERROR = 0;
+  RET_OK = 1;
+  RET_SERVER_MAINTAIN = 2; //服务器维护
+  
+}

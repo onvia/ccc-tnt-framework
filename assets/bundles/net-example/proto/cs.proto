@@ -1,0 +1,85 @@
+syntax = "proto3";
+package cs;
+
+
+enum ID{
+
+    ID_C2S_HeartBeat = 900;
+    ID_S2C_HeartBeat = 901;
+
+    ID_C2S_SyncTime = 903;
+    ID_S2C_SyncTime = 904;
+
+    ID_C2S_User = 1000;
+    ID_S2C_User = 1001;
+    ID_C2S_Bag_GetInfo = 1002;
+    ID_S2C_Bag_GetInfo = 1003;    
+    
+    ID_C2S_Player = 1007;
+    ID_S2C_Player = 1008; 
+}
+
+enum RET {
+  RET_ERROR = 0;
+  RET_OK = 1;
+  RET_SERVER_MAINTAIN = 2; //服务器维护
+  
+}
+
+// 打包数据
+message Pack {
+  uint32 id = 1;
+  bytes data = 2;
+}
+
+message C2S_HeartBeat {
+}
+message S2C_HeartBeat {
+}
+
+message C2S_SyncTime {
+}
+message S2C_SyncTime {
+    uint32 ret = 1;
+    uint64 serverTime = 2;
+}
+
+
+message C2S_Bag_GetInfo {
+
+}
+
+message S2C_Bag_GetInfo {
+    uint32 ret = 1;
+    repeated Item items = 2;
+    UserObject ob = 3;
+}
+
+message UserObject {
+
+}
+
+message Item {
+    uint32 type = 1;
+    uint32 value = 2;
+    uint32 count = 3;
+}
+
+
+message Player {
+    uint32  id = 1;         //唯一ID  首次登录时设置为0，由服务器分配
+    string  name = 2;       //显示名字
+    uint32  enterTime = 3;  //登录时间
+}
+
+
+
+message C2S_User {
+    uint32 username = 1;   
+    string password = 2;
+}
+
+message S2C_User {
+    uint32 time = 1;
+    Player player = 2;
+}

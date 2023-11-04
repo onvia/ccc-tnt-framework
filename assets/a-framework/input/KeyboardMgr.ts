@@ -41,7 +41,7 @@ export class KeyboardMgr {
     }
     public off(target: IKeyboard) {
 
-        var index = this.keyBoardHandler.indexOf(target);
+        let index = this.keyBoardHandler.indexOf(target);
         if (index > -1) {
             this.keyBoardHandler.splice(index, 1);
         }
@@ -106,7 +106,7 @@ export class KeyboardMgr {
     }
 
     private _onKeyUp(event: EventKeyboard) {
-        var index = this._downKeyList.indexOf(event.keyCode);
+        let index = this._downKeyList.indexOf(event.keyCode);
         if (index != -1) {
             if (index > -1) {
                 this._downKeyList.splice(index, 1);

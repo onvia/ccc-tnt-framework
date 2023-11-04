@@ -1100,9 +1100,9 @@ class AssetLoader implements IPluginMgr {
     static getUUIDFromMeta(filepath, type, callback, bundle = "resources") {
         if (EDITOR) {
             // @ts-ignore
-            var path = require('path');
+            let path = require('path');
             // @ts-ignore
-            var fs = require('fs');
+            let fs = require('fs');
             // @ts-ignore
             let projectPath = Editor.Project.path || Editor.projectPath;
 

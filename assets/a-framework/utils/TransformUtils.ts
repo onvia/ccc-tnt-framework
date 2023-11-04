@@ -83,7 +83,7 @@ class TransformUtils {
      * @param {Vec3} worldPos
      */
     setWorldPosition(node: Node, worldPos: Vec3) {
-        var parent = node.parent;
+        let parent = node.parent;
         if (parent) {
             let transform = node.parent.getComponent(UITransform);
             node.position = transform.convertToNodeSpaceAR(worldPos);
@@ -124,7 +124,7 @@ class TransformUtils {
      * @param {Vec3} worldScale 
      */
     setWorldScale(node: Node, worldScale: Vec3) {
-        var s = this.getWorldToNodeScale(node.parent, worldScale.x, worldScale.y);
+        let s = this.getWorldToNodeScale(node.parent, worldScale.x, worldScale.y);
         node.scale = s;
         //
         return node.scale;
@@ -163,10 +163,10 @@ class TransformUtils {
     getNodeToWorldScale(node: Node, scaleXInNode: number, scaleYInNode: number, scaleZInNode: number = 1) {
         // if (node === null)
         //     return new Vec2(scaleXInNode, scaleYInNode);
-        var scaleX = scaleXInNode;//node.scaleX;
-        var scaleY = scaleYInNode;//node.scaleY;
+        let scaleX = scaleXInNode;//node.scaleX;
+        let scaleY = scaleYInNode;//node.scaleY;
         let scaleZ = scaleZInNode;
-        var parent = node;//.parent;
+        let parent = node;//.parent;
         while (parent) {// && parent.parent) {
             scaleX *= parent.scale.x;
             scaleY *= parent.scale.y;
@@ -185,8 +185,8 @@ class TransformUtils {
     getWorldToNodeScale(node: Node, scaleXInWorld: number, scaleYInWorld: number, scaleZInWorld: number = 1) {
         // if (node === null)
         //     return new Vec2(scaleXInWorld, scaleYInWorld);
-        // var scale = this.getNodeToWorldScale(node.parent, node.scaleX, node.scaleY);
-        var scale = this.getWorldScale(node);
+        // let scale = this.getNodeToWorldScale(node.parent, node.scaleX, node.scaleY);
+        let scale = this.getWorldScale(node);
         return new Vec3(scaleXInWorld / scale.x, scaleYInWorld / scale.y, scaleZInWorld / scale.z);
     }
     /**
@@ -197,8 +197,8 @@ class TransformUtils {
     getNodeToWorldAngle(node: Node, rotationInNode: number) {
         // if (node === null)
         //     return rotationInNode;
-        var rot = rotationInNode;//node.rotationX;
-        var parent = node;//.parent;
+        let rot = rotationInNode;//node.rotationX;
+        let parent = node;//.parent;
         while (parent) {//} && parent.parent) {
             if (isNaN(parent.angle)) {
                 parent = parent.parent;
@@ -217,9 +217,9 @@ class TransformUtils {
     getWorldToNodeAngle(node: Node, rotationInWorld: number) {
         // if (node === null)
         //     return rotationInWorld;
-        var rotation = rotationInWorld;
+        let rotation = rotationInWorld;
         // rotation -= node.rotation;
-        var parent = node;//.parent;
+        let parent = node;//.parent;
         while (parent) {//} && parent.parent) {
             if (isNaN(parent.angle)) {
                 parent = parent.parent;

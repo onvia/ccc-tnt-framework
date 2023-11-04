@@ -5,7 +5,7 @@
 
 #============ get the file name ===========  
 
-echo -e "i18n::拖拽想要压缩的文件和文件夹到此"  
+echo -e "i18n::拖拽想要处理的文件和文件夹到此"  
 
 read InputDir  
 

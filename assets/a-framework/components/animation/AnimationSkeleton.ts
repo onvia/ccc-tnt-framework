@@ -90,18 +90,18 @@ export default class AnimationSkeleton extends tnt.AnimationBase {
      * @param timescale 
      */
     playRepeat(name, count, listener?: PlayListener, timescale?: number) {
-        var oldAnim = this.getCurrentAnimation();
+        let oldAnim = this.getCurrentAnimation();
         console.log(`AnimationSkeleton-> playRepeat old animation [${oldAnim}]`);
 
         this.setTimeScale(timescale);
-        var trackEntry = this.skeleton.setAnimation(0, name, count == 1 ? false : true);
+        let trackEntry = this.skeleton.setAnimation(0, name, count == 1 ? false : true);
 
         this.animationName = name;
         let loopCount = 0;
 
         let _complete = (trackEntry: sp.spine.TrackEntry) => {
             loopCount++;
-            var animationName = trackEntry.animation ? trackEntry.animation.name : "";
+            let animationName = trackEntry.animation ? trackEntry.animation.name : "";
             if (count === loopCount) {
                 if (listener) {
                     listener(this, trackEntry);
@@ -253,7 +253,7 @@ export default class AnimationSkeleton extends tnt.AnimationBase {
                 // 局部换装
                 skeletonProto.updateRegion = function (attachment: any, tex2d: any) {
                     // @ts-ignore
-                    var jsbTex2d = new middleware.Texture2D();
+                    let jsbTex2d = new middleware.Texture2D();
                     jsbTex2d.setRealTextureIndex(spineSkeletonDataProto.recordTexture(tex2d));
                     jsbTex2d.setPixelsWide(tex2d.width);
                     jsbTex2d.setPixelsHigh(tex2d.height);
@@ -274,7 +274,7 @@ export default class AnimationSkeleton extends tnt.AnimationBase {
             // let spineSkeletonData = cc.internal.SpineSkeletonData.prototype;
 
             // // @ts-ignore
-            // var jsbTex2d = new middleware.Texture2D();
+            // let jsbTex2d = new middleware.Texture2D();
             // jsbTex2d.setRealTextureIndex(spineSkeletonData.recordTexture(texture));
             // jsbTex2d.setPixelsWide(texture.width);
             // jsbTex2d.setPixelsHigh(texture.height);
@@ -433,8 +433,8 @@ export default class AnimationSkeleton extends tnt.AnimationBase {
         js.mixin(copy, skeletonData);
         // @ts-ignore
         copy._uuid = spData._uuid + "_copy" + "_" + copy_uid;
-        var old = copy.name;
-        var newName = copy.name + '_copy'
+        let old = copy.name;
+        let newName = copy.name + '_copy'
         copy.name = newName;
         copy.atlasText = copy.atlasText.replace(old, newName)
         // @ts-ignore
@@ -443,7 +443,7 @@ export default class AnimationSkeleton extends tnt.AnimationBase {
         copy.init && copy.init()
 
 
-        // var copy = new sp.SkeletonData()//拷贝一份纹理，避免重复纹理缓存
+        // let copy = new sp.SkeletonData()//拷贝一份纹理，避免重复纹理缓存
         // js.mixin(copy,skeletonData);
         // skeletonData.skeletonJson && (copy.skeletonJson = JSON.parse(JSON.stringify(skeletonData.skeletonJson)));
 

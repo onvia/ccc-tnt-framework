@@ -94,9 +94,9 @@ export class Polyglot {
   //
   // This feature is used internally to support nested phrase objects.
   extend(morePhrases, prefix?) {
-    var phrase;
+    let phrase;
 
-    for (var key in morePhrases) {
+    for (let key in morePhrases) {
       if (morePhrases.hasOwnProperty(key)) {
         phrase = morePhrases[key];
         if (prefix) key = prefix + '.' + key;
@@ -130,12 +130,12 @@ export class Polyglot {
   // The unset method can take either a string (for the key), or an object hash with
   // the keys that you would like to unset.
   unset(morePhrases, prefix) {
-    var phrase;
+    let phrase;
 
     if (typeof morePhrases === 'string') {
       delete this.phrases[morePhrases];
     } else {
-      for (var key in morePhrases) {
+      for (let key in morePhrases) {
         if (morePhrases.hasOwnProperty(key)) {
           phrase = morePhrases[key];
           if (prefix) key = prefix + '.' + key;
@@ -195,7 +195,7 @@ export class Polyglot {
   //     => "I like to write in JavaScript."
   //
   t(key, options) {
-    var phrase, result;
+    let phrase, result;
     options = options == null ? {} : options;
     // allow number as a pluralization shortcut
     if (typeof options === 'number') {
@@ -235,10 +235,10 @@ export class Polyglot {
 
 // #### Pluralization methods
 // The string that separates the different phrase possibilities.
-var delimeter = '||||';
+let delimeter = '||||';
 
 // Mapping from pluralization group plural logic.
-var pluralTypes = {
+let pluralTypes = {
   chinese: function (n) { return 0; },
   german: function (n) { return n !== 1 ? 1 : 0; },
   french: function (n) { return n > 1 ? 1 : 0; },
@@ -249,7 +249,7 @@ var pluralTypes = {
 };
 
 // Mapping from pluralization group to individual locales.
-var pluralTypeToLanguages = {
+let pluralTypeToLanguages = {
   chinese: ['fa', 'id', 'ja', 'ko', 'lo', 'ms', 'th', 'tr', 'zh'],
   german: ['da', 'de', 'en', 'es', 'fi', 'el', 'he', 'hu', 'it', 'nl', 'no', 'pt', 'sv'],
   french: ['fr', 'tl', 'pt-br'],
@@ -260,7 +260,7 @@ var pluralTypeToLanguages = {
 };
 
 function langToTypeMap(mapping) {
-  var type, langs, l, ret = {};
+  let type, langs, l, ret = {};
   for (type in mapping) {
     if (mapping.hasOwnProperty(type)) {
       langs = mapping[type];
@@ -273,7 +273,7 @@ function langToTypeMap(mapping) {
 }
 
 // Trim a string.
-var trimRe = /^\s+|\s+$/g;
+let trimRe = /^\s+|\s+$/g;
 function trim(str) {
   return replace.call(str, trimRe, '');
 }
@@ -282,7 +282,7 @@ function trim(str) {
 // by `delimeter`, a `locale`, and a `count`, choose the correct
 // plural form, or none if `count` is `null`.
 function choosePluralForm(text, locale, count) {
-  var ret, texts, chosenText;
+  let ret, texts, chosenText;
   if (count != null && text) {
     texts = text.split(delimeter);
     chosenText = texts[pluralTypeIndex(locale, count)] || texts[0];
@@ -294,7 +294,7 @@ function choosePluralForm(text, locale, count) {
 }
 
 function pluralTypeName(locale) {
-  var langToPluralType = langToTypeMap(pluralTypeToLanguages);
+  let langToPluralType = langToTypeMap(pluralTypeToLanguages);
   return langToPluralType[locale] || langToPluralType["en"];
 }
 
@@ -306,15 +306,15 @@ function pluralTypeIndex(locale, count) {
 //
 // Does the dirty work. Creates a `RegExp` object for each
 // interpolation placeholder.
-var dollarRegex = /\$/g;
-var dollarBillsYall = '$$$$';
+let dollarRegex = /\$/g;
+let dollarBillsYall = '$$$$';
 function interpolate(phrase, options) {
-  for (var arg in options) {
+  for (let arg in options) {
     if (arg !== '_' && options.hasOwnProperty(arg)) {
       // Ensure replacement value is escaped to prevent special $-prefixed
       // regex replace tokens. the "$$$$" is needed because each "$" needs to
       // be escaped with "$" itself, and we need two in the resulting output.
-      var replacement = options[arg];
+      let replacement = options[arg];
       if (typeof replacement === 'string') {
         replacement = replace.call(options[arg], dollarRegex, dollarBillsYall);
       }
@@ -331,8 +331,8 @@ function interpolate(phrase, options) {
 //
 // Clone an object.
 function clone(source) {
-  var ret = {};
-  for (var prop in source) {
+  let ret = {};
+  for (let prop in source) {
     ret[prop] = source[prop];
   }
   return ret;
