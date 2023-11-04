@@ -170,9 +170,50 @@ class GComponent<Options = any> extends Component {
      * @memberof GComponent
      */
     protected bindNodes() {
-        let comp = this;
+        // let comp = this;
+        // // @ts-ignore
+        // let _nodes = comp.__$$50nodes__;
+        // if (_nodes) {
+        //     for (const key in _nodes) {
+        //         let param = _nodes[key];
+        //         let parent: Node = null;
+        //         if (param.parent) {
+        //             parent = this.find(param.parent)
+        //         }
+        //         let node = this.find(param.name, parent);
+        //         node && (comp[key] = node);
+        //     }
+        // }
+
+        // // @ts-ignore
+        // let _components = comp.__$$50components__;
+        // if (_components) {
+        //     for (const key in _components) {
+        //         let param = _components[key];
+        //         let parent: Node = null;
+        //         if (param.parent) {
+        //             parent = this.find(param.parent)
+        //         }
+        //         let _comp = this.findComponent(param.name, param.type, parent);
+        //         _comp && (comp[key] = _comp);
+        //     }
+        // }
+
+
+        // // @ts-ignore
+        // let _btnSounds = comp.__$$50btnSounds__;
+        // if (_btnSounds) {
+        //     for (const key in _btnSounds) {
+        //         let obj = _btnSounds[key];
+        //         let btn = comp[key] as Button;
+        //         btn.__$soundName = obj?.soundName;
+        //     }
+        // }
+
+
+        let comp = this.constructor;
         // @ts-ignore
-        let _nodes = comp.__$$50nodes__;
+        let _nodes = comp.__$$50bind__?.data;
         if (_nodes) {
             for (const key in _nodes) {
                 let param = _nodes[key];
@@ -180,32 +221,25 @@ class GComponent<Options = any> extends Component {
                 if (param.parent) {
                     parent = this.find(param.parent)
                 }
-                let node = this.find(param.name, parent);
-                node && (comp[key] = node);
-            }
-        }
+                if (param.type) {
+                    let _comp = this.findComponent(param.name, param.type, parent);
+                    this[key] = _comp;
+                } else {
 
-        // @ts-ignore
-        let _components = comp.__$$50components__;
-        if (_components) {
-            for (const key in _components) {
-                let param = _components[key];
-                let parent: Node = null;
-                if (param.parent) {
-                    parent = this.find(param.parent)
+                    let node = this.find(param.name, parent);
+                    this[key] = node;
                 }
-                let _comp = this.findComponent(param.name, param.type, parent);
-                _comp && (comp[key] = _comp);
             }
         }
 
+        
 
         // @ts-ignore
-        let _btnSounds = comp.__$$50btnSounds__;
+        let _btnSounds = comp.__$$50btnSounds__?.data;
         if (_btnSounds) {
             for (const key in _btnSounds) {
                 let obj = _btnSounds[key];
-                let btn = comp[key] as Button;
+                let btn = this[key] as Button;
                 btn.__$soundName = obj?.soundName;
             }
         }

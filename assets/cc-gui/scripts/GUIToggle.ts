@@ -16,7 +16,9 @@ declare global {
 export class GUIToggle extends GUIBase<GUIToggleOptions> {
 
 
-
+    protected __preload(): void {
+        super.__preload();
+    }
     protected onStart(): void {
         super.onStart();
         this.node.toggle.isChecked = !!this.options.defaultChecked;

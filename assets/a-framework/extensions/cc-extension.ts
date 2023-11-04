@@ -42,7 +42,7 @@ if (!EDITOR) {
             Object.defineProperty(Node.prototype, key, {
                 get: function () {
                     let tmp = this.__nodeCaches__.componentMap.get(key);
-                    if (!tmp) {
+                    if (!tmp || !tmp.isValid) {
                         tmp = this.getComponent(componentMap[key]);
                         this.__nodeCaches__.componentMap.set(key, tmp);
                     }
