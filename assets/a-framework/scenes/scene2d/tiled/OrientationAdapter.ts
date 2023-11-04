@@ -1,5 +1,5 @@
 
-import { _decorator, TiledMap, UITransform, TiledLayer, Vec2, Size, Vec3 } from 'cc';
+import { _decorator, Node, UITransform, TiledLayer, Vec2, Size, Vec3, Rect, TiledMap } from 'cc';
 import { IOrientation } from './_InterfaceTiledMap';
 const { ccclass, property } = _decorator;
 
@@ -18,13 +18,25 @@ declare global {
 }
 
 
+interface MapInfo {
+    orientation: number,
+    tileSize: Size,
+    mapSize: Size,
+
+    staggerAxis: number,
+    staggerIndex: number,
+    hexSideLength: number,
+}
 let tmp1_v3 = new Vec3();
 @ccclass('OrientationAdapter')
 abstract class OrientationAdapter implements IOrientation {
-    public tiledMap: TiledMap;
+
     public tileSize: Readonly<Size>;
     public mapSize: Readonly<Size>;
     public mapSizeInPixel: Readonly<Size>;
+
+    public mapInfo: tnt.tmx.MapInfo = null;
+    public mapRoot: Node = null;
 
     private _isCheckPassed = false;
     init(): void {
@@ -55,7 +67,7 @@ abstract class OrientationAdapter implements IOrientation {
             x = xOrPos as number;
         }
 
-        let uiTransform = this.tiledMap.node.getComponent(UITransform);
+        let uiTransform = this.mapRoot.getComponent(UITransform);
         tmp1_v3.set(x, y);
         let localPos = uiTransform.convertToNodeSpaceAR(tmp1_v3, tmp1_v3);
 
@@ -75,7 +87,7 @@ abstract class OrientationAdapter implements IOrientation {
             x = xOrPos as number;
         }
         let position = this.tileToPixelCoords(x, y);
-        let uiTransform = this.tiledMap.node.getComponent(UITransform);
+        let uiTransform = this.mapRoot.getComponent(UITransform);
         tmp1_v3.set(position.x, position.y);
         let worldPos = uiTransform.convertToWorldSpaceAR(tmp1_v3, tmp1_v3);
         return new Vec2(worldPos.x, worldPos.y);
@@ -84,7 +96,7 @@ abstract class OrientationAdapter implements IOrientation {
 
     public hitTest(worldPos: Vec2): boolean {
 
-        let uiTransform = this.tiledMap.node.getComponent(UITransform);
+        let uiTransform = this.mapRoot.getComponent(UITransform);
         tmp1_v3.set(worldPos.x, worldPos.y);
         let localPos = uiTransform.convertToNodeSpaceAR(tmp1_v3, tmp1_v3);
 
@@ -97,15 +109,26 @@ abstract class OrientationAdapter implements IOrientation {
         return false;
     }
 
-    public isSafe(tiledCoords: Vec2): boolean {
-        return tiledCoords.x >= 0 && tiledCoords.y >= 0 && tiledCoords.x < this.mapSize.width && tiledCoords.y < this.mapSize.height;
+    isSafe(position: Vec2): boolean;
+    isSafe(x: number, y: number): boolean;
+    isSafe(xOrPos: number | Vec2, y?: number): boolean;
+    isSafe(xOrPos: number | Vec2, y?: number): boolean {
+        let x = 0;
+        if (typeof y === 'undefined') {
+            let pos = (xOrPos as Vec2);
+            x = pos.x;
+            y = pos.y;
+        } else {
+            x = xOrPos as number;
+        }
+        return x >= 0 && y >= 0 && x < this.mapSize.width && y < this.mapSize.height;
     }
 
 
     //遍历图层的图块
-    public forEachTiles(layer: TiledLayer | string, callback: (gid: number, x: number, y: number) => void) {
+    public forEachTiles(layer: TiledLayer | string, callback: (gid: number, x: number, y: number) => void, tiledMap: TiledMap = null) {
         if (typeof layer == "string") {
-            layer = this.tiledMap.getLayer(layer);
+            layer = tiledMap.getLayer(layer);
         }
         for (let i = 0; i < this.mapSize.width; i++) {
             for (let j = 0; j < this.mapSize.height; j++) {
@@ -119,12 +142,14 @@ abstract class OrientationAdapter implements IOrientation {
         if (this._isCheckPassed) {
             return;
         }
-        let uiTransform = this.tiledMap.node.getComponent(UITransform);
+        let uiTransform = this.mapRoot.getComponent(UITransform);
         if (uiTransform.anchorX != 0 && uiTransform.anchorY != 0) {
             throw new Error("TiledMap 地图暂时只支持 锚点为 0,0 的坐标转换，请设置 TiledMap 节点的锚点为 0,0");
         }
         this._isCheckPassed = true;
     }
+
+    public abstract boundingRect(x: number, y: number, width: number, height: number): Rect;
 }
 
 tnt.tmx.OrientationAdapter = OrientationAdapter;

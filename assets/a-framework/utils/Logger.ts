@@ -34,33 +34,33 @@ class Logger {
 
     log(msg: any) {
         if (this.level >= LoggerLevel.INFO) {
-            var backLog = console.log || log;
+            let backLog = console.log || log;
             backLog.call(null, "%s%s:%o", this.getDateString(), this.stack(5), msg);
         }
     }
 
     warn(msg: any) {
         if (this.level >= LoggerLevel.WARN) {
-            var backLog = console.warn || warn;
+            let backLog = console.warn || warn;
             backLog.call(null, "%s%s:%o", this.getDateString(), this.stack(5), msg);
         }
     }
 
     error(msg: any) {
         if (this.level >= LoggerLevel.ERROR) {
-            var backLog = console.error || error;
+            let backLog = console.error || error;
             backLog.call(null, "%s%s:%o", this.getDateString(), this.stack(5), msg);
         }
     }
 
 
     private stack(index: number): string {
-        var e = new Error();
-        var lines = e.stack!.split("\n");
-        var result: Array<any> = [];
+        let e = new Error();
+        let lines = e.stack!.split("\n");
+        let result: Array<any> = [];
         lines.forEach((line) => {
             line = line.substring(7);
-            var lineBreak = line.split(" ");
+            let lineBreak = line.split(" ");
             if (lineBreak.length < 2) {
                 result.push(lineBreak[0]);
             }
@@ -69,22 +69,22 @@ class Logger {
             }
         });
 
-        var list: string[] = [];
-        var splitList: Array<string> = [];
+        let list: string[] = [];
+        let splitList: Array<string> = [];
         if (index < result.length - 1) {
-            var value: string;
-            for (var a in result[index]) {
-                var splitList = a.split(".");
+            let value: string;
+            for (let a in result[index]) {
+                let splitList = a.split(".");
 
                 if (splitList.length == 2) {
                     list = splitList.concat();
                 }
                 else {
                     value = result[index][a];
-                    var start = value!.lastIndexOf("/");
-                    var end = value!.lastIndexOf(".");
+                    let start = value!.lastIndexOf("/");
+                    let end = value!.lastIndexOf(".");
                     if (start > -1 && end > -1) {
-                        var r = value!.substring(start + 1, end);
+                        let r = value!.substring(start + 1, end);
                         list.push(r);
                     }
                     else {

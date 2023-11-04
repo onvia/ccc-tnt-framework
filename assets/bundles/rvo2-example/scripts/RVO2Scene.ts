@@ -21,7 +21,7 @@ export class RVO2Scene extends tnt.SceneBase<RVO2SceneOptions> implements ITouch
 
     simulator: Simulator = null;
 
-    rectTemplete: Node = null;
+    rectTemplate: Node = null;
 
     gameRoot: Node = null;
 
@@ -61,7 +61,7 @@ export class RVO2Scene extends tnt.SceneBase<RVO2SceneOptions> implements ITouch
 
         this.gameCamera = this.findComponent("Camera", Camera, null, this.scene);
         this.gameRoot = this.find("GameRoot", null, this.scene);
-        this.rectTemplete = this.find("rect", null, this.scene);
+        this.rectTemplate = this.find("rect", null, this.scene);
 
         console.log(`RVO2Scene-> `);
 
@@ -69,12 +69,12 @@ export class RVO2Scene extends tnt.SceneBase<RVO2SceneOptions> implements ITouch
     }
 
     initGameObject() {
-        let parent = this.rectTemplete.parent;
-        this.rectTemplete.removeFromParent();
+        let parent = this.rectTemplate.parent;
+        this.rectTemplate.removeFromParent();
         for (let i = 0; i < 5; i++) {
             let x = math.randomRangeInt(-400, 400);
             let y = math.randomRangeInt(-300, 300);
-            let rect = instantiate(this.rectTemplete)
+            let rect = instantiate(this.rectTemplate)
             rect.setPosition(x, y, 0);
             rect.parent = parent;
 

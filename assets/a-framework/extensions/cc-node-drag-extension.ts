@@ -50,7 +50,7 @@ if (!EDITOR) {
             },
             onTouchMove_0: function (event: EventTouch) {
                 if (!this._dragging && this._draggable && this._dragTesting) {
-                    var sensitivity = 10;
+                    let sensitivity = 10;
                     let pos = event.getUILocation();
                     if (Math.abs(this._dragStartPoint.x - pos.x) < sensitivity
                         && Math.abs(this._dragStartPoint.y - pos.y) < sensitivity) {

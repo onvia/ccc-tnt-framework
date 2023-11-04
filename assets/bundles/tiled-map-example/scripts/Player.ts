@@ -47,7 +47,7 @@ export class Player extends tnt.Actor2D {
         let dy = target.pixelY - this.position.y;
         this._dir.set(dx, dy);
         this._dir = this._dir.normalize();
-        var speed = this.moveSpeed * dt;
+        let speed = this.moveSpeed * dt;
 
         if (dx * dx + dy * dy > speed * speed) {
             this.position.x += this._dir.x * speed;

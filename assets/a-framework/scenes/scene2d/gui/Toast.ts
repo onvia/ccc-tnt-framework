@@ -83,8 +83,8 @@ class Toast {
         }
         // let canvas = scene.getComponentInChildren(Canvas);
         let trans = canvas.getComponent(UITransform);
-        var width = trans.width;
-        var height = trans.height;
+        let width = trans.width;
+        let height = trans.height;
 
         let toastTrans = toast.getComponent(UITransform);
         let text_label = toast.getChildByName("text").getComponent(Label);
@@ -176,7 +176,7 @@ class Toast {
         ).by(0.3, { position: v3(0, 100, 0) })
             .call(() => {
 
-                var index = this.toastArray.indexOf(toast);
+                let index = this.toastArray.indexOf(toast);
                 if (index > -1) {
                     this.toastArray.splice(index, 1);
                 }

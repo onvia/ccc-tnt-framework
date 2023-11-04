@@ -1,5 +1,5 @@
 
-import { _decorator, TiledMap, Vec2, Size } from 'cc';
+import { _decorator, TiledMap, Vec2, Size, Rect } from 'cc';
 const { ccclass } = _decorator;
 
 /**
@@ -37,19 +37,19 @@ class HexParams {
     columnWidth: number = 0;
     rowHeight: number = 0;
 
-    initWithTiledMap(tiledMap: TiledMap) {
-        let tileSize = tiledMap.getTileSize();
+    initWithTiledMap(mapInfo: tnt.tmx.MapInfo) {
+        let tileSize = mapInfo.tileSize;
         this.tileWidth = tileSize.width & ~1;
         this.tileHeight = tileSize.height & ~1;
-        this.staggerX = tiledMap._mapInfo.getStaggerAxis() === 0;
-        this.staggerEven = tiledMap._mapInfo.getStaggerIndex() === 1;
+        this.staggerX = mapInfo.staggerAxis === 0;
+        this.staggerEven = mapInfo.staggerIndex === 1;
 
-        if (tiledMap._mapInfo.orientation === 1) {
+        if (mapInfo.orientation === 1) {
             if (this.staggerX) {
-                this.sideLengthX = tiledMap._mapInfo.getHexSideLength();
+                this.sideLengthX = mapInfo.hexSideLength;
             }
             else {
-                this.sideLengthY = tiledMap._mapInfo.getHexSideLength();
+                this.sideLengthY = mapInfo.hexSideLength;
             }
         }
 
@@ -74,7 +74,7 @@ const offsetsStaggerY = [new Vec2(0, 0), new Vec2(-1, 1), new Vec2(0, 1), new Ve
 
 @ccclass('Hexagonal')
 class Hexagonal extends tnt.tmx.OrientationAdapter {
-    tiledMap: TiledMap = null;
+
     tileSize: Readonly<Size> = null;
     mapSize: Readonly<Size> = null;
     mapSizeInPixel: Readonly<Size> = null;
@@ -83,7 +83,7 @@ class Hexagonal extends tnt.tmx.OrientationAdapter {
 
     init() {
         this.hexParams = new HexParams();
-        this.hexParams.initWithTiledMap(this.tiledMap);
+        this.hexParams.initWithTiledMap(this.mapInfo);
     }
 
     pixelToTileCoords(position: Vec2): Vec2;
@@ -225,6 +225,54 @@ class Hexagonal extends tnt.tmx.OrientationAdapter {
 
         return new Vec2(pixelX, pixelY);
     }
+    public boundingRect(x: number, y: number, width: number, height: number): Rect {
+        let p = this.hexParams;
+        let topLeft = this.tileToPixelCoords(x, y);
+        let _width: number;
+        let _height: number;
+
+        if (p.staggerX) {
+            _width = width * p.columnWidth + p.sideOffsetX;
+            _height = height * (p.tileHeight + p.sideLengthY);
+
+            if (width > 1) {
+                height += p.rowHeight;
+                if (p.doStaggerX(x)) {
+                    topLeft.y -= p.rowHeight;
+                }
+            }
+        } else {
+            _width = width * (p.tileWidth + p.sideLengthX);
+            _height = height * p.rowHeight + p.sideOffsetY;
+
+            if (height > 1) {
+                width += p.columnWidth;
+                if (p.doStaggerY(y)) {
+                    topLeft.x -= p.columnWidth;
+                }
+            }
+        }
+        return new Rect(topLeft.x, topLeft.y, _width, _height);
+    }
+    tileToScreenPolygon(x: number, y: number) {
+        let p = this.hexParams;
+        let topRight = this.tileToPixelCoords(x, y);
+        let polygon: Vec2[] = [];
+        for (let i = 0; i < 8; i++) {
+            polygon[i] = new Vec2();
+
+        }
+        polygon[0] = Vec2.add(polygon[0], topRight, new Vec2(0, p.tileHeight - p.sideOffsetY));
+        polygon[1] = Vec2.add(polygon[1], topRight, new Vec2(0, p.sideOffsetY));
+        polygon[2] = Vec2.add(polygon[2], topRight, new Vec2(p.sideOffsetX, 0));
+        polygon[3] = Vec2.add(polygon[3], topRight, new Vec2(p.tileWidth - p.sideOffsetX, 0));
+        polygon[4] = Vec2.add(polygon[4], topRight, new Vec2(p.tileWidth, p.sideOffsetY));
+        polygon[5] = Vec2.add(polygon[5], topRight, new Vec2(p.tileWidth, p.tileHeight - p.sideOffsetY));
+        polygon[6] = Vec2.add(polygon[6], topRight, new Vec2(p.tileWidth - p.sideOffsetX, p.tileHeight));
+        polygon[7] = Vec2.add(polygon[7], topRight, new Vec2(p.sideOffsetX, p.tileHeight));
+
+        return polygon;
+    }
 }
-tnt.tmx.Hexagonal = Hexagonal;
+tnt.tmx.Hexagonal = Hexagonal; 
 export { };

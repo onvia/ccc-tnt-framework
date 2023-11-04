@@ -767,7 +767,7 @@ export class UIMgr extends tnt.EventMgr implements IPluginMgr {
             }
             removedWindow = window;
 
-            var index = this._stack.indexOf(window);
+            let index = this._stack.indexOf(window);
             if (index === this._stack.length - 1) {
                 this._stack.splice(index, 1);
                 // activeTop();
@@ -814,7 +814,7 @@ export class UIMgr extends tnt.EventMgr implements IPluginMgr {
     }
 
     private _removeElement(array: Array<any>, element: any) {
-        var index = array.indexOf(element);
+        let index = array.indexOf(element);
         if (index > -1) {
             array.splice(index, 1);
             return true;

@@ -27,9 +27,9 @@ class GTimeUtils {
         }
         let startDate = new Date(time1).toLocaleDateString()
         let endDate = new Date(time2).toLocaleDateString()
-        var startTime = new Date(startDate).getTime();
-        var endTime = new Date(endDate).getTime();
-        var dates = Math.abs((startTime - endTime)) / (1000 * 60 * 60 * 24);
+        let startTime = new Date(startDate).getTime();
+        let endTime = new Date(endDate).getTime();
+        let dates = Math.abs((startTime - endTime)) / (1000 * 60 * 60 * 24);
         return dates;
     }
 
@@ -38,7 +38,7 @@ class GTimeUtils {
         if (time2 == undefined || time2 == null) {
             time2 = +new Date();
         }
-        var dates = Math.abs((time2 - time1)) / (1000);
+        let dates = Math.abs((time2 - time1)) / (1000);
         return dates;
     }
 

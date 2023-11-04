@@ -1,162 +1,314 @@
+import { _decorator, Node, Camera, TiledMap, TiledMapAsset, Vec3, UITransform, Color, color, Vec2, Toggle, Size, TiledLayer, director, Director, __private, Rect } from "cc";
 
-import { _decorator, Component, Node, TiledMap, Camera, TiledLayer, EventTouch, math, UITransform, Vec2, EventMouse, sys, Toggle } from 'cc';
+const { ccclass } = _decorator;
+const { node, sprite, button } = tnt._decorator;
 
-const { ccclass, property } = _decorator;
+
+declare global {
+    interface TiledMapOrientationDemoOptions {
+
+    }
+}
+
+const FLIPPED_MASK = (~(0x80000000 | 0x40000000 | 0x20000000 | 0x10000000)) >>> 0;
+// @ts-ignore
+TiledLayer.prototype._updateTileForGID = function (gidAndFlags, x: number, y: number): void {
+    const idx = 0 | (x + y * this._layerSize!.width);
+    if (idx >= this.tiles.length) {
+        return;
+    }
+
+    const oldGIDAndFlags = this.tiles[idx];
+    if (gidAndFlags === oldGIDAndFlags) {
+        return;
+    }
+
+    const gid = (((gidAndFlags as unknown as number) & FLIPPED_MASK) >>> 0);
+    const grid = this.texGrids!.get(gid as unknown);
+
+    if (grid) {
+        this.tiles[idx] = gidAndFlags;
+        this._updateVertex(x, y);
+    } else {
+        this.tiles[idx] = 0 as unknown;
+    }
+    this._cullingDirty = true;
+    // 下一帧更新
+    director.once(Director.EVENT_BEFORE_COMMIT, () => {
+        this.markForUpdateRenderData();
+    });
+}
+function setAnchorPointZero(node: Node) {
+    let uiTransform = node.getComponent(UITransform);
+    uiTransform.setAnchorPoint(0, 0);
+    node.position.set(0, 0, 0);
+}
+
+const tmp1_v2 = new Vec2();
+const tmp2_v2 = new Vec2();
+const tmp1_v3 = new Vec3();
+const tmp2_v3 = new Vec3();
+const HALF_v2 = new Vec2(0.5, 0.5);
+
+enum MapType {
+    Orthogonal,
+    Isometric,
+    HexagonXOdd, // 六角 X 奇数
+    HexagonXEven, // 六角 X 偶数
+    HexagonYOdd, // 六角 Y 奇数
+    HexagonYEven, // 六角 Y 偶数
+    StaggerXOddByHex,
+    StaggerXEvenByHex,
+    StaggerYOddByHex,
+    StaggerYEvenByHex,
+
+}
 
 @ccclass('TiledMapOrientationDemo')
-export class TiledMapOrientationDemo extends tnt.SceneBase implements ITouch, IMouse, IMVVMObject {
+export class TiledMapOrientationDemo extends tnt.SceneBase<TiledMapOrientationDemoOptions> {
 
-    tiledMap: TiledMap = null;
-    gameCamera: Camera = null;
-    layer: TiledLayer = null;
+    debugGraphics: tnt.game.DebugGraphics = null;
 
     tiledMapProxy: tnt.tmx.TiledMapProxy = null;
+    tiledMapGesture: tnt.tmx.TiledMapGesture = null;
 
+    gameCamera: Camera = null;
+    tiledMap: TiledMap = null;
+    cameraController: tnt.CameraController = null;
 
-    data = {
-        tiledCoord: "0,0",
-        worldCoord: "0,0",
-        screenCoord: "0,0",
+    worldCoord = "0,0";
+    tiledCoord = "0,0";
+    screenCoord = "0,0";
+    mapType: MapType = null;
+
+    onEnterTransitionStart(sceneName?: string): void {
+        this.initGUI();
+
+        this.gameCamera = tnt.componentUtils.findComponent("Camera", Camera, this.scene);
+
+        this.tiledMap = tnt.componentUtils.findComponent("map", TiledMap, this.scene);
+
+        this.updateMap(MapType.Orthogonal, true);
+    }
+    onExitTransitionStart(sceneName?: string): void {
+        // 关闭手势
+        this.tiledMapGesture.disable();
+        tnt.gui.destroy();
     }
 
-    onEnter(): void {
-        tnt.vm.observe(this);
-        this.bindView();
+    onInit() {
+        this.tiledMap._layers.forEach((layer) => {
+            layer.node.position = new Vec3();
+        });
+        // 使用了摄像机需要把自动裁剪关闭
+        this.tiledMap.enableCulling = false;
+        this.tiledMapProxy = tnt.tmx.TiledMapProxy.create(this.tiledMap.node, {
+            orientation: this.tiledMap._mapInfo.getOrientation(),
+            tileSize: this.tiledMap.getTileSize(),
+            mapSize: this.tiledMap.getMapSize(),
+            staggerAxis: this.tiledMap._mapInfo.getStaggerAxis(),
+            staggerIndex: this.tiledMap._mapInfo.getStaggerIndex(),
+            hexSideLength: this.tiledMap._mapInfo.getHexSideLength(),
+        });
+        this.cameraController = tnt.CameraController.create(this.gameCamera, this.tiledMapProxy.mapSizeInPixel);
+
+        this.tiledMapGesture = tnt.tmx.TiledMapGesture.create(this.gameCamera, {
+            minZoomRatio: 0.5,
+            getCameraTargetZoomRatio: () => {
+                return this.cameraController.zoomRatio;
+            },
+
+            getCameraCurrentZoomRatio: () => {
+                return this.cameraController.visualZoomRatio;
+            },
+
+            getCameraCurrentPosition: () => {
+                return this.cameraController.visualPosition;
+            },
+
+            updateCameraPosition: (position: Vec3) => {
+                this.cameraController.forcePosition(position);
+            },
+
+            updateCameraZoomRatio: (zoomRatio: number) => {
+                this.cameraController.forceZoomRatio(zoomRatio);
+            },
+            onClick: (worldPosition: Vec2) => this.onClickTile(worldPosition),
+        });
 
 
-        this.registerToggleGroupEvent("ToggleGroup", { onChecked: this.onChecked, onUnChecked: this.onUnChecked });
-        this.toggleCheck("ToggleGroup", "ToggleHexagonalX");
-    }
-
-    bindView() {
-        tnt.vm.label(this, this.getNodeByName("tiledCoord"), "*.tiledCoord");
-        tnt.vm.label(this, this.getNodeByName("worldCoord"), "*.worldCoord");
-        tnt.vm.label(this, this.getNodeByName("screenCoord"), "*.screenCoord");
-
-    }
-
-    onChecked(toggle: Toggle, name: string) {
-
-        let tileMapName = "";
-        switch (name) {
-            case "ToggleHexagonalX":
-                tileMapName = "map_hexagonal_x";
-                break;
-            case "ToggleHexagonalY":
-                tileMapName = "map_hexagonal_y";
-                break;
-            case "ToggleIsometric":
-                tileMapName = "map_isometric";
-                break;
-            case "ToggleOrthogonal":
-                tileMapName = "map_orthogonal";
-                break;
-            case "ToggleStaggered":
-                tileMapName = "map_hexagonal_simulation_staggered";
-                break;
-            default:
-                break;
+        if (this.mapType == MapType.HexagonXOdd || this.mapType == MapType.StaggerXOddByHex) {
+            tnt.toast.show("修正图层位置，上移半个 Tile 高度", 1.5, 999, true);
         }
-        let GameCanvas = this.find("GameCanvas", null, this.scene);
-        let GameRoot = this.find("GameRoot", GameCanvas, this.scene);
-        let tiledMap = this.findComponent(tileMapName, TiledMap, GameRoot, this.scene);
-        this.gameCamera = this.findComponent("Camera", Camera, GameCanvas, this.scene);
-
-        // 隐藏之前的
-        if (this.tiledMap) {
-            this.tiledMap.node.active = false;
+        if (this.mapType == MapType.HexagonYEven || this.mapType == MapType.StaggerYEvenByHex) {
+            tnt.toast.show("修正图层位置，右移半个 Tile 宽度", 1.5, 999, true);
         }
 
-        this.tiledMap = tiledMap;
-        this.tiledMap.node.active = true;
 
-        this.layer = this.tiledMap.getLayer("layer");
-        this.tiledMapProxy = new tnt.tmx.TiledMapProxy(this.tiledMap);
 
-        let mapBg = this.find("map_bg", null, this.scene);
-        mapBg.uiTransform.setContentSize(this.tiledMap.node.uiTransform.contentSize);
-        mapBg.position = this.tiledMap.node.position;
+        setAnchorPointZero(this.tiledMap.node);
+        // 地图锚点 设置为 [0,0]
+        this.tiledMap._layers.forEach((layer) => {
+            setAnchorPointZero(layer.node);
+            if (this.mapType == MapType.HexagonXOdd || this.mapType == MapType.StaggerXOddByHex) {
+                layer.node.y = this.tiledMapProxy.tileSize.height / 2;
+            }
+            if (this.mapType == MapType.HexagonYEven || this.mapType == MapType.StaggerYEvenByHex) {
+                layer.node.x = this.tiledMapProxy.tileSize.width / 2;
+            }
+        });
+
+
+        // 启用手势
+        this.tiledMapGesture.enable(this.node, true);
+
+        this.initDebugGraphics();
+
+        this.debugGraphics.clear();
+        this.debugGraphics.rect(0, 0, this.tiledMapProxy.mapSizeInPixel.width, this.tiledMapProxy.mapSizeInPixel.height);
+        console.log(`TiledMapOrientationDemo->${MapType[this.mapType]} cocos-creator mapSizeInPixel `, this.tiledMapProxy.mapSizeInPixel.toString());
+
     }
+    async initGUI() {
+        await new Promise<void>((resolve, reject) => {
+            tnt.resourcesMgr.loadBundle("cc-gui", () => {
+                resolve();
+            });
+        });
 
-    onUnChecked(toggle: Toggle, name: string) {
+        let guiWindow = await tnt.gui.create("Debug", new Size(240, 640));
 
-    }
+        guiWindow.left()
+            .addItem("Mouse wheel/Two finger scaling")
+            .addItem("TileXY", () => {
+                return this.tiledCoord;
+            })
+            .addItem("WorldXY", () => {
+                return this.worldCoord;
+            })
+            .addItem("ScreenXY", () => {
+                return this.screenCoord;
+            })
+            .addSlider("Zoom", {
+                defaultValue: 1, minValue: 0.5, maxValue: 3,
+                callback: (progress, value) => {
+                    this.cameraController.forceZoomRatio(value);
+                }
+            })
 
-    onExit(): void {
-        tnt.vm.violate(this);
 
-    }
+        let mapGroup = guiWindow.addGroup("Map");
+        // MapType.Orthogonal
 
-    onEnterTransitionFinished(): void {
-        if (sys.platform == sys.Platform.DESKTOP_BROWSER) {
-            tnt.mouse.on(this);
-        } else {
-            tnt.touch.on(this);
+        for (const key in MapType) {
+            // 正则判断 key  是否是数字
+
+            if (/^\d+$/.test(key)) {
+                if (Object.prototype.hasOwnProperty.call(MapType, key)) {
+                    const element = MapType[key];
+                    mapGroup.addToggle(element, (isChecked) => {
+                        this.updateMap(parseInt(key), isChecked);
+                    }, key === MapType[MapType.Orthogonal]);
+                }
+            }
         }
     }
 
-    onExitTransitionStart(): void {
-        tnt.touch.off(this);
-        tnt.mouse.off(this);
-    }
 
-    onTouchBegan(event: EventTouch) {
-        if (!this.tiledMapProxy) {
+    updateMap(mapType: MapType, isChecked: boolean) {
+        if (!isChecked) {
             return;
         }
+        if (this.mapType == mapType) {
+            return;
+        }
+        this.mapType = mapType;
+        let mapNameMap = {
+            [MapType.Orthogonal]: "map_orthogonal",
+            [MapType.Isometric]: "map_isometric",
+            [MapType.HexagonXOdd]: "map_hexagon_x_odd", // 六角 X 奇数
+            [MapType.HexagonXEven]: "map_hexagon_x_even", // 六角 X 偶数
+            [MapType.HexagonYOdd]: "map_hexagon_y_odd", // 六角 Y 奇数
+            [MapType.HexagonYEven]: "map_hexagon_y_even", // 六角 Y 偶数
+            [MapType.StaggerXOddByHex]: "map_hexagon2stagger_x_odd",
+            [MapType.StaggerXEvenByHex]: "map_hexagon2stagger_x_even",
+            [MapType.StaggerYOddByHex]: "map_hexagon2stagger_y_odd",
+            [MapType.StaggerYEvenByHex]: "map_hexagon2stagger_y_even",
+        }
+        let mapName = mapNameMap[mapType];
+        if (!mapName) {
+            return;
+        }
+        this.loader.load(`tiled-map-example#map/${mapName}`, TiledMapAsset, (err, asset) => {
+            if (err) {
+                console.log(`TiledMapOrientationDemo-> `, err);
+                return;
+            }
+            this.tiledMap.tmxAsset = asset;
+            this.onInit();
+        });
     }
-    onTouchMoved(event: EventTouch) {
-        this.onInputMoveEvent(event);
-    }
-    onTouchEnded(event: EventTouch) {
+
+    async onClickTile(worldPosition: Vec2) {
+        let tileCoords = this.tiledMapProxy.worldToTileCoords(worldPosition.x, worldPosition.y);
+
+        console.log(`TiledMapOrientationDemo->点击 `, JSON.stringify(tileCoords));
 
     }
-    onTouchCancel(event: EventTouch) {
-
-    }
-
-    onMouseDown(event: EventMouse) {
-    }
-    onMouseUp(event: EventMouse) {
-
-    }
-    onMouseMove?(event: EventMouse) {
-        this.onInputMoveEvent(event);
-    }
-
-    onInputMoveEvent(event: EventMouse | EventTouch) {
-
-        let location = event.getLocation();
-
-        let worldPosition = this.gameCamera.screenToWorld(location.copyAsVec3());
-
-        let posInNode = this.screenToNode(location.copyAsVec3(), this.tiledMap.node);
 
 
-        let tilePos = this.tiledMapProxy.pixelToTileCoords(posInNode.copyAsVec2());
+    onInputMoveEvent(location: Vec2) {
+        tmp1_v3.set(location.x, location.y);
+        tmp2_v3.set(location.x, location.y);
+        let worldPosition = this.gameCamera.screenToWorld(tmp1_v3, tmp1_v3);
+
+        let posInNode = this.screenToNode(tmp2_v3, this.tiledMapProxy.mapRoot, tmp2_v3);
+
+        tmp1_v2.set(posInNode.x, posInNode.y);
+        tmp2_v2.set(worldPosition.x, worldPosition.y);
+        let tilePos = this.tiledMapProxy.pixelToTileCoords(tmp1_v2);
         // let hit = this.tiled.hitTest(worldPosition.copyAsVec2());
-        let world2Tile = this.tiledMapProxy.worldToTileCoords(worldPosition.copyAsVec2());
+        // let world2Tile = this.tiledMapProxy.worldToTileCoords(tmp2_v2);
 
         // let tile2Pixel = this.tiled.tileToPixelCoords(tilePos.x,tilePos.y,new Vec2(0.5,0.5));
         // let tile2WorldPixel = this.tiled.tileToWorldCoords(tilePos.x,tilePos.y,new Vec2(0.5,0.5));
 
+        this.worldCoord = `${Math.round(worldPosition.x)},${Math.round(worldPosition.y)}`;
+        this.tiledCoord = `${tilePos.x},${tilePos.y}`;
+        this.screenCoord = `${Math.round(location.x)},${Math.round(location.y)}`;
 
+    }
 
-        this.data.worldCoord = `${Math.round(worldPosition.x)},${Math.round(worldPosition.y)}`;
-        this.data.tiledCoord = `${tilePos.x},${tilePos.y}`;
-        this.data.screenCoord = `${Math.round(location.x)},${Math.round(location.y)}`;
+    initDebugGraphics() {
+        this.debugGraphics?.clear();
+        if (!this.debugGraphics) {
+            this.debugGraphics = new tnt.game.DebugGraphics(this.tiledMap.node);
+            // this.debugGraphics.setColor(Color.fromHEX(color(), "#B3B3B3"));
+            this.debugGraphics.setColor(Color.RED);
+            this.debugGraphics.setLineWidth(3);
+        }
     }
 
 
     /** 屏幕坐标转换到节点本地坐标 */
-    screenToNode(screenPos: math.Vec3, node: Node, out?: math.Vec3) {
+    screenToNode(screenPos: Vec3, node: Node, out?: Vec3) {
         if (!out) {
-            out = new math.Vec3();
+            out = new Vec3();
         }
         this.gameCamera.screenToWorld(screenPos, out);
-        let uiTransform = node.getComponent(UITransform);
-        uiTransform.convertToNodeSpaceAR(out, out);
+        node.uiTransform.convertToNodeSpaceAR(out, out);
         return out;
     }
 
+    cacheLocation: Vec2 = new Vec2();
+    protected update(dt: number): void {
+        if (!this.tiledMapGesture) {
+            return;
+        }
+        if (this.cacheLocation.equals(this.tiledMapGesture.location)) {
+            return;
+        }
+        this.onInputMoveEvent(this.tiledMapGesture.location);
+        this.cacheLocation = this.tiledMapGesture.location;
+    }
 }

@@ -42,6 +42,7 @@ export class BtnCommonEventMgr implements IPluginMgr{
             node = target.node;
         }
 
+        this._bindButtonEvent(node);
         this._bindButton(node);
     }
     private _bindButton(node: Node) {

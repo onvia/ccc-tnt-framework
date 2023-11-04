@@ -70,6 +70,8 @@ export class GUIItem extends GUIBase<GUIItemOptions> {
         this.registerButtonClick(button, (target) => {
             this.options.clickFn?.(target);
         });
+
+        tnt.btnCommonEventMgr.bind(this); // 注册按钮通用事件
         return this.parentGroup;
     }
 
@@ -86,6 +88,8 @@ export class GUIItem extends GUIBase<GUIItemOptions> {
         this.registerToggleClick(toggle, (target) => {
             this.options.clickFn?.(target.isChecked);
         });
+
+        tnt.btnCommonEventMgr.bind(this); // 注册按钮通用事件
         return this.parentGroup;
     }
 

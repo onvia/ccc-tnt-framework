@@ -1,0 +1,17 @@
+syntax = "proto3";
+package game;
+import "common.proto";
+
+message C2S_Bag_GetInfo {
+
+}
+
+message S2C_Bag_GetInfo {
+    uint32 ret = 1;
+    repeated common.Item items = 2;
+    UserObject ob = 3;
+}
+
+message UserObject {
+
+}

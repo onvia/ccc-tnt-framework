@@ -1,5 +1,6 @@
 import { Component, js, Label, Button, Layout, ProgressBar, EditBox, Sprite, Graphics, RichText, Toggle, _decorator, Widget, Slider, ScrollView } from "cc";
 import { DEV, EDITOR } from "cc/env";
+import { __net } from "../network/Net";
 
 /**
  * 装饰器相关功能，用于添加组件、插件等装饰器。
@@ -14,7 +15,7 @@ import { DEV, EDITOR } from "cc/env";
  * 按钮属性选项
  */
 type ButtonPropertyOptions = {
-    soundName?: string;
+    soundName: string;
 }
 
 /**
@@ -63,91 +64,112 @@ function _component_sound(name?: string, type?: GConstructor<Component>, parent?
             _parent = null;
         }
         __decorator.component(name, type, _parent)(target, propertyKey);
-        CommonPropertyDecorator("__$$50btnSounds__", _class_sound_attrs, name, options)(target, propertyKey);
+        CommonPropertyDecorator("__$$50btnSounds__", name, options)(target, propertyKey);
     }
 }
 
 
-let _extends = {};
-let _class_node_attrs = {};
-let _class_component_attrs = {};
-let _class_sound_attrs = {};
-let _target__ = {};
-let __classIdx = 0;
+// let _extends = {};
+// let _class_node_attrs = {};
+// let _class_component_attrs = {};
+// let _class_sound_attrs = {};
+// let _target__ = {};
+// let __classIdx = 0;
 
-function checkClassTag(target) {
-    if (target.constructor._$50classTag === undefined || _target__[target.constructor._$50classTag] != target) {
-        target.constructor._$50classTag = `${__classIdx}`;
-        _target__[target.constructor._$50classTag] = target;
-        __classIdx++;
-    }
-    return target.constructor._$50classTag;
-}
+// function checkClassTag(target) {
+//     if (target.constructor._$50classTag === undefined || _target__[target.constructor._$50classTag] != target) {
+//         target.constructor._$50classTag = `${__classIdx}`;
+//         _target__[target.constructor._$50classTag] = target;
+//         __classIdx++;
+//     }
+//     return target.constructor._$50classTag;
+// }
 
-function _assign(target, source) {
-    for (const key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-            if (key in target) {
-                continue;
-            }
-            target[key] = source[key];
-        }
-    }
-}
-function assign(target, ...sources) {
-    for (let i = 0; i < sources.length; i++) {
-        _assign(target, sources[i]);
-    }
-}
+// function _assign(target, source) {
+//     for (const key in source) {
+//         if (Object.prototype.hasOwnProperty.call(source, key)) {
+//             if (key in target) {
+//                 continue;
+//             }
+//             target[key] = source[key];
+//         }
+//     }
+// }
+// function assign(target, ...sources) {
+//     for (let i = 0; i < sources.length; i++) {
+//         _assign(target, sources[i]);
+//     }
+// }
 
 /** 需要往组件类上声明属性的可以用这个通用的装饰器 */
-function CommonPropertyDecorator(attrName: string, _classAttrs: Record<string, any>, key?: string, obj?: any) {
+function CommonPropertyDecorator(attrName: string, key?: string, obj?: any) {
+
     return (target: any, propertyKey: string) => {
 
-        let _className = target.constructor.name;
-
-        _className = checkClassTag(target);
-
-        !_classAttrs[_className] && (_classAttrs[_className] = {});
 
         if (!key) {
             key = propertyKey;
         }
 
-        let _classObj = _classAttrs[_className];
-        _classObj[propertyKey] = Object.assign({
-            name: key,
-        }, obj || {});
-
-        var base = js.getSuper(target.constructor);
-        (base === Object || base === Object || base === Component) && (base = null);
-        if (base) {
-
-            let parent = checkClassTag(base.prototype);
-            !_extends[_className] && (_extends[_className] = parent);
-
-            var _super = js.getSuper(base);
-            let superIdx = 1;
-            while (_super) {
-                if (_super === Object || _super === Object || _super === Component) {
-                    _super = null;
-                    break;
-                }
-                let superTag = checkClassTag(_super.prototype);
-                !_extends[parent] && (_extends[parent] = superTag);
-                _super = js.getSuper(_super);
-                superIdx++;
-            }
-
-            while (parent) {
-                if (parent in _classAttrs) {
-                    assign(_classObj, _classAttrs[parent]);
-                }
-                parent = _extends[parent];
-            }
+        let _bind50Data = target.constructor[attrName];
+        if (!_bind50Data) {
+            _bind50Data = { constructor: target.constructor, data: {} }
+            target.constructor[attrName] = _bind50Data;
         }
-        target[attrName] = _classAttrs[_className] = _classObj;
+        if (_bind50Data.constructor != target.constructor) {
+            let tmpData = _bind50Data.data;
+            _bind50Data = { constructor: target.constructor, data: { ...tmpData } }
+            target.constructor[attrName] = _bind50Data;
+        }
+
+        _bind50Data.data[propertyKey] = Object.assign({ name: key }, obj || {});
     }
+    // return (target: any, propertyKey: string) => {
+
+    //     let _className = target.constructor.name;
+
+    //     _className = checkClassTag(target);
+
+    //     !_classAttrs[_className] && (_classAttrs[_className] = {});
+
+    //     if (!key) {
+    //         key = propertyKey;
+    //     }
+
+    //     let _classObj = _classAttrs[_className];
+    //     _classObj[propertyKey] = Object.assign({
+    //         name: key,
+    //     }, obj || {});
+
+    //     let base = js.getSuper(target.constructor);
+    //     (base === Object || base === Object || base === Component) && (base = null);
+    //     if (base) {
+
+    //         let parent = checkClassTag(base.prototype);
+    //         !_extends[_className] && (_extends[_className] = parent);
+
+    //         let _super = js.getSuper(base);
+    //         let superIdx = 1;
+    //         while (_super) {
+    //             if (_super === Object || _super === Object || _super === Component) {
+    //                 _super = null;
+    //                 break;
+    //             }
+    //             let superTag = checkClassTag(_super.prototype);
+    //             !_extends[parent] && (_extends[parent] = superTag);
+    //             _super = js.getSuper(_super);
+    //             superIdx++;
+    //         }
+
+    //         while (parent) {
+    //             if (parent in _classAttrs) {
+    //                 assign(_classObj, _classAttrs[parent]);
+    //             }
+    //             parent = _extends[parent];
+    //         }
+    //     }
+    //     target[attrName] = _classAttrs[_className] = _classObj;
+    // }
 }
 
 
@@ -302,6 +324,7 @@ let __decorator = {
         }
     },
     _registerPlugins: _registerPlugins,
+    _net: __net,
 
     /**
      * UI 的预制体路径装饰器
@@ -326,7 +349,7 @@ let __decorator = {
      * @param parent 父节点名
      */
     node(name?: string, parent?: string) {
-        return CommonPropertyDecorator("__$$50nodes__", _class_node_attrs, name, { parent });
+        return CommonPropertyDecorator("__$$50bind__", name, { parent });
     },
 
     // 其他组件的装饰器
@@ -455,7 +478,7 @@ let __decorator = {
                 key = name;
             }
         }
-        return CommonPropertyDecorator("__$$50components__", _class_component_attrs, key, { type, parent });
+        return CommonPropertyDecorator("__$$50bind__", key, { type, parent });
     },
     /**
      * 非序列化装饰器，用于标记属性不会被序列化
@@ -618,7 +641,7 @@ let __decorator = {
 
     //         // 修复 使用类装饰器之后 导致 node.getComponent(组件基类) 返回值 为空的情况
     //         // 代表性示例为 UIMgr 需要获取 UIViewBase 
-    //         var base = js.getSuper(constructor);
+    //         let base = js.getSuper(constructor);
     //         base === CCObject && (base = null);
     //         if(base){
     //             // @ts-ignore

@@ -75,12 +75,12 @@ declare global {
     remove: {
         value: function (filter) {
             if (typeof (filter) == 'function') {
-                for (var i = this.length - 1; i > -1; --i) {
+                for (let i = this.length - 1; i > -1; --i) {
                     filter(this[i], i, this) && this.splice(i, 1);
                 }
             }
             else {
-                for (var i = this.length - 1; i > -1; --i) {
+                for (let i = this.length - 1; i > -1; --i) {
                     this[i] === filter && this.splice(i, 1);
                 }
             }
@@ -90,7 +90,7 @@ declare global {
     removeOne: {
         value: function (filter) {
             if (typeof (filter) == 'function') {
-                for (var i = 0; i < this.length; ++i) {
+                for (let i = 0; i < this.length; ++i) {
                     if (filter(this[i], i, this)) {
                         this.splice(i, 1);
                         return this;
@@ -98,7 +98,7 @@ declare global {
                 }
             }
             else {
-                for (var i = 0; i < this.length; ++i) {
+                for (let i = 0; i < this.length; ++i) {
                     if (this[i] === filter) {
                         this.splice(i, 1);
                         return this;
@@ -156,9 +156,9 @@ declare global {
                 return a > b ? a : b;
             }
             if (typeof (mapper) == 'function') {
-                var max = mapper(this[0], 0, this);
-                for (var i = 1; i < this.length; ++i) {
-                    var temp = mapper(this[i], i, this);
+                let max = mapper(this[0], 0, this);
+                for (let i = 1; i < this.length; ++i) {
+                    let temp = mapper(this[i], i, this);
                     max = temp > max ? temp : max;
                 }
                 return max;
@@ -177,9 +177,9 @@ declare global {
                 return a < b ? a : b;
             }
             if (typeof (mapper) == 'function') {
-                var min = mapper(this[0], 0, this);
-                for (var i = 1; i < this.length; ++i) {
-                    var temp = mapper(this[i], i, this);
+                let min = mapper(this[0], 0, this);
+                for (let i = 1; i < this.length; ++i) {
+                    let temp = mapper(this[i], i, this);
                     min = temp < min ? temp : min;
                 }
                 return min;
@@ -196,8 +196,8 @@ declare global {
     },
     filterIndex: {
         value: function (filter) {
-            var output = [];
-            for (var i = 0; i < this.length; ++i) {
+            let output = [];
+            for (let i = 0; i < this.length; ++i) {
                 if (filter(this[i], i, this)) {
                     output.push(i);
                 }
@@ -207,8 +207,8 @@ declare global {
     },
     count: {
         value: function (filter) {
-            var result = 0;
-            for (var i = 0; i < this.length; ++i) {
+            let result = 0;
+            for (let i = 0; i < this.length; ++i) {
                 if (filter(this[i], i, this)) {
                     ++result;
                 }
@@ -218,8 +218,8 @@ declare global {
     },
     sum: {
         value: function (mapper) {
-            var result = 0;
-            for (var i = 0; i < this.length; ++i) {
+            let result = 0;
+            for (let i = 0; i < this.length; ++i) {
                 result += mapper ? mapper(this[i], i, this) : this[i];
             }
             return result;
@@ -232,14 +232,14 @@ declare global {
     },
     orderBy: {
         value: function () {
-            var mappers = [];
-            for (var _i = 0; _i < arguments.length; _i++) {
+            let mappers = [];
+            for (let _i = 0; _i < arguments.length; _i++) {
                 mappers[_i] = arguments[_i];
             }
             return this.slice().sort(function (a, b) {
-                for (var i = 0; i < mappers.length; ++i) {
-                    var va = mappers[i](a);
-                    var vb = mappers[i](b);
+                for (let i = 0; i < mappers.length; ++i) {
+                    let va = mappers[i](a);
+                    let vb = mappers[i](b);
                     if (va > vb) {
                         return 1;
                     }
@@ -253,14 +253,14 @@ declare global {
     },
     orderByDesc: {
         value: function () {
-            var mappers = [];
-            for (var _i = 0; _i < arguments.length; _i++) {
+            let mappers = [];
+            for (let _i = 0; _i < arguments.length; _i++) {
                 mappers[_i] = arguments[_i];
             }
             return this.slice().sort(function (a, b) {
-                for (var i = 0; i < mappers.length; ++i) {
-                    var va = mappers[i](a);
-                    var vb = mappers[i](b);
+                for (let i = 0; i < mappers.length; ++i) {
+                    let va = mappers[i](a);
+                    let vb = mappers[i](b);
                     if (va > vb) {
                         return -1;
                     }
@@ -274,10 +274,10 @@ declare global {
     },
     binarySearch: {
         value: function (value, keyMapper) {
-            var low = 0, high = this.length - 1;
+            let low = 0, high = this.length - 1;
             while (low <= high) {
-                var mid = ((high + low) / 2) | 0;
-                var midValue = keyMapper ? keyMapper(this[mid]) : this[mid];
+                let mid = ((high + low) / 2) | 0;
+                let midValue = keyMapper ? keyMapper(this[mid]) : this[mid];
                 if (value === midValue) {
                     return mid;
                 }
@@ -297,12 +297,12 @@ declare global {
                 unique = keyMapper;
                 keyMapper = undefined;
             }
-            var low = 0, high = this.length - 1;
-            var mid = NaN;
-            var itemValue = keyMapper ? keyMapper(item) : item;
+            let low = 0, high = this.length - 1;
+            let mid = NaN;
+            let itemValue = keyMapper ? keyMapper(item) : item;
             while (low <= high) {
                 mid = ((high + low) / 2) | 0;
-                var midValue = keyMapper ? keyMapper(this[mid]) : this[mid];
+                let midValue = keyMapper ? keyMapper(this[mid]) : this[mid];
                 if (itemValue === midValue) {
                     if (unique) {
                         return mid;
@@ -318,7 +318,7 @@ declare global {
                     high = mid - 1;
                 }
             }
-            var index = low > mid ? mid + 1 : mid;
+            let index = low > mid ? mid + 1 : mid;
             this.splice(index, 0, item);
             return index;
         }
@@ -330,7 +330,7 @@ declare global {
     },
     findLast: {
         value: function (predicate) {
-            for (var i = this.length - 1; i > -1; --i) {
+            for (let i = this.length - 1; i > -1; --i) {
                 if (predicate(this[i], i, this)) {
                     return this[i];
                 }
@@ -340,7 +340,7 @@ declare global {
     },
     findLastIndex: {
         value: function (predicate) {
-            for (var i = this.length - 1; i > -1; --i) {
+            for (let i = this.length - 1; i > -1; --i) {
                 if (predicate(this[i], i, this)) {
                     return i;
                 }
@@ -350,8 +350,8 @@ declare global {
     },
     groupBy: {
         value: function (grouper) {
-            var group = this.reduce(function (prev, next) {
-                var groupKey = grouper(next);
+            let group = this.reduce(function (prev, next) {
+                let groupKey = grouper(next);
                 if (!prev[groupKey]) {
                     prev[groupKey] = [];
                 }
@@ -359,7 +359,7 @@ declare global {
                 return prev;
             }, {});
             return Object.keys(group).map(function (key) {
-                var arr = group[key];
+                let arr = group[key];
                 arr.key = key;
                 return arr;
             });

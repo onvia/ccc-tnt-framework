@@ -1,0 +1,10 @@
+
+syntax = "proto3";
+package common;
+
+
+message Item {
+    uint32 type = 1;
+    uint32 value = 2;
+    uint32 count = 3;
+}
