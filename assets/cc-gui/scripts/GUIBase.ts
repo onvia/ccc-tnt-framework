@@ -24,6 +24,7 @@ export class GUIBase<Options extends GUIBaseOptions> extends tnt.UIItem<Options>
     protected onStart(): void {
         super.onStart();
         this.nameLabel && (this.nameLabel.string = this.options.name);
+        this.node.name = this.options.name;
     }
 
     setGUIEnable(enable) {

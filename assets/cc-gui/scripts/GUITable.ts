@@ -1,6 +1,7 @@
 import { _decorator, Node, Layout, __private, Button, ToggleContainer, Size, find, Label } from "cc";
 import { GUIBase } from "./GUIBase";
 import { GUICheckbox } from "./GUICheckbox";
+import { GUIDropDownList } from "./GUIDropDownList";
 import { GUIEditText } from "./GUIEditText";
 import { GUIGroup } from "./GUIGroup";
 import { GUIItem } from "./GUIItem";
@@ -149,9 +150,10 @@ export class GUITable<Options extends GUITableOptions> extends tnt.UIItem<Option
         return this;
     }
 
-    addDropDownList(name: string) {
-        // this._justWidgetName = name;
-
+    addDropDownList(name: string, list: string[], checkFn: (param: string) => any) {
+        let ui = this.addUISync(GUIDropDownList, this.content, { name, list, selectFn: checkFn });
+        ui.parentGroup = this;
+        return this;
     }
 
     justWidget(obj?: { widget: GUIBase<any> }) {

@@ -74,6 +74,10 @@ export class CCGUITestScene extends tnt.SceneBase<CCGUITestSceneOptions> {
                 .addItemToggle("item-check3", (isChecked) => { console.log(`CCGUITestScene-> item-check3 ${isChecked}`); })
                 .addItemButton("item-button1", () => { console.log(`CCGUITestScene-> item-button1`); })
                 .addItemButton("item-button2", () => { console.log(`CCGUITestScene-> item-button2`); })
+                .addDropDownList("color", ["red", "white", "blue", "black"], (select) => {
+                    console.log(`CCGUITestScene-> `, select);
+
+                })
 
             group1.addGroup("panel2")
                 .addItemToggle("item-check1", (isChecked) => { console.log(`CCGUITestScene-> item-check1 ${isChecked}`); })

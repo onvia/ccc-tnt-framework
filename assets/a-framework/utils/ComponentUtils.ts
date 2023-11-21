@@ -1,4 +1,4 @@
-import { _decorator, Component, Node, __private, Button, EditBox, Toggle, Slider, Scene, ToggleContainer, isValid, js } from "cc";
+import { _decorator, Component, Node, __private, Button, EditBox, Toggle, Slider, Scene, ToggleContainer, isValid, js, Canvas } from "cc";
 declare module 'cc' {
     interface Node {
         __$nodes: Record<string, Node[]>;
@@ -403,6 +403,14 @@ class ComponentUtils {
         node.on("slide", callback, target);
     }
 
+    getCanvas(node: Node) {
+        let temp = node;
+        while (temp && !temp.getComponent(Canvas)) {
+            temp = temp.parent;
+        }
+
+        return temp;
+    }
 
     private static _instance: ComponentUtils = null
     public static getInstance(): ComponentUtils {
