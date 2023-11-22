@@ -135,7 +135,7 @@ export class PathFindingDemo extends tnt.SceneBase<PathFindingDemoOptions> {
             },
 
             updateCameraPosition: (position: Vec3) => {
-                this.cameraController.forcePosition(position);
+                this.cameraController.forcePosition(position,true);
             },
 
             updateCameraZoomRatio: (zoomRatio: number) => {

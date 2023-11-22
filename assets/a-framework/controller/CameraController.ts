@@ -218,7 +218,14 @@ class CameraController extends Component {
         this.forceUpdateCameraBounds();
     }
 
-    public forcePosition(value: Vec3) {
+    public forcePosition(value: Vec3, useLimit = false) {
+        let bounds = this.bounds;
+        if (useLimit && bounds) {
+            // 限制相机 的移动范围
+            value.x = misc.clampf(value.x, bounds.xMin, bounds.xMax);
+            value.y = misc.clampf(value.y, bounds.yMin, bounds.yMax);
+        }
+
         this.forceTransition(value);
         this.camera.node.position = new Vec3(value);
         this._gapPosition.set(Vec3.ZERO);

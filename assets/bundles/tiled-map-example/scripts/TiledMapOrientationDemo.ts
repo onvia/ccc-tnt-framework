@@ -127,7 +127,7 @@ export class TiledMapOrientationDemo extends tnt.SceneBase<TiledMapOrientationDe
             },
 
             updateCameraPosition: (position: Vec3) => {
-                this.cameraController.forcePosition(position);
+                this.cameraController.forcePosition(position, true);
             },
 
             updateCameraZoomRatio: (zoomRatio: number) => {
