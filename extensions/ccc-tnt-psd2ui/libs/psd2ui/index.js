@@ -1166,7 +1166,7 @@
             this.scale = new Vec3(1, 1, 1);
         }
         parseNameRule(name) {
-            var _a, _b;
+            var _a, _b, _c;
             if (!name) {
                 return;
             }
@@ -1177,11 +1177,11 @@
                 return;
             }
             let obj = {
-                name: (_b = (_a = fragments[0]) === null || _a === void 0 ? void 0 : _a.replace(/\.|>|\/|\ /g, "_")) !== null && _b !== void 0 ? _b : "unknow",
+                name: (_c = (_b = (_a = fragments[0]) === null || _a === void 0 ? void 0 : _a.trim()) === null || _b === void 0 ? void 0 : _b.replace(/\.|>|\/|\ /g, "_")) !== null && _c !== void 0 ? _c : "unknow",
                 comps: {},
             };
             for (let i = 1; i < fragments.length; i++) {
-                const fragment = fragments[i].trim();
+                const fragment = this.removeChineseFromEnd(fragments[i].trim()).trim(); // 删除规则尾部的中文
                 let attr = {};
                 let startIdx = fragment.indexOf("{");
                 let comp = fragment;
@@ -1254,6 +1254,18 @@
             //     console.warn(`PsdLayer->${obj.name} 同时存在 @full 和 @size`);
             // }
             return obj;
+        }
+        removeChineseFromEnd(inputString) {
+            if (!inputString) {
+                return inputString;
+            }
+            const chineseRegex = /[\u4e00-\u9fa5]+$/;
+            const match = inputString.trim().match(chineseRegex);
+            if (match && match[0]) {
+                const chineseLength = match[0].length;
+                return this.removeChineseFromEnd(inputString.slice(0, -chineseLength));
+            }
+            return inputString;
         }
         /** 解析数据 */
         parseSource() {
@@ -1359,6 +1371,9 @@
             return true;
         }
         resize() {
+            if (!this.children.length) {
+                return;
+            }
             let left = Number.MAX_SAFE_INTEGER;
             let right = Number.MIN_SAFE_INTEGER;
             let top = Number.MAX_SAFE_INTEGER;
