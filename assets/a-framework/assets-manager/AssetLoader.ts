@@ -1010,9 +1010,13 @@ class AssetLoader implements IPluginMgr {
 
         // 根据资源类型在路径后加上特定的后缀
         if (js.getClassName(type) === js.getClassName(SpriteFrame)) {
-            path += "/spriteFrame";
+            if (!path.endsWith('/spriteFrame')) {
+                path += "/spriteFrame";
+            }
         } else if (js.getClassName(type) === js.getClassName(Texture2D)) {
-            path += "/texture";
+            if (!path.endsWith('/texture')) {
+                path += "/texture";
+            }
         }
 
         return path;
