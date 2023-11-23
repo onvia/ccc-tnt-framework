@@ -128,7 +128,7 @@ export class FloodFillDemo extends tnt.SceneBase<FloodFillDemoOptions> {
             },
 
             updateCameraPosition: (position: Vec3) => {
-                this.cameraController.forcePosition(position);
+                this.cameraController.forcePosition(position,true);
             },
 
             updateCameraZoomRatio: (zoomRatio: number) => {
