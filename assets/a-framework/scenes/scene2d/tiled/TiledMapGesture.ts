@@ -112,6 +112,7 @@ class TiledMapGesture extends Component implements ITouch, IMouse {
 
     private _autoScrollBrakingStartPosition = new Vec3();
     private _deltaPos = new Vec3();
+    private _contentPos: Vec3 = new Vec3();
     public brake = BRAKE; // 在用户停止触摸后滚动多快停止，0表示永不停止，1表示立刻停止。
 
     /**
@@ -555,9 +556,9 @@ class TiledMapGesture extends Component implements ITouch, IMouse {
     private _calculateAutoScrollTimeByInitialSpeed(initialSpeed: number) {
         return Math.sqrt(Math.sqrt(initialSpeed / 5));
     }
-
     private _getContentPosition() {
-        return this.options.getCameraCurrentPosition().clone();
+        this._contentPos.set(this.options.getCameraCurrentPosition())
+        return this._contentPos;
     }
     private _startAutoScroll(deltaMove: Vec3, timeInSecond: number, attenuated = false) {
         const adjustedDeltaMove = deltaMove;
