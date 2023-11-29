@@ -75,5 +75,10 @@ export const SceneConfig: ISceneConfig[] = [
         scene: "CCGUITestScene",
         button: "cc-gui",
         bundle: "cc-gui-test"
+    },
+    {
+        scene: "ShaderTest",
+        button: "shader",
+        bundle: "shader-test",
     }
 ]
