@@ -50,6 +50,7 @@ class GComponent<Options = any> extends Component {
 
     declare options: Options;
 
+    private _alreadyBindNode: boolean = false;
     protected __preload(): void {
         this.bindNodes();
     }
@@ -166,50 +167,15 @@ class GComponent<Options = any> extends Component {
     /**
      * 不需要手动调用
      *
-     * @protected
+     * @public
      * @memberof GComponent
      */
-    protected bindNodes() {
-        // let comp = this;
-        // // @ts-ignore
-        // let _nodes = comp.__$$50nodes__;
-        // if (_nodes) {
-        //     for (const key in _nodes) {
-        //         let param = _nodes[key];
-        //         let parent: Node = null;
-        //         if (param.parent) {
-        //             parent = this.find(param.parent)
-        //         }
-        //         let node = this.find(param.name, parent);
-        //         node && (comp[key] = node);
-        //     }
-        // }
+    public bindNodes() {
 
-        // // @ts-ignore
-        // let _components = comp.__$$50components__;
-        // if (_components) {
-        //     for (const key in _components) {
-        //         let param = _components[key];
-        //         let parent: Node = null;
-        //         if (param.parent) {
-        //             parent = this.find(param.parent)
-        //         }
-        //         let _comp = this.findComponent(param.name, param.type, parent);
-        //         _comp && (comp[key] = _comp);
-        //     }
-        // }
-
-
-        // // @ts-ignore
-        // let _btnSounds = comp.__$$50btnSounds__;
-        // if (_btnSounds) {
-        //     for (const key in _btnSounds) {
-        //         let obj = _btnSounds[key];
-        //         let btn = comp[key] as Button;
-        //         btn.__$soundName = obj?.soundName;
-        //     }
-        // }
-
+        if (this._alreadyBindNode) {
+            return;
+        }
+        this._alreadyBindNode = true;
 
         let comp = this.constructor;
         // @ts-ignore
