@@ -184,6 +184,7 @@ class SceneMgr extends tnt.EventMgr implements ISceneMgrPlugin, IPluginMgr {
             (clazz as GConstructor<T>).prototype.prefabUrl = enterSceneName;
             (clazz as GConstructor<T>).prototype.bundle = options?.bundle || "main";
 
+            nextScene.bindNodes();
             nextScene.updateOptions(options?.sceneOptions);
             nextScene.onCreate();
             nextScene.onLaunch(scene);

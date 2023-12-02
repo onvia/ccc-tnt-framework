@@ -331,6 +331,7 @@ class ResourcesMgr {
                 if (!component.loaderKey) {
                     component.loaderKey = loader.key;
                 }
+                component.bindNodes();
                 component.updateOptions(options);
                 component.onCreate();
                 resolve(component);
@@ -369,6 +370,7 @@ class ResourcesMgr {
         if (!component.loaderKey) {
             component.loaderKey = loader.key;
         }
+        component.bindNodes();
         component.updateOptions(options);
         component.onCreate();
         return component;
