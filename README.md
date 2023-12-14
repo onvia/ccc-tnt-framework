@@ -54,6 +54,7 @@ tnt.startup(startupOptions);
     - [截图管理](./docs/%E6%88%AA%E5%9B%BE%E7%AE%A1%E7%90%86.md)
     - [按钮通用事件管理](./docs/%E6%8C%89%E9%92%AE%E9%80%9A%E7%94%A8%E4%BA%8B%E4%BB%B6%E7%AE%A1%E7%90%86.md)
     - [多语言](./docs/%E5%A4%9A%E8%AF%AD%E8%A8%80.md)
+    - [控制器](./docs/%E6%8E%A7%E5%88%B6%E5%99%A8.md)
     - [TiledMap](./docs/TiledMap.md)
     - [MVVM](./docs/MVVM.md)
     - [装饰器](./docs/%E8%A3%85%E9%A5%B0%E5%99%A8.md)
