@@ -264,6 +264,10 @@ class CameraController extends Component {
         this.cameraState = CameraStateEnum.Follow;
     }
 
+    public free(){
+        this.cameraState = CameraStateEnum.Free;
+    }
+
     protected computeZoomRatio(dt) {
         let zoomRatio = 1;
         if (this._gapZoom > 0) {
@@ -330,7 +334,7 @@ class CameraController extends Component {
             if (tmpCameraPos_v3.x > followPosition.x - this.limit.x && tmpCameraPos_v3.x < followPosition.x + this.limit.x
                 && tmpCameraPos_v3.y > followPosition.y - this.limit.y && tmpCameraPos_v3.y < followPosition.y + this.limit.y) {
                 this.isJustEnable = false;
-                this.moveSpeed = 500;
+                // this.moveSpeed = 500;
             } else {
                 // 重新计算位移，使摄像机快速追上 目标
                 let curPosition = this.camera.node.position;
