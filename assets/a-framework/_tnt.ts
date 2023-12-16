@@ -28,6 +28,7 @@ import "./input/_input";
 import "./utils/_utils";
 import "./task/_task";
 import "./mvvm/_mvvm";
+import "./mvvm/VMDecorator";
 import "./controller/_controller";
 
 

@@ -183,22 +183,23 @@ class GComponent<Options = any> extends Component {
         if (_nodes) {
             for (const key in _nodes) {
                 let param = _nodes[key];
-                let parent: Node = null;
-                if (param.parent) {
-                    parent = this.find(param.parent)
-                }
-                if (param.type) {
-                    let _comp = this.findComponent(param.name, param.type, parent);
-                    this[key] = _comp;
-                } else {
+                this.bindNode(key, param.name, param.type, param.parent);
+                // let parent: Node = null;
+                // if (param.parent) {
+                //     parent = this.find(param.parent)
+                // }
+                // if (param.type) {
+                //     let _comp = this.findComponent(param.name, param.type, parent);
+                //     this[key] = _comp;
+                // } else {
 
-                    let node = this.find(param.name, parent);
-                    this[key] = node;
-                }
+                //     let node = this.find(param.name, parent);
+                //     this[key] = node;
+                // }
             }
         }
 
-        
+
 
         // @ts-ignore
         let _btnSounds = comp.__$$50btnSounds__?.data;
@@ -211,6 +212,20 @@ class GComponent<Options = any> extends Component {
         }
     }
 
+    protected bindNode(property: string, nodeName: string, type: GConstructor<Component>, parentName: string = null) {
+        let parent: Node = null;
+        if (parentName) {
+            parent = this.find(parentName)
+        }
+        if (type) {
+            let _comp = this.findComponent(nodeName, type, parent);
+            this[property] = _comp;
+        } else {
+
+            let node = this.find(nodeName, parent);
+            this[property] = node;
+        }
+    }
 
     /**
      * 分帧执行

@@ -11,7 +11,7 @@ export class MVVMDemoList extends tnt.SceneBase {
         item.removeFromParent();
 
         let bundle = this.loader.getBundle(this.bundle as string);
-        if(!bundle){
+        if (!bundle) {
             return;
         }
 
@@ -63,7 +63,7 @@ export class MVVMDemoList extends tnt.SceneBase {
         });
 
         tnt.loaderMgr.share.loadBundle(bundle.name, () => {
-            if (clazz && js.getSuper(clazz) == tnt.SceneBase) {
+            if (clazz && js.hasSuper(clazz, tnt.SceneBase)) {
                 // @ts-ignore
                 tnt.sceneMgr.toScene(clazz);
             } else {

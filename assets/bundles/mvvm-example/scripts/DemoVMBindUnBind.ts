@@ -53,6 +53,7 @@ export class DemoVMBindUnBind extends tnt.SceneBase implements IMVVMObject {
 
         // logo 颜色
         tnt.vm.bind(this, this.logo.sprite, {
+            
             color: {
                 watchPath: "userData.level",
                 formatter: (opts) => {

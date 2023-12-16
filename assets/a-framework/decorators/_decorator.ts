@@ -676,16 +676,23 @@ let __decorator = {
     // }
 }
 
+
+
+type ___IDecorator = typeof __decorator;
 /**
  * 全局声明扩展接口，添加 _decorator 对象
  */
 declare global {
+    interface __IDecorator extends ___IDecorator {
+
+    }
     interface ITNT {
-        _decorator: typeof __decorator;
+        _decorator: __IDecorator;
     }
 }
 
 /**
  * 将 _decorator 对象添加到全局 ITNT 接口中
  */
+// @ts-ignore
 tnt._decorator = __decorator;

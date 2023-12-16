@@ -101,7 +101,8 @@ export abstract class VMBaseHandler<T extends object = any>{
                 node,
                 // nodeIdx,
                 watchPath,
-                attr: this.attr
+                attr: this.attr,
+                component: this.userControllerComponent
             };
             return await this.attr.formatter.call(this.userControllerComponent, options);
         }
@@ -160,6 +161,7 @@ export abstract class VMBaseHandler<T extends object = any>{
                 watchPath,
                 handler: this,
                 attr: this.attr,
+                component: this.userControllerComponent
             }
             this.attr.onValueChange?.call(this.userControllerComponent, options);
         }
