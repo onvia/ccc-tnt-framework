@@ -63,7 +63,7 @@ export class MVVMDemoList extends tnt.SceneBase {
         });
 
         tnt.loaderMgr.share.loadBundle(bundle.name, () => {
-            if (clazz && js.hasSuper(clazz, tnt.SceneBase)) {
+            if (clazz && tnt.js.hasSuper(clazz, tnt.SceneBase)) {
                 // @ts-ignore
                 tnt.sceneMgr.toScene(clazz);
             } else {

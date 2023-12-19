@@ -206,12 +206,12 @@ export abstract class VMBaseHandler<T extends object = any>{
             console.warn(`VMBaseHandler-> 组件属性为对象类型，无法进行双向绑定`);
             return;
         }
-        let descr = js.getPropertyDescriptor(target, this.attr._targetPropertyKey);
+        let descriptor = js.getPropertyDescriptor(target, this.attr._targetPropertyKey);
         target[this._vmProperty] = target[_property];
 
         Object.defineProperty(target, this._vmProperty, {
-            get: descr.get,
-            set: descr.set
+            get: descriptor.get,
+            set: descriptor.set
         });
 
         if (Array.isArray(this.attr.watchPath)) {
@@ -219,11 +219,11 @@ export abstract class VMBaseHandler<T extends object = any>{
             return;
         }
 
-        if (!!descr.set) {
+        if (!!descriptor.set) {
             Object.defineProperty(target, _property, {
-                get: descr.get,
+                get: descriptor.get,
                 set: (value) => {
-                    descr.set.call(target, value);
+                    descriptor.set.call(target, value);
                     tnt.vm.setValue(this.attr.watchPath as string, value);
                 }
             });

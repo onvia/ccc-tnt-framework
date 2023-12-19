@@ -530,6 +530,30 @@ let __decorator = {
         }
     },
 
+    /**
+     * 方法装饰器
+     *
+     * @param {string} name
+     * @param {string} [parent]
+     * @return {*} 
+     */
+    click(name: string, parent?: string) {
+        return (target: any,
+            propertyKey: string,
+            descriptor: TypedPropertyDescriptor<any>) => {
+
+            let key = null;
+            if (name) {
+                if (typeof name == "string") {
+                    key = name;
+                }
+            }
+
+            CommonPropertyDecorator("__$$50btnClick__", key, { parent, func: descriptor.value })(target, propertyKey);
+            return descriptor;
+        }
+    },
+
     // // 多态
     // polymorphism({ types, displayName }: PolymorphismOptions): PropertyDecorator {
     //     return (target, propertyKey: PropertyKey) => {
@@ -606,11 +630,11 @@ let __decorator = {
     // },
 
 
-    // clazz(name: string) {
-    //     return (target: Function) => {
-    //         console.log(`_decorator-> 类装饰器  clazz ${name}`);
-    //     };
-    // },
+    clazz(name: string) {
+        return (target: Function) => {
+            console.log(`_decorator-> 类装饰器  clazz ${name}`);
+        };
+    },
 
     // func<T>(name: string) {
     //     return function (target: any, propertyKey: string, descriptor: TypedPropertyDescriptor<T>) {

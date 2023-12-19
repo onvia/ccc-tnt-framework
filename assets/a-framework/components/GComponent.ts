@@ -29,7 +29,7 @@ declare global {
 @ccclass('GComponent')
 class GComponent<Options = any> extends Component {
 
-    protected declare _loaderKey: string;
+    public declare _loaderKey: string;
 
     public get loaderKey(): string {
         if (!this._loaderKey) {
@@ -184,18 +184,6 @@ class GComponent<Options = any> extends Component {
             for (const key in _nodes) {
                 let param = _nodes[key];
                 this.bindNode(key, param.name, param.type, param.parent);
-                // let parent: Node = null;
-                // if (param.parent) {
-                //     parent = this.find(param.parent)
-                // }
-                // if (param.type) {
-                //     let _comp = this.findComponent(param.name, param.type, parent);
-                //     this[key] = _comp;
-                // } else {
-
-                //     let node = this.find(param.name, parent);
-                //     this[key] = node;
-                // }
             }
         }
 
@@ -208,6 +196,29 @@ class GComponent<Options = any> extends Component {
                 let obj = _btnSounds[key];
                 let btn = this[key] as Button;
                 btn.__$soundName = obj?.soundName;
+            }
+        }
+
+        // @ts-ignore
+        let btnClicks = comp.__$$50btnClick__?.data;
+        if (btnClicks) {
+            for (const key in btnClicks) {
+                let param = btnClicks[key]
+                let parent: Node = null;
+                if (param.parent) {
+                    parent = this.find(param.parent)
+                }
+
+                let node = this.find(param.name, parent);
+                if (node?.button) {
+                    tnt.componentUtils.registerButtonClick(node, param.func, this, this.node);
+                } else if (node) {
+                    let touch = {
+                        onTouchEnded: param.func,
+                    }
+                    tnt.componentUtils.registerNodeTouchEvent(node, touch, this, this.node);
+                }
+
             }
         }
     }

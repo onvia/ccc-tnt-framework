@@ -1,14 +1,14 @@
-import { Component, Label, Node, Sprite, EditBox, ProgressBar, RichText, Slider, Toggle, UIOpacity, UIRenderer, js, UITransform, isValid, SpriteFrame, Button, sp } from "cc";
+import { Component, Label, Node, Sprite, EditBox, ProgressBar, RichText, Slider, Toggle, UIOpacity, UIRenderer, js, UITransform, SpriteFrame, Button, sp, Color, Size, Asset, Renderer, instantiate } from "cc";
 import { DEBUG, DEV } from "cc/env";
 import { GVMTween } from "./VMTween";
 import { isArray } from "./VMGeneral";
-import { VMBaseAttr, WatchPath, Formatter, ReturnValueType, VMForAttr, SpriteAttrBind, VMSpriteAttr, LabelAttrBind, BaseValueType, VMEventAttr, DataChanged, CustomAttrBind, VMCustomAttr } from "./_mv_declare";
+import { VMBaseAttr, WatchPath, Formatter, ReturnValueType, VMForAttr, SkinAttrBind, LabelAttrBind, BaseValueType, VMEventAttr, DataChanged, CustomAttrBind, VMCustomAttr } from "./_mv_declare";
 import * as VMFactory from "./VMFactory";
 import { VMHandlerName } from "./VMFactory";
 import { handlerMap, IVMObserveAutoUnbind, proxyMap, Raw, rawDepsMap, rawMap, rawNameMap, targetMap, unbindMap } from "./reactivity/_internals";
 import { _reactive } from "./reactivity/_reactive";
 import { VMBaseHandler } from "./handlers/VMBaseHandler";
-import { formatAttr, getDefaultComponentProperty, getDefaultFormatter, parseWatchPath, registerDefaultFormatter } from "./_common";
+import { formatAttr, parseWatchPath, registerDefaultComponentProperty, registerDefaultFormatter } from "./_common";
 
 
 
@@ -49,6 +49,15 @@ class VM {
      * @memberof VM
      */
     public registerDefaultFormatter = registerDefaultFormatter;
+
+    /**
+     *  注册组件默认属性
+     *
+     * @param {GConstructor<any>} clazz
+     * @param {string} property
+     * @memberof VM
+     */
+    public registerDefaultComponentProperty = registerDefaultComponentProperty;
 
     public get factory() {
         return VMFactory;
@@ -207,7 +216,8 @@ class VM {
         return isUnbind;
     }
     public label(mvvmObject: IMVVMObject, bindObject: Label | Node, attr: LabelAttrBind<Label>)
-    public label(mvvmObject: IMVVMObject, bindObject: Label | Node, attr: WatchPath, formatter?: Formatter<BaseValueType, unknown>)
+    public label(mvvmObject: IMVVMObject, bindObject: Label | Node, attr: WatchPath)
+    public label(mvvmObject: IMVVMObject, bindObject: Label | Node, attr: WatchPath, formatter: Formatter<BaseValueType, unknown>)
     public label(mvvmObject: IMVVMObject, bindObject: Label | Node, attr: LabelAttrBind<Label> | WatchPath, formatter?: Formatter<BaseValueType, unknown>) {
         // 有 formatter 的时候，一般使用默认属性， label.string 类型为 string
 
@@ -216,7 +226,8 @@ class VM {
     }
 
     public richText(mvvmObject: IMVVMObject, bindObject: RichText | Node, attr: LabelAttrBind<RichText>)
-    public richText(mvvmObject: IMVVMObject, bindObject: RichText | Node, attr: WatchPath, formatter?: Formatter<BaseValueType, unknown>)
+    public richText(mvvmObject: IMVVMObject, bindObject: RichText | Node, attr: WatchPath)
+    public richText(mvvmObject: IMVVMObject, bindObject: RichText | Node, attr: WatchPath, formatter: Formatter<BaseValueType, unknown>)
     public richText(mvvmObject: IMVVMObject, bindObject: RichText | Node, attr: LabelAttrBind<RichText> | WatchPath, formatter?: Formatter<BaseValueType, unknown>) {
         // 有 formatter 的时候，一般使用默认属性， richText.string 类型为 string
         let _label: RichText = _typeTransition(bindObject, RichText);
@@ -225,7 +236,8 @@ class VM {
 
 
     public node(mvvmObject: IMVVMObject, node: Node, attr: CustomAttrBind<Node>)
-    public node(mvvmObject: IMVVMObject, node: Node, attr: WatchPath, formatter?: Formatter<boolean, unknown>)
+    public node(mvvmObject: IMVVMObject, node: Node, attr: WatchPath)
+    public node(mvvmObject: IMVVMObject, node: Node, attr: WatchPath, formatter: Formatter<boolean, unknown>)
     public node(mvvmObject: IMVVMObject, node: Node, attr: CustomAttrBind<Node> | WatchPath, formatter?: Formatter<boolean, unknown>) {
         // 有 formatter 的时候，一般使用默认属性， Node 为 node.active 类型为 boolean
         this.bind(mvvmObject, node, attr, formatter);
@@ -235,30 +247,105 @@ class VM {
 
     // }
 
-    public sprite(mvvmObject: IMVVMObject, bindObject: Sprite | Node, attr: SpriteAttrBind<Sprite>)
-    public sprite(mvvmObject: IMVVMObject, bindObject: Sprite | Node, attr: WatchPath, formatter?: Formatter<SpriteFrame, { bundle?: string, loaderKey: string }>)
-    public sprite(mvvmObject: IMVVMObject, bindObject: Sprite | Node, attr: SpriteAttrBind<Sprite> | WatchPath, formatter?: Formatter<SpriteFrame, { bundle?: string, loaderKey: string }>) {
-
-        if (!bindObject) {
-            console.error(`_mvvm-> 绑定对象不存在`);
-            return;
-        }
+    public sprite(mvvmObject: IMVVMObject, bindObject: Sprite | Node, attr: SkinAttrBind<Sprite>)
+    public sprite(mvvmObject: IMVVMObject, bindObject: Sprite | Node, attr: WatchPath)
+    public sprite(mvvmObject: IMVVMObject, bindObject: Sprite | Node, attr: WatchPath, formatter: Formatter<SpriteFrame, { bundle?: string, loaderKey: string }>)
+    public sprite(mvvmObject: IMVVMObject, bindObject: Sprite | Node, attr: SkinAttrBind<Sprite> | WatchPath, formatter?: Formatter<SpriteFrame, { bundle?: string, loaderKey: string }>) {
+        // spriteFrame
         let _comp: Sprite = _typeTransition(bindObject, Sprite);
         this.bind(mvvmObject, _comp, attr, formatter);
     }
 
+    public progressBar(mvvmObject: IMVVMObject, bindObject: ProgressBar | Node, attr: CustomAttrBind<ProgressBar>)
+    public progressBar(mvvmObject: IMVVMObject, bindObject: ProgressBar | Node, attr: WatchPath)
+    public progressBar(mvvmObject: IMVVMObject, bindObject: ProgressBar | Node, attr: WatchPath, formatter: Formatter<number, unknown>)
     public progressBar(mvvmObject: IMVVMObject, bindObject: ProgressBar | Node, attr: CustomAttrBind<ProgressBar> | WatchPath, formatter?: Formatter<number, unknown>) {
         // 有 formatter 的时候，一般使用默认属性， ProgressBar，Slider 为 comp.progress 类型为 number
         let _comp = _typeTransition(bindObject, ProgressBar);
         this.bind(mvvmObject, _comp, attr, formatter);
     }
 
+    public slider(mvvmObject: IMVVMObject, bindObject: Slider | Node, attr: CustomAttrBind<Slider>)
+    public slider(mvvmObject: IMVVMObject, bindObject: Slider | Node, attr: WatchPath)
+    public slider(mvvmObject: IMVVMObject, bindObject: Slider | Node, attr: WatchPath, formatter: Formatter<number, unknown>)
     public slider(mvvmObject: IMVVMObject, bindObject: Slider | Node, attr: CustomAttrBind<Slider> | WatchPath, formatter?: Formatter<number, unknown>) {
         // 有 formatter 的时候，一般使用默认属性， ProgressBar，Slider 为 comp.progress 类型为 number
         let _comp = _typeTransition(bindObject, Slider);
         this.bind(mvvmObject, _comp, attr, formatter);
     }
 
+    public editBox<T extends EditBox, A extends CustomAttrBind<T>>(mvvmObject: IMVVMObject, bindObject: T | Node, attr: A)
+    public editBox<T extends EditBox, A extends CustomAttrBind<T>>(mvvmObject: IMVVMObject, bindObject: T | Node, attr: WatchPath)
+    public editBox<T extends EditBox, A extends CustomAttrBind<T>>(mvvmObject: IMVVMObject, bindObject: T | Node, attr: WatchPath, formatter: Formatter<BaseValueType, unknown>)
+    public editBox<T extends EditBox, A extends CustomAttrBind<T>>(mvvmObject: IMVVMObject, bindObject: T | Node, attr: A | WatchPath, formatter?: Formatter<BaseValueType, unknown>) {
+        // string
+        let _comp = _typeTransition(bindObject, EditBox);
+        this.bind(mvvmObject, _comp, attr, formatter);
+    }
+    public toggle<T extends Toggle, A extends CustomAttrBind<T>>(mvvmObject: IMVVMObject, bindObject: T | Node, attr: A)
+    public toggle<T extends Toggle, A extends CustomAttrBind<T>>(mvvmObject: IMVVMObject, bindObject: T | Node, attr: WatchPath)
+    public toggle<T extends Toggle, A extends CustomAttrBind<T>>(mvvmObject: IMVVMObject, bindObject: T | Node, attr: WatchPath, formatter: Formatter<boolean, unknown>)
+    public toggle<T extends Toggle, A extends CustomAttrBind<T>>(mvvmObject: IMVVMObject, bindObject: T | Node, attr: A | WatchPath, formatter?: Formatter<boolean, unknown>) {
+        // isChecked
+        let _comp = _typeTransition(bindObject, Toggle);
+        this.bind(mvvmObject, _comp, attr, formatter);
+    }
+
+    public uiOpacity<T extends UIOpacity, A extends CustomAttrBind<T>>(mvvmObject: IMVVMObject, bindObject: T | Node, attr: A)
+    public uiOpacity<T extends UIOpacity, A extends CustomAttrBind<T>>(mvvmObject: IMVVMObject, bindObject: T | Node, attr: WatchPath)
+    public uiOpacity<T extends UIOpacity, A extends CustomAttrBind<T>>(mvvmObject: IMVVMObject, bindObject: T | Node, attr: WatchPath, formatter: Formatter<number, unknown>)
+    public uiOpacity<T extends UIOpacity, A extends CustomAttrBind<T>>(mvvmObject: IMVVMObject, bindObject: T | Node, attr: A | WatchPath, formatter?: Formatter<number, unknown>) {
+        // opacity
+        let _comp = _typeTransition(bindObject, UIOpacity);
+        this.bind(mvvmObject, _comp, attr, formatter);
+    }
+
+
+    public uiRenderer<T extends UIRenderer, A extends CustomAttrBind<T>>(mvvmObject: IMVVMObject, bindObject: T | Node, attr: A)
+    public uiRenderer<T extends UIRenderer, A extends CustomAttrBind<T>>(mvvmObject: IMVVMObject, bindObject: T | Node, attr: WatchPath)
+    public uiRenderer<T extends UIRenderer, A extends CustomAttrBind<T>>(mvvmObject: IMVVMObject, bindObject: T | Node, attr: WatchPath, formatter: Formatter<Color, unknown>)
+    public uiRenderer<T extends UIRenderer, A extends CustomAttrBind<T>>(mvvmObject: IMVVMObject, bindObject: T | Node, attr: A | WatchPath, formatter?: Formatter<Color, unknown>) {
+        // color
+        let _comp = _typeTransition(bindObject, UIRenderer);
+        this.bind(mvvmObject, _comp, attr, formatter);
+    }
+    public uiTransform<T extends UITransform, A extends CustomAttrBind<T>>(mvvmObject: IMVVMObject, bindObject: T | Node, attr: A)
+    public uiTransform<T extends UITransform, A extends CustomAttrBind<T>>(mvvmObject: IMVVMObject, bindObject: T | Node, attr: WatchPath)
+    public uiTransform<T extends UITransform, A extends CustomAttrBind<T>>(mvvmObject: IMVVMObject, bindObject: T | Node, attr: WatchPath, formatter: Formatter<Size, unknown>)
+    public uiTransform<T extends UITransform, A extends CustomAttrBind<T>>(mvvmObject: IMVVMObject, bindObject: T | Node, attr: A | WatchPath, formatter?: Formatter<Size, unknown>) {
+        // contentSize
+        let _comp = _typeTransition(bindObject, UITransform);
+        this.bind(mvvmObject, _comp, attr, formatter);
+    }
+
+
+    public button<T extends Button, A extends CustomAttrBind<T>>(mvvmObject: IMVVMObject, bindObject: T | Node, attr: A)
+    public button<T extends Button, A extends CustomAttrBind<T>>(mvvmObject: IMVVMObject, bindObject: T | Node, attr: WatchPath)
+    public button<T extends Button, A extends CustomAttrBind<T>>(mvvmObject: IMVVMObject, bindObject: T | Node, attr: WatchPath, formatter: Formatter<boolean, unknown>)
+    public button<T extends Button, A extends CustomAttrBind<T>>(mvvmObject: IMVVMObject, bindObject: T | Node, attr: A | WatchPath, formatter?: Formatter<boolean, unknown>) {
+        // interactable
+        let _comp = _typeTransition(bindObject, Button);
+        this.bind(mvvmObject, _comp, attr, formatter);
+    }
+
+
+    public skeleton<T extends sp.Skeleton, A extends SkinAttrBind<T>>(mvvmObject: IMVVMObject, bindObject: T | Node, attr: A)
+    public skeleton<T extends sp.Skeleton, A extends SkinAttrBind<T>>(mvvmObject: IMVVMObject, bindObject: T | Node, attr: WatchPath)
+    public skeleton<T extends sp.Skeleton, A extends SkinAttrBind<T>>(mvvmObject: IMVVMObject, bindObject: T | Node, attr: WatchPath, formatter: Formatter<sp.SkeletonData, { bundle?: string, loaderKey: string }>)
+    public skeleton<T extends sp.Skeleton, A extends SkinAttrBind<T>>(mvvmObject: IMVVMObject, bindObject: T | Node, attr: A | WatchPath, formatter?: Formatter<sp.SkeletonData, { bundle?: string, loaderKey: string }>) {
+        // skeletonData
+        let _comp = _typeTransition(bindObject, sp.Skeleton);
+        this.bind(mvvmObject, _comp, attr, formatter);
+    }
+
+    public skin<T extends Renderer, A extends SkinAttrBind<T>>(mvvmObject: IMVVMObject, bindObject: T | Node, attr: A)
+    public skin<T extends Renderer, A extends SkinAttrBind<T>>(mvvmObject: IMVVMObject, bindObject: T | Node, attr: WatchPath)
+    public skin<T extends Renderer, A extends SkinAttrBind<T>>(mvvmObject: IMVVMObject, bindObject: T | Node, attr: WatchPath, formatter: Formatter<Asset, { bundle?: string, loaderKey: string }>)
+    public skin<T extends Renderer, A extends SkinAttrBind<T>>(mvvmObject: IMVVMObject, bindObject: T | Node, attr: A | WatchPath, formatter?: Formatter<Asset, { bundle?: string, loaderKey: string }>) {
+        // 
+        let _comp = _typeTransition(bindObject, Renderer);
+        this.bind(mvvmObject, _comp, attr, formatter);
+    }
 
     /**
      * 关联子节点数量
@@ -269,11 +356,13 @@ class VM {
      * @memberof VM
      */
     public for(target: IMVVMObject, parent: Node, attr: VMForAttr) {
-        attr.watchPath = parseWatchPath(attr.watchPath, target._vmTag);
-        lazyCheckWatchPath(attr.watchPath, target.constructor.name, parent.name);
+        let _attr = instantiate(attr); // 使用副本数据
+        _attr.watchPath = parseWatchPath(_attr.watchPath, target._vmTag);
+
+        lazyCheckWatchPath(_attr.watchPath, target.constructor.name, parent.name);
         // 
-        attr._handler = VMHandlerName.For;
-        this._collect(target, parent, attr);
+        _attr._handler = VMHandlerName.For;
+        this._collect(target, parent, _attr);
     }
 
     /**
@@ -288,10 +377,8 @@ class VM {
         let attr: VMEventAttr = {
             _handler: VMHandlerName.Event,
             onValueChange: formatter,
-            watchPath
+            watchPath: parseWatchPath(watchPath, mvvmObject._vmTag)
         }
-
-        attr.watchPath = parseWatchPath(attr.watchPath, mvvmObject._vmTag);
 
         lazyCheckWatchPath(attr.watchPath, mvvmObject.constructor.name, "event");
         this._collect(mvvmObject, mvvmObject as any, attr);
@@ -445,9 +532,14 @@ class VM {
 
 function VMTag(target: IMVVMObject) {
     if (!target._vmTag) {
-        target._vmTag = `VM-AUTO-${_vmId}`;
-        _vmId++;
+        if (target instanceof Component) {
+            target._vmTag = ("VM-TAG-" + (target.name || "AUTO-") + '<' + target.uuid.replace('.', '') + '>');
+        } else {
+            target._vmTag = `VM-AUTO-${++_vmId}`;
+        }
     }
+
+    return target._vmTag;
 }
 
 

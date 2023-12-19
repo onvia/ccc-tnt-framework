@@ -129,19 +129,6 @@ if (!EDITOR) {
                 this.__$soundName = soundName;
             }
         })
-        js.mixin(js, {
-            /** 获取超类 */
-            hasSuper(clazz: GConstructor<any>, _super: GConstructor<any>): GConstructor {
-                let superClass = js.getSuper(clazz);
-                while (superClass != null) {
-                    if (superClass == _super) {
-                        break;
-                    }
-                    superClass = js.getSuper(superClass);
-                }
-                return superClass;
-            }
-        });
     }
 
 
@@ -179,9 +166,6 @@ declare module "cc" {
     export interface Button {
         __$soundName: string;
 
-    }
-    export namespace js {
-        export function hasSuper(clazz: GConstructor<any>, _super: GConstructor<any>): GConstructor;
     }
     export interface Node {
 

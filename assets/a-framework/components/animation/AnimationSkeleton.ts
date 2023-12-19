@@ -1,5 +1,5 @@
 
-import { AssetManager, isValid, js, log, Size, sp, sys, Texture2D, Vec2, Vec3, _decorator, __private } from "cc";
+import { AssetManager, gfx, ImageAsset, isValid, js, log, Size, sp, sys, Texture2D, Vec2, Vec3, _decorator, __private } from "cc";
 import { DEV, JSB } from "cc/env";
 import "./AnimationBase";
 
@@ -31,6 +31,8 @@ type PlayListener = (sk: AnimationSkeleton, trackEntry: sp.spine.TrackEntry) => 
 @disallowMultiple()
 export default class AnimationSkeleton extends tnt.AnimationBase {
 
+    static shareDataMap: Map<string, sp.SkeletonData> = new Map();
+
     @property({ tooltip: '混合时间' })
     mixTime = 0.2;
 
@@ -44,6 +46,8 @@ export default class AnimationSkeleton extends tnt.AnimationBase {
         this._skeleton = value;
     }
 
+    @property
+    shareData: boolean = false;
 
     isCopySkeletonData = false;
     cacheOriginalSkins: Record<string, { texture: sp.spine.TextureAtlasRegion, size: Size }> = {};
@@ -454,6 +458,121 @@ export default class AnimationSkeleton extends tnt.AnimationBase {
         }
     }
 
+    //#region  ------------------------- 换肤 -------------------------------------
+    /**
+     * 局部换肤
+     * 
+     * @param {string} slotName
+     * @param {Texture2D} texture
+     * @param {(Vec2 | Vec3)} [offset]
+     * @return {*} 
+     * @memberof AnimationSkeleton
+     */
+    setSkinRegion(regionName: string, regionImg: ImageAsset) {
+        if (!regionImg) {
+            console.log(`regionImg 不能为空`);
+            return;
+        }
+        let skeletonData: sp.SkeletonData = this.skeleton.skeletonData;
+        if (!skeletonData) {
+            console.warn(`skeletonData 不能为空`);
+            return;
+        }
+        if (!skeletonData._uuid.endsWith("copy")) {
+            skeletonData = this._copySkeletonData(skeletonData);
+            this.skeleton.skeletonData = skeletonData;
+        }
+        // @ts-ignore
+        let regions: any[] = skeletonData._atlasCache.regions;
+        let texture = skeletonData.textures[0];
+        let region = regions.find((region) => {
+            return region.name == regionName;
+        });
+
+        if (region) {
+            let gfxTexture = texture.getGFXTexture();
+            // @ts-ignore
+            let device = texture._getGFXDevice();
+
+            const temp = new gfx.BufferTextureCopy();
+            temp.texOffset.x = region.x;
+            temp.texOffset.y = region.y;
+            temp.texExtent.width = region.width;
+            temp.texExtent.height = region.height;
+            device.copyTexImagesToTexture([regionImg.data as any], gfxTexture, [temp]);
+        } else {
+            console.log(`未找到指定部位： ${regionName}`);
+        }
+
+    }
+
+    copyTextureWithImageAsset(imageAsset: ImageAsset): Texture2D {
+        let texture2D = new Texture2D();
+        texture2D.reset({
+            width: imageAsset.width,
+            height: imageAsset.height,
+            format: imageAsset.format
+        });
+
+        let gfxTexture = texture2D.getGFXTexture();
+        // @ts-ignore
+        let device = texture2D._getGFXDevice();
+
+        const temp = new gfx.BufferTextureCopy();
+        temp.texOffset.x = 0;
+        temp.texOffset.y = 0;
+        temp.texExtent.width = imageAsset.width;
+        temp.texExtent.height = imageAsset.height;
+        device.copyTexImagesToTexture([imageAsset.data as any], gfxTexture, [temp]);
+        return texture2D;
+    }
+
+    _copySkeletonData(skeletonData: sp.SkeletonData): sp.SkeletonData {
+
+        let uuid = "";
+        if (this.shareData) {
+            uuid = skeletonData._uuid;
+            if (AnimationSkeleton.shareDataMap.has(skeletonData._uuid)) {
+                let data = AnimationSkeleton.shareDataMap.get(skeletonData._uuid);
+                return data;
+            }
+        }
+
+
+        skeletonData.getRuntimeData();
+        let suffix = "_copy";
+
+        let data = new sp.SkeletonData();
+        // @ts-ignore
+        data._uuid = (uuid || this.generateUUID()) + suffix;//任意字符串
+        data._nativeAsset = skeletonData._nativeAsset;
+        data.atlasText = skeletonData.atlasText;
+        data.textures = [this.copyTextureWithImageAsset(skeletonData.textures[0].image)];
+        data.textureNames = skeletonData.textureNames;
+        data._nativeUrl = skeletonData._nativeUrl;
+        // @ts-ignore
+        data._getAtlas();
+
+        if (this.shareData) {
+            AnimationSkeleton.shareDataMap.set(skeletonData._uuid, data);
+        }
+        return data;
+    }
+
+    public generateUUID() {
+        let now = new Date().getTime();
+        if (window.performance && typeof window.performance.now === "function") {
+            now += performance.now();
+        }
+        let uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+            let r = (now + Math.random() * 16) % 16 | 0;
+            now = Math.floor(now / 16);
+            return (c == 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+        });
+        return uuid;
+    }
+
+    //#endregion --------------------------------- 换肤 --------------------------------------------------
     // 获取当前皮肤纹理
     getCurRegionTexture(slotName: string) {
         return this.curRegionTextures[slotName];

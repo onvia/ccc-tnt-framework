@@ -63,7 +63,7 @@ export interface VMForAttr extends VMBaseAttr {
     onChange: (operate: ForOpType) => void;
 }
 
-export interface VMSpriteAttr<R> extends VMCustomAttr<R> {
+export interface VMSkinAttr<R> extends VMCustomAttr<R> {
 
     /** @deprecated 在 VMSpriteAttr 中不要使用这个属性*/
     tween?: null;
@@ -103,8 +103,8 @@ export type CustomAttrBind<T> = {
 }
 
 // 属性绑定
-export type SpriteAttrBind<T = Sprite> = {
-    [P in keyof T as T[P] extends (...args: any[]) => any ? never : P]?: WatchPath | VMSpriteAttr<BaseValueTypeOrOriginal<T[P]>>;
+export type SkinAttrBind<T> = {
+    [P in keyof T as T[P] extends (...args: any[]) => any ? never : P]?: WatchPath | VMSkinAttr<BaseValueTypeOrOriginal<T[P]>>;
 }
 
 // 属性绑定

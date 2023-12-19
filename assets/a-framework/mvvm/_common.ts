@@ -59,6 +59,15 @@ function getDefaultComponentProperty(component: Object) {
     return defKey;
 }
 /**
+ *  注册组件默认属性
+ *
+ * @param {GConstructor<any>} clazz
+ * @param {string} property
+ */
+function registerDefaultComponentProperty(clazz: GConstructor<any>, property: string) {
+    defaultComponentProperty.set(clazz, property);
+}
+/**
  * 注册默认格式化方法
  *
  * @template T
@@ -155,6 +164,7 @@ function parseWatchPath(watchPath: string | string[], tag: string) {
 }
 
 export {
+    registerDefaultComponentProperty,
     getDefaultComponentProperty,
     registerDefaultFormatter,
     getDefaultFormatter,
