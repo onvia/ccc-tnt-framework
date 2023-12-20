@@ -1,6 +1,6 @@
 
 import { Node, CCObject, Component, js, __private, Button, Label, ProgressBar, Sprite, Slider, UIRenderer, UITransform, UIOpacity, SpriteFrame, RichText, EditBox, Toggle, Color, Size, sp, Asset, Renderer, CCClass, instantiate } from "cc";
-import { EDITOR } from "cc/env";
+import { DEBUG, EDITOR } from "cc/env";
 import { BaseValueType, CustomAttrBind, DataChanged, Formatter, LabelAttrBind, ReturnValueType, SkinAttrBind, VMForAttr, WatchPath } from "./_mv_declare";
 
 type DecoratorCompData = { attr: CustomAttrBind<any> | WatchPath, formatter: Formatter<ReturnValueType, unknown>, ctor: GConstructor<any> };
@@ -44,11 +44,16 @@ function mvvm(_tagOrDelay?: string | number, _delay?: number) {
         // 修复 使用类装饰器之后 导致 node.getComponent(组件基类) 返回值 为空的情况
         var base = js.getSuper(constructor);
 
+        // let _bind50Data = constructor["_vmDecoratorDataArray"];
+        // if (_bind50Data) {
+        //     console.log(`VMDecorator-> `);
+        // }
+
         let isVMClass = base?.hasOwnProperty(VM_CLASS_TAG);
         if (isVMClass) {
+            js.value(constructor, VM_CLASS_TAG, true, true);
             return constructor;
         }
-
         base === CCObject && (base = null);
         if (base) {
             base._sealed = false;
@@ -56,7 +61,7 @@ function mvvm(_tagOrDelay?: string | number, _delay?: number) {
 
         let clazz = class extends constructor {
 
-            declare _vmDecoratorDataArray: DecoratorData<eVMFuncType>[];
+            // declare _vmDecoratorDataArray: DecoratorData<eVMFuncType>[];
 
             public _vmTag: string = null;
             public _initVMTag() {
@@ -103,27 +108,48 @@ function mvvm(_tagOrDelay?: string | number, _delay?: number) {
             // }
 
             _vmBind() {
-                !this._vmDecoratorDataArray && (this._vmDecoratorDataArray = []);
-                if (!this._vmDecoratorDataArray.length) {
+                let comp = this.constructor;
+                // @ts-ignore
+                let _vmDecoratorDataArray = comp._vmDecoratorDataArray?.data;
+
+
+                if (!_vmDecoratorDataArray) {
+                    console.log(`VMDecorator-> ${this.name} MVVM 装饰器数据不存在`);
                     return;
                 }
-                for (let i = 0; i < this._vmDecoratorDataArray.length; i++) {
-                    const decoratorData = this._vmDecoratorDataArray[i];
-                    if (!this[decoratorData.propertyKey]) {
-                        console.log(`VMDecorator-> 绑定对象不存在 ${decoratorData.propertyKey}`);
+                for (let key in _vmDecoratorDataArray) {
+                    const decoratorData = _vmDecoratorDataArray[key];
+                    let targetProperty = this[decoratorData.propertyKey];
+                    if (!targetProperty) {
+                        DEBUG && console.log(`VMDecorator-> ${this.name} 对象不存在 ${decoratorData.propertyKey}，尝试自动绑定`);
+                        let ctor = decoratorData?.data?.ctor == Node ? null : decoratorData?.data?.ctor;
                         // @ts-ignore
-                        this.bindNode?.(decoratorData.propertyKey, decoratorData.propertyKey, decoratorData?.data?.ctor);
+                        this.bindNode?.(decoratorData.propertyKey, decoratorData.propertyKey, ctor);
+
+                        targetProperty = this[decoratorData.propertyKey];
                     }
+
+                    // 取出正确的对象
+                    if (decoratorData?.data?.ctor) {
+                        if (js.getClassName(targetProperty) !== js.getClassName(decoratorData.data.ctor)) {
+                            if (decoratorData.data.ctor === Node) {
+                                targetProperty = targetProperty.node;
+                            } else if (tnt.js.hasSuper(decoratorData.data.ctor, Component)) {
+                                targetProperty = targetProperty.getComponent(decoratorData.data.ctor);
+                            }
+                        }
+                    }
+
                     let copyData = instantiate(decoratorData.data); // 这里使用副本数据
                     switch (decoratorData.funcType) {
                         case eVMFuncType.Comp:
                             let compData = copyData as DecoratorCompData;
 
-                            tnt.vm.bind(this, this[decoratorData.propertyKey], compData.attr, compData.formatter);
+                            tnt.vm.bind(this, targetProperty, compData.attr, compData.formatter);
                             break;
                         case eVMFuncType.For:
                             let forData = copyData as DecoratorForData;
-                            tnt.vm.for(this, this[decoratorData.propertyKey], forData);
+                            tnt.vm.for(this, targetProperty, forData);
                             break;
                         case eVMFuncType.Event:
                             let eventData = copyData as DecoratorEventData;
@@ -198,11 +224,15 @@ function doDefine(className, baseClass, ctor) {
     return ctor;
 }
 
+
+
 function _VMBase(funcType: eVMFuncType, data: FuncDataMap[eVMFuncType]) {
     return function (target: any, propertyKey: string) {
-        !target._vmDecoratorDataArray && (target._vmDecoratorDataArray = []);
-        let _vmDecoratorDataArray: DecoratorData<eVMFuncType>[] = target._vmDecoratorDataArray;
-        _vmDecoratorDataArray.push({ propertyKey, funcType: funcType, data: data });
+        // !target._vmDecoratorDataArray && (target._vmDecoratorDataArray = []);
+        // let _vmDecoratorDataArray: DecoratorData<eVMFuncType>[] = target._vmDecoratorDataArray;
+        // _vmDecoratorDataArray.push({ propertyKey, funcType: funcType, data: data });
+
+        tnt._decorator.__CommonPropertyDecorator("_vmDecoratorDataArray", propertyKey, { propertyKey, funcType: funcType, data: data })(target, propertyKey);
     }
 }
 // function VMBase<T extends Component | Node, A extends CustomAttrBind<T>>(attr: A)
@@ -241,7 +271,7 @@ function VMNode(attr: CustomAttrBind<Node>)
 function VMNode(attr: WatchPath)
 function VMNode(attr: WatchPath, formatter: Formatter<boolean, unknown>)
 function VMNode(attr: CustomAttrBind<Node> | WatchPath, formatter?: Formatter<boolean, unknown>) {
-    return VMBase(attr, formatter, null);
+    return VMBase(attr, formatter, Node);
 }
 
 
@@ -284,13 +314,6 @@ function VMUIOpacity(attr: WatchPath)
 function VMUIOpacity(attr: WatchPath, formatter: Formatter<number, unknown>)
 function VMUIOpacity(attr: CustomAttrBind<UIOpacity> | WatchPath, formatter?: Formatter<number, unknown>) {
     return VMBase(attr, formatter, UIOpacity);
-}
-
-function VMUIRenderer(attr: CustomAttrBind<UIRenderer>)
-function VMUIRenderer(attr: WatchPath)
-function VMUIRenderer(attr: WatchPath, formatter: Formatter<Color, unknown>)
-function VMUIRenderer(attr: CustomAttrBind<UIRenderer> | WatchPath, formatter?: Formatter<Color, unknown>) {
-    return VMBase(attr, formatter, UIRenderer);
 }
 
 function VMUITransform(attr: CustomAttrBind<UITransform>)
@@ -345,7 +368,6 @@ declare global {
 
         VMButton: typeof VMButton;
         VMUITransform: typeof VMUITransform;
-        VMUIRenderer: typeof VMUIRenderer;
         VMUIOpacity: typeof VMUIOpacity;
         VMToggle: typeof VMToggle;
         VMEditBox: typeof VMEditBox;
@@ -369,7 +391,6 @@ tnt._decorator.VMEvent = VMEvent;
 
 tnt._decorator.VMButton = VMButton;
 tnt._decorator.VMUITransform = VMUITransform;
-tnt._decorator.VMUIRenderer = VMUIRenderer;
 tnt._decorator.VMUIOpacity = VMUIOpacity;
 tnt._decorator.VMToggle = VMToggle;
 tnt._decorator.VMEditBox = VMEditBox;

@@ -106,7 +106,6 @@ function CommonPropertyDecorator(attrName: string, key?: string, obj?: any) {
 
     return (target: any, propertyKey: string) => {
 
-
         if (!key) {
             key = propertyKey;
         }
@@ -121,55 +120,8 @@ function CommonPropertyDecorator(attrName: string, key?: string, obj?: any) {
             _bind50Data = { constructor: target.constructor, data: { ...tmpData } }
             target.constructor[attrName] = _bind50Data;
         }
-
         _bind50Data.data[propertyKey] = Object.assign({ name: key }, obj || {});
     }
-    // return (target: any, propertyKey: string) => {
-
-    //     let _className = target.constructor.name;
-
-    //     _className = checkClassTag(target);
-
-    //     !_classAttrs[_className] && (_classAttrs[_className] = {});
-
-    //     if (!key) {
-    //         key = propertyKey;
-    //     }
-
-    //     let _classObj = _classAttrs[_className];
-    //     _classObj[propertyKey] = Object.assign({
-    //         name: key,
-    //     }, obj || {});
-
-    //     let base = js.getSuper(target.constructor);
-    //     (base === Object || base === Object || base === Component) && (base = null);
-    //     if (base) {
-
-    //         let parent = checkClassTag(base.prototype);
-    //         !_extends[_className] && (_extends[_className] = parent);
-
-    //         let _super = js.getSuper(base);
-    //         let superIdx = 1;
-    //         while (_super) {
-    //             if (_super === Object || _super === Object || _super === Component) {
-    //                 _super = null;
-    //                 break;
-    //             }
-    //             let superTag = checkClassTag(_super.prototype);
-    //             !_extends[parent] && (_extends[parent] = superTag);
-    //             _super = js.getSuper(_super);
-    //             superIdx++;
-    //         }
-
-    //         while (parent) {
-    //             if (parent in _classAttrs) {
-    //                 assign(_classObj, _classAttrs[parent]);
-    //             }
-    //             parent = _extends[parent];
-    //         }
-    //     }
-    //     target[attrName] = _classAttrs[_className] = _classObj;
-    // }
 }
 
 
@@ -233,6 +185,8 @@ function _registerPlugins() {
  * 装饰器对象，包含各种组件和功能装饰器
  */
 let __decorator = {
+
+    __CommonPropertyDecorator: CommonPropertyDecorator,
 
     /**
      * 插件管理器装饰器
@@ -630,11 +584,11 @@ let __decorator = {
     // },
 
 
-    clazz(name: string) {
-        return (target: Function) => {
-            console.log(`_decorator-> 类装饰器  clazz ${name}`);
-        };
-    },
+    // clazz(name: string) {
+    //     return (target: Function) => {
+    //         console.log(`_decorator-> 类装饰器  clazz ${name}`);
+    //     };
+    // },
 
     // func<T>(name: string) {
     //     return function (target: any, propertyKey: string, descriptor: TypedPropertyDescriptor<T>) {

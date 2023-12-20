@@ -1,9 +1,11 @@
 import { _decorator, Node, Color, Label, math, ProgressBar, ScrollView, Sprite, EditBox, js } from "cc";
-import { DemoVMDevBase } from "./DemoVMDevBase";
 import { VMItem } from "./VMItem";
+import { VMPanel1 } from "./VMPanel1";
+import { VMPanel2 } from "./VMPanel2";
+import { VMPanel3 } from "./VMPanel3";
 
 const { ccclass } = _decorator;
-const { node, sprite, button, label, mvvm, VMLabel, VMComponent,VMSprite, click, clazz } = tnt._decorator;
+const { node, sprite, button, label, mvvm, VMLabel, VMComponent, click } = tnt._decorator;
 
 
 declare global {
@@ -11,92 +13,61 @@ declare global {
 
     }
 }
-// @mvvm() // 不正常
-@ccclass('DemoVMDev')
-@mvvm() // 正常
-export class DemoVMDev extends DemoVMDevBase {
 
-    @VMSprite("*.icon")
-    vmSprite: Sprite = null;
+@ccclass('DemoVMDev')
+export class DemoVMDev extends tnt.SceneBase<DemoVMDevOptions> {
+
+
+
+    @node()
+    Layout: Node = null;
+
+    // 数据
+    data = {
+        name: '小明',
+        info: 'xin',
+        gold: 0,
+        maxGold: 999,
+        diamond: 0,
+        progress: 0,
+        icon: "resources#textures/star2",
+        check: {
+            selectA: true,
+            selectB: false,
+            selectC: false,
+        },
+        obj: {
+            progress: 0
+        },
+        array: [
+            { name: 's1', age: 18, sex: 0 },
+            { name: 's2', age: 16, sex: 1 },
+            { name: 's3', age: 12, sex: 2 },
+        ],
+        index: [2, 1, 6, 3, 7, 5, 4],
+        color: new Color(255, 1, 234, 255),
+    }
+
+    // 当前例子中没有组件与 data2 数据进行绑定
+    data2 = {
+        array: [
+            { name: 'sn1', age: 18, sex: 0 },
+            { name: 'sn2', age: 16, sex: 1 },
+            { name: 'sn3', age: 12, sex: 2 },
+        ],
+        icon: ["resources#textures/star2", "resources#textures/goldcoin"],
+    }
 
     protected onEnable(): void {
-        super.onEnable();
-        this.testFor();
 
     }
-    testEvent() {
 
-        tnt.vm.event(this, "*.diamond", (otps) => {
-            console.log(`DemoVMNormal-> `, otps.newValue);
-
-        });
-        tnt.vm.event(this, ["*.diamond", "*.maxGold"], (otps) => {
-            console.log(`DemoVMNormal-> `, otps.newValue);
-
-        });
-    }
-    testSprite() {
-        let sprite: Sprite = this.getSpriteByName("vmSprite");
-        tnt.vm.sprite(this, sprite, "*.icon");
-
-        tnt.vm.toggle(this, sprite.node, "*.visible", () => { return !!1 });
+    onEnterTransitionStart(sceneName?: string): void {
+        // this.addUI(VMPanel1, this.Layout);
+        // this.addUI(VMPanel2, this.Layout);
+        this.addUI(VMPanel3, this.Layout);
     }
 
-
-    testProgressBar() {
-        let progressBar: ProgressBar = this.getProgressBarByName("vmProgressBar");
-
-        // 会自动对两个参数进行除法处理  这里是  gold/maxGold = 值范围 0~1
-
-        // 简单用法
-        // tnt.vm.progressBar(this, progressBar.node,["*.gold", "*.maxGold"]);
-
-        // 使用缓动
-        tnt.vm.progressBar(this, progressBar.node, {
-            'progress': {
-                watchPath: ["*.gold", "*.maxGold"],
-                tween: 4
-            }
-        });
-    }
-    testFor() {
-        let scrollView = this.findComponent("ScrollView", ScrollView);
-        let vmForContent = this.getNodeByName("vmForContent");
-
-        this.registerButtonClick("btnAddItem", () => {
-            this.data.array.push(this.data2.array.random());
-        });
-
-        this.registerButtonClick("btnDelItem", () => {
-            if (this.data.array.length) {
-                this.data.array.removeOne(this.data.array.random());
-            }
-        });
-
-        tnt.vm.for(this, vmForContent, {
-            watchPath: "*.array",
-            component: VMItem,
-            onChange: (operate) => {
-                if (operate == 'delete' || operate === 'add') {
-                    scrollView.scrollToBottom(0.1);
-                }
-            },
-        });
-    }
-
-    testNodeActive() {
-        let arr = ['selectA', 'selectB', 'selectC'];
-        for (let i = 0; i < 3; i++) {
-            let node = this.getNodeByName("vmChild" + i);
-            tnt.vm.node(this, node, `*.check.${arr[i]}`);
-        }
-    }
-
-
-    @click("TestButton")
-    onClickTest() {
-        console.log("click 1");
-    }
 
     protected onDestroy(): void {
     }

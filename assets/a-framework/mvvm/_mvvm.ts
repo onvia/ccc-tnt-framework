@@ -174,7 +174,7 @@ class VM {
     public bind<T extends Component | Node, A extends CustomAttrBind<T>>(mvvmObject: IMVVMObject, bindObject: T, attr: A | WatchPath, formatter: Formatter<ReturnValueType, unknown>)
     public bind<T extends Component | Node, A extends CustomAttrBind<T>>(mvvmObject: IMVVMObject, bindObject: T, attr: A | WatchPath, formatter?: Formatter<ReturnValueType, unknown>) {
         if (!bindObject) {
-            console.error(`_mvvm-> 绑定对象不存在`);
+            console.error(`_mvvm-> vm.bind 绑定对象不存在`);
             return;
         }
         let _attrs = formatAttr(mvvmObject, bindObject, attr, formatter);
@@ -235,11 +235,14 @@ class VM {
     }
 
 
-    public node(mvvmObject: IMVVMObject, node: Node, attr: CustomAttrBind<Node>)
-    public node(mvvmObject: IMVVMObject, node: Node, attr: WatchPath)
-    public node(mvvmObject: IMVVMObject, node: Node, attr: WatchPath, formatter: Formatter<boolean, unknown>)
-    public node(mvvmObject: IMVVMObject, node: Node, attr: CustomAttrBind<Node> | WatchPath, formatter?: Formatter<boolean, unknown>) {
+    public node(mvvmObject: IMVVMObject, node: Node | Component, attr: CustomAttrBind<Node>)
+    public node(mvvmObject: IMVVMObject, node: Node | Component, attr: WatchPath)
+    public node(mvvmObject: IMVVMObject, node: Node | Component, attr: WatchPath, formatter: Formatter<boolean, unknown>)
+    public node(mvvmObject: IMVVMObject, node: Node | Component, attr: CustomAttrBind<Node> | WatchPath, formatter?: Formatter<boolean, unknown>) {
         // 有 formatter 的时候，一般使用默认属性， Node 为 node.active 类型为 boolean
+        if (node instanceof Component) {
+            node = node.node;
+        }
         this.bind(mvvmObject, node, attr, formatter);
     }
 
@@ -301,14 +304,6 @@ class VM {
     }
 
 
-    public uiRenderer<T extends UIRenderer, A extends CustomAttrBind<T>>(mvvmObject: IMVVMObject, bindObject: T | Node, attr: A)
-    public uiRenderer<T extends UIRenderer, A extends CustomAttrBind<T>>(mvvmObject: IMVVMObject, bindObject: T | Node, attr: WatchPath)
-    public uiRenderer<T extends UIRenderer, A extends CustomAttrBind<T>>(mvvmObject: IMVVMObject, bindObject: T | Node, attr: WatchPath, formatter: Formatter<Color, unknown>)
-    public uiRenderer<T extends UIRenderer, A extends CustomAttrBind<T>>(mvvmObject: IMVVMObject, bindObject: T | Node, attr: A | WatchPath, formatter?: Formatter<Color, unknown>) {
-        // color
-        let _comp = _typeTransition(bindObject, UIRenderer);
-        this.bind(mvvmObject, _comp, attr, formatter);
-    }
     public uiTransform<T extends UITransform, A extends CustomAttrBind<T>>(mvvmObject: IMVVMObject, bindObject: T | Node, attr: A)
     public uiTransform<T extends UITransform, A extends CustomAttrBind<T>>(mvvmObject: IMVVMObject, bindObject: T | Node, attr: WatchPath)
     public uiTransform<T extends UITransform, A extends CustomAttrBind<T>>(mvvmObject: IMVVMObject, bindObject: T | Node, attr: WatchPath, formatter: Formatter<Size, unknown>)
@@ -356,6 +351,10 @@ class VM {
      * @memberof VM
      */
     public for(target: IMVVMObject, parent: Node, attr: VMForAttr) {
+        if (!parent) {
+            console.error(`_mvvm-> vm.for 绑定对象不存在`);
+            return;
+        }
         let _attr = instantiate(attr); // 使用副本数据
         _attr.watchPath = parseWatchPath(_attr.watchPath, target._vmTag);
 
