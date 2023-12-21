@@ -1,8 +1,9 @@
 import { _decorator, Node, Color, math, Label, Sprite } from "cc";
+import { VMItem } from "./VMItem";
 import { VMPanelBase } from "./VMPanelBase";
 
 const { ccclass } = _decorator;
-const { prefabUrl, node, sprite, button, VMLabel, VMSprite, mvvm } = tnt._decorator;
+const { prefabUrl, node, sprite, button, VMLabel, VMSprite, VMFor, mvvm } = tnt._decorator;
 
 
 declare global {
@@ -17,28 +18,38 @@ declare global {
 export class VMPanel1 extends VMPanelBase {
 
 
-    // @VMSprite({ color: { watchPath: "*.color" } })
-    // vmChild0: Sprite = null;
+    @VMSprite({ color: { watchPath: "*.color" } })
+    vmChild0: Sprite = null;
 
-    // @VMLabel({
-    //     string: {
-    //         watchPath: "*.obj.progress",
-    //         tween: 3,
-    //         formatter: (opts) => {
-    //             return (opts.newValue / 100).toFixed(2);
-    //         }
-    //     }
-    // })
-    // label: Label = null;
+    @VMLabel({
+        string: {
+            watchPath: "*.obj.progress",
+            tween: 3,
+            formatter: (opts) => {
+                return (opts.newValue / 100).toFixed(2);
+            }
+        }
+    })
+    label: Label = null;
 
-    data = {
-        name: "Panel1",
-        obj: { progress: 1 },
-        color: new Color(255, 1, 234, 255)
-    }
+
+    // 替换掉之前
+    @VMFor({
+        watchPath: "*.array",
+        component: VMItem,
+        onChange(operate) {
+            if (operate == 'delete' || operate === 'add') {
+                this.scrollView.scrollToBottom(0.1);
+                console.log(`${this.name}-> 数组变化`);
+            }
+        },
+    })
+    vmForContent: Node = null;
+
+
 
     public onCreate(): void {
-
+        this.data.name = "Panel1";
     }
 
     protected onStart(): void {

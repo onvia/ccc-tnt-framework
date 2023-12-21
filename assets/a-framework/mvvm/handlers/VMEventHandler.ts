@@ -8,15 +8,19 @@ export class VMEventHandler extends VMBaseImplHandler {
     public declare attr: VMEventAttr;
 
     protected async _updateValue(newValue: any, oldValue: any, watchPath: WatchPath): Promise<void> {
-        let options = {
-            newValue,
-            oldValue,
-            watchPath,
-            handler: this,
-            attr: this.attr,
-            component: this.userControllerComponent
+
+        if (this.attr.onValueChange) {
+            let options = {
+                newValue,
+                oldValue,
+                watchPath,
+                node: this.node,
+                handler: this,
+                attr: this.attr,
+                component: this.userControllerComponent
+            }
+            this.attr.onValueChange.call(this.userControllerComponent, options);
         }
-        this.attr.onValueChange.call(this.userControllerComponent, options);
     }
 
 }

@@ -110,7 +110,7 @@ function mvvm(_tagOrDelay?: string | number, _delay?: number) {
             _vmBind() {
                 let comp = this.constructor;
                 // @ts-ignore
-                let _vmDecoratorDataArray = comp._vmDecoratorDataArray?.data;
+                let _vmDecoratorDataArray: DecoratorData<eVMFuncType>[] = comp._vmDecoratorDataArray?.data;
 
 
                 if (!_vmDecoratorDataArray) {
@@ -120,22 +120,24 @@ function mvvm(_tagOrDelay?: string | number, _delay?: number) {
                 for (let key in _vmDecoratorDataArray) {
                     const decoratorData = _vmDecoratorDataArray[key];
                     let targetProperty = this[decoratorData.propertyKey];
+                    // @ts-ignore
+                    let ctor = decoratorData?.data?.ctor;
                     if (!targetProperty) {
                         DEBUG && console.log(`VMDecorator-> ${this.name} 对象不存在 ${decoratorData.propertyKey}，尝试自动绑定`);
-                        let ctor = decoratorData?.data?.ctor == Node ? null : decoratorData?.data?.ctor;
+                        let _ctor = ctor == Node ? null : ctor;
                         // @ts-ignore
-                        this.bindNode?.(decoratorData.propertyKey, decoratorData.propertyKey, ctor);
+                        this.bindNode?.(decoratorData.propertyKey, decoratorData.propertyKey, _ctor);
 
                         targetProperty = this[decoratorData.propertyKey];
                     }
 
                     // 取出正确的对象
-                    if (decoratorData?.data?.ctor) {
-                        if (js.getClassName(targetProperty) !== js.getClassName(decoratorData.data.ctor)) {
-                            if (decoratorData.data.ctor === Node) {
+                    if (ctor) {
+                        if (js.getClassName(targetProperty) !== js.getClassName(ctor)) {
+                            if (ctor === Node) {
                                 targetProperty = targetProperty.node;
-                            } else if (tnt.js.hasSuper(decoratorData.data.ctor, Component)) {
-                                targetProperty = targetProperty.getComponent(decoratorData.data.ctor);
+                            } else if (tnt.js.hasSuper(ctor, Component)) {
+                                targetProperty = targetProperty.getComponent(ctor);
                             }
                         }
                     }

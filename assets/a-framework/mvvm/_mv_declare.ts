@@ -59,6 +59,8 @@ export interface VMForAttr extends VMBaseAttr {
     /** @deprecated 在 VMForAttr 中不要使用这个属性 */
     formatter?: null;
 
+    isBidirectional?: false;
+
     /** 数据发生改变 */
     onChange: (operate: ForOpType) => void;
 }

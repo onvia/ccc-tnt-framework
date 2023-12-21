@@ -154,16 +154,17 @@ export abstract class VMBaseHandler<T extends object = any>{
         }
         let isSuccess = this._updateTargetValue(this.target, val);
 
-        if (isSuccess) {
-            let options = {
+        if (isSuccess && this.attr.onValueChange) {
+            let options: FormatterOpts = {
                 newValue,
                 oldValue,
                 watchPath,
+                node: this.node,
                 handler: this,
                 attr: this.attr,
                 component: this.userControllerComponent
             }
-            this.attr.onValueChange?.call(this.userControllerComponent, options);
+            this.attr.onValueChange.call(this.userControllerComponent, options);
         }
     }
 

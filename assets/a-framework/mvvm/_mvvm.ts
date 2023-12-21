@@ -1,14 +1,15 @@
 import { Component, Label, Node, Sprite, EditBox, ProgressBar, RichText, Slider, Toggle, UIOpacity, UIRenderer, js, UITransform, SpriteFrame, Button, sp, Color, Size, Asset, Renderer, instantiate } from "cc";
 import { DEBUG, DEV } from "cc/env";
 import { GVMTween } from "./VMTween";
-import { isArray } from "./VMGeneral";
+import { isArray, isObject } from "./VMGeneral";
 import { VMBaseAttr, WatchPath, Formatter, ReturnValueType, VMForAttr, SkinAttrBind, LabelAttrBind, BaseValueType, VMEventAttr, DataChanged, CustomAttrBind, VMCustomAttr } from "./_mv_declare";
 import * as VMFactory from "./VMFactory";
 import { VMHandlerName } from "./VMFactory";
-import { handlerMap, IVMObserveAutoUnbind, proxyMap, Raw, rawDepsMap, rawMap, rawNameMap, targetMap, unbindMap } from "./reactivity/_internals";
+import { handlerMap, IVMObserveAutoUnbind, proxyMap, Raw, rawDepsMap, rawMap, rawNameMap, targetMap, TriggerOpTypes, unbindMap } from "./reactivity/_internals";
 import { _reactive } from "./reactivity/_reactive";
 import { VMBaseHandler } from "./handlers/VMBaseHandler";
 import { formatAttr, parseWatchPath, registerDefaultComponentProperty, registerDefaultFormatter } from "./_common";
+import { _trigger } from "./reactivity/_reaction";
 
 
 
@@ -425,6 +426,10 @@ class VM {
     }
 
     private _collectTarget<T extends Component | Node>(bindObject: T, watchPath: string) {
+
+        // TODO: 修改为使用 Map key 为 watchPath，value 为 comps
+        // 在调用 _trigger 时，获取数据完整路径，判断所存的 comps 判断组件的有效性
+
         let targetData = this._getDataByPath(watchPath);
         if (!targetData) {
             DEBUG && console.log(`_mvvm-> track [${watchPath}] 找不到数据`);
@@ -438,6 +443,14 @@ class VM {
         targetMap.set(targetData, comps);
     }
 
+    /**
+     * 通过路径设置数据值
+     *
+     * @param {string} path
+     * @param {*} value
+     * @return {*} 
+     * @memberof VM
+     */
     public setValue(path: string, value: any) {
         if (path.startsWith("*")) {
             console.error(`_mvvm-> path 需要为完整路径`);
@@ -454,6 +467,14 @@ class VM {
         proxy[key] = value;
     }
 
+    /**
+     * 通过路径获取一个数据
+     *
+     * @param {string} path
+     * @param {*} defaultValue
+     * @return {*} 
+     * @memberof VM
+     */
     public getValue(path: string, defaultValue: any) {
         if (path.startsWith("*")) {
             console.error(`_mvvm-> path 需要为完整路径`);
@@ -468,6 +489,24 @@ class VM {
         let rs = path.split(".").map(val => val.trim());
         let key = rs[rs.length - 1];
         return proxy[key];
+    }
+
+
+    /**
+     * - 强制执行一次数据的更新流程
+     * - 
+     * @param {object} data
+     * @memberof VM
+     */
+    public trigger(data: object) {
+        if (!isObject(data)) {
+            // 非对象不能使用此方法
+            return;
+        }
+        const raw = rawMap.get(data) || data;
+        const dep = rawDepsMap.get(raw);
+        const name = rawNameMap.get(raw);
+        _trigger(dep, TriggerOpTypes.SET, name, data, data);
     }
 
     private _getDataByPath(path: string) {

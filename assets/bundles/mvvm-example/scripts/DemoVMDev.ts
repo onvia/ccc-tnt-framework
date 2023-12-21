@@ -63,9 +63,10 @@ export class DemoVMDev extends tnt.SceneBase<DemoVMDevOptions> {
     }
 
     onEnterTransitionStart(sceneName?: string): void {
-        // this.addUI(VMPanel1, this.Layout);
-        // this.addUI(VMPanel2, this.Layout);
+        this.addUI(VMPanel1, this.Layout);
+        this.addUI(VMPanel2, this.Layout);
         this.addUI(VMPanel3, this.Layout);
+        this.addUI(VMPanel2, this.Layout);
     }
 
 

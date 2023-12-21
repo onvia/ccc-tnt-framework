@@ -204,3 +204,36 @@ export default class Demo extends Component implements IMVVMObject {
 ```
 
 具体使用请参考项目示例 `MVVM`
+
+
+3. 关于数组的使用
+数组添加元素、删除元素、重新赋值指定索引的元素，都会触发数组数据改变的事件
+如果数组元素是对象，修改对象属性不会触发数组的更新
+
+例如
+```
+    data = {
+        array: [
+            { name: 'sn1', age: 18, sex: 0 },
+            { name: 'sn2', age: 16, sex: 1 },
+            { name: 'sn3', age: 12, sex: 2 },
+        ],
+    }
+
+    // 删除最后一个
+    this.data.array.pop()
+
+    // 删除第一个
+    this.data.array.splice(0, 1);
+
+    // 只留一个元素
+    data.array.length = 1; 
+
+    // 更新元素
+    data.array[0] =  { name: 'sn999', age: 999, sex: 2 },
+
+    // 添加元素
+    data.array[data.array.length] =  { name: data.array.length, age: 4, sex: 2 },
+    data.push({ name: 'sn5', age: 5, sex: 2 });
+
+```

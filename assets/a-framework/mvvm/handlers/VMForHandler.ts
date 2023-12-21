@@ -1,7 +1,7 @@
 
 import { Component, isValid, Node } from "cc";
 import { DEV } from "cc/env";
-import { ForOpType, VMForAttr, WatchPath } from "../_mv_declare";
+import { FormatterOpts, ForOpType, VMForAttr, WatchPath } from "../_mv_declare";
 import { VMBaseImplHandler } from "./VMBaseImplHandler";
 declare global {
     interface IVMItem {
@@ -60,7 +60,9 @@ export class VMForHandler extends VMBaseImplHandler {
                 let promise: Promise<tnt.UIBase> = this.pool.get();
                 this.promises.push(promise);
                 promise.then((ui) => {
-                    ui.node.parent = this.node;
+                    if(ui && isValid(this.node)){
+                        ui.node.parent = this.node;
+                    }
                 });
             }
 
@@ -74,7 +76,7 @@ export class VMForHandler extends VMBaseImplHandler {
             while (this.promises.length > newValue.length) {
                 let promise = this.promises.pop();
                 promise.then((ui) => {
-                    ui.node.removeFromParent();
+                    ui?.node.removeFromParent();
                 });
                 this.pool.put(promise);
             }
@@ -89,13 +91,27 @@ export class VMForHandler extends VMBaseImplHandler {
             promise.then((ui) => {
                 let index = i;
                 let item = ui as any as IVMItem;
-                item.updateItem(newValue[index], index);
+                item?.updateItem(newValue[index], index);
             });
         }
 
         Promise.all(this.promises).then(() => {
             // 刷新完成
-            this.attr.onChange(action);
+            this.attr.onChange?.call(this.userControllerComponent, action);
+
+
+            if (this.attr.onValueChange) {
+                let options: FormatterOpts = {
+                    newValue,
+                    oldValue,
+                    watchPath,
+                    node: this.node,
+                    handler: this,
+                    attr: this.attr,
+                    component: this.userControllerComponent
+                }
+                this.attr.onValueChange?.call(this.userControllerComponent, options);
+            }
         });
     }
 
