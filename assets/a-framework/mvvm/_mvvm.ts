@@ -5,7 +5,7 @@ import { isArray, isObject } from "./VMGeneral";
 import { VMBaseAttr, WatchPath, Formatter, ReturnValueType, VMForAttr, SkinAttrBind, LabelAttrBind, BaseValueType, VMEventAttr, DataChanged, CustomAttrBind, VMCustomAttr } from "./_mv_declare";
 import * as VMFactory from "./VMFactory";
 import { VMHandlerName } from "./VMFactory";
-import { handlerMap, IVMObserveAutoUnbind, proxyMap, Raw, rawDepsMap, rawMap, rawNameMap, targetMap, TriggerOpTypes, unbindMap } from "./reactivity/_internals";
+import { handlerMap, IVMObserveAutoUnbind, mvMap, proxyMap, Raw, rawDepsMap, rawMap, rawNameMap, targetMap, TriggerOpTypes, unbindMap } from "./reactivity/_internals";
 import { _reactive } from "./reactivity/_reactive";
 import { VMBaseHandler } from "./handlers/VMBaseHandler";
 import { formatAttr, parseWatchPath, registerDefaultComponentProperty, registerDefaultFormatter } from "./_common";
@@ -27,13 +27,12 @@ declare global {
 }
 if (DEBUG) {
     window['tntWeakMap'] = {
-        proxyMap, rawMap, rawNameMap, targetMap, handlerMap, unbindMap, rawDepsMap
+        proxyMap, rawMap, rawNameMap, targetMap, handlerMap, unbindMap, rawDepsMap, mvMap
     };
 }
 
 let _vmId = 0;
 class VM {
-    private _mvMap: Map<string, { data: object, tag: string }> = new Map();
 
     constructor() {
     }
@@ -427,20 +426,24 @@ class VM {
 
     private _collectTarget<T extends Component | Node>(bindObject: T, watchPath: string) {
 
-        // TODO: 修改为使用 Map key 为 watchPath，value 为 comps
-        // 在调用 _trigger 时，获取数据完整路径，判断所存的 comps 判断组件的有效性
-
         let targetData = this._getDataByPath(watchPath);
         if (!targetData) {
             DEBUG && console.log(`_mvvm-> track [${watchPath}] 找不到数据`);
             return;
         }
-        let comps = targetMap.get(targetData);
+        let comps = targetMap.get(watchPath);
         if (!comps) { // 使用 Set 天然去重
             comps = new Set();
         }
         comps.add(bindObject);
-        targetMap.set(targetData, comps);
+        targetMap.set(watchPath, comps);
+
+        // let comps = targetMap.get(targetData);
+        // if (!comps) { // 使用 Set 天然去重
+        //     comps = new Set();
+        // }
+        // comps.add(bindObject);
+        // targetMap.set(targetData, comps);
     }
 
     /**
@@ -511,7 +514,7 @@ class VM {
 
     private _getDataByPath(path: string) {
         let rs = path.split(".").map(val => val.trim());
-        let viewModel = this._mvMap.get(rs[0]);
+        let viewModel = mvMap.get(rs[0]);
         if (!viewModel) {
             return null;
         }
@@ -531,7 +534,7 @@ class VM {
             return;
         }
 
-        let has = this._mvMap.has(tag);
+        let has = mvMap.has(tag);
         if (has) {
             console.warn('已存在 tag: ' + tag);
             return;
@@ -543,18 +546,28 @@ class VM {
             data = rawMap.get(data) as T;
         }
 
-        this._mvMap.set(tag, {
+        mvMap.set(tag, {
             data, tag
         })
     }
 
     private _remove(tag: string) {
-        let has = this._mvMap.has(tag);
+        let has = mvMap.has(tag);
         if (!has) {
             DEBUG && console.warn(`_mvvm-> 不存在 ${tag} 数据，无法移除`);
             return;
         }
-        this._mvMap.delete(tag);
+        mvMap.delete(tag);
+
+        let keys: string[] = [];
+        targetMap.forEach((value, key) => {
+            if (key.startsWith(tag)) {
+                keys.push(key);
+            }
+        });
+        keys.forEach((key) => {
+            targetMap.delete(key);
+        });
     }
 
 

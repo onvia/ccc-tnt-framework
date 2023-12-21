@@ -1,20 +1,22 @@
 import { isValid } from "cc";
-import { handlerMap, rawDepsMap, rawNameMap, targetMap, TriggerOpTypes } from "./_internals";
+import { handlerMap, mvMap, rawDepsMap, rawNameMap, targetMap, TriggerOpTypes } from "./_internals";
 
 function _trigger(target: object, type: TriggerOpTypes, key: PropertyKey, newValue: any, oldValue: any) {
-    let targets = targetMap.get(target); //
-    if (targets) {
+    // let comps = targetMap.get(target); //
+    let fullPath = _getFullWatchPath(target, key);
+    let comps = targetMap.get(fullPath); //
+    if (comps) {
         let _deleteArr: any[] = null;
-        let fullPath = _getFullWatchPath(target, key);
-        targets.forEach((_target) => {
-            if (!isValid(_target)) {
+        // let fullPath = _getFullWatchPath(target, key);
+        comps.forEach((_comp) => {
+            if (!isValid(_comp)) {
                 _deleteArr = _deleteArr || [];
-                _deleteArr.push(_target);
+                _deleteArr.push(_comp);
                 return;
             }
-            let vmHandlerArray = handlerMap.get(_target);
+            let vmHandlerArray = handlerMap.get(_comp);
             if (!vmHandlerArray) {
-                console.error(`_reaction-> [${_target.name}] handler 错误，如果此错误在你的预期内，请忽略`);
+                console.error(`_reaction-> [${_comp.name}] handler 错误，如果此错误在你的预期内，请忽略`);
                 return;
             }
             for (let i = 0; i < vmHandlerArray.length; i++) {
@@ -28,7 +30,7 @@ function _trigger(target: object, type: TriggerOpTypes, key: PropertyKey, newVal
         if (_deleteArr) {
             for (let i = 0; i < _deleteArr.length; i++) {
                 const element = _deleteArr[i];
-                targets.delete(element);
+                comps.delete(element);
             }
             _deleteArr = null;
         }
@@ -52,4 +54,4 @@ function _getFullWatchPath(target: object, propertyKey: PropertyKey) {
 
 export {
     _trigger
- };
+};

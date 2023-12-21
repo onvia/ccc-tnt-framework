@@ -63,7 +63,7 @@ export class VMPanelBase extends tnt.UIPanel<VMPanelBaseOptions> {
 
 
         this.registerButtonClick("btnAddItem", () => {
-            this.data.array.push(_data.array.random());
+            this.data.array.push(JSON.parse(JSON.stringify(_data.array.random())));
         });
 
         this.registerButtonClick("btnDelItem", () => {
@@ -72,8 +72,10 @@ export class VMPanelBase extends tnt.UIPanel<VMPanelBaseOptions> {
             }
         });
         this.registerButtonClick("btnUpdateItem", () => {
-            this.data.array[0].name = _data.array.random()?.name;
-            tnt.vm.trigger(this.data.array);
+            if (this.data.array.length) {
+                this.data.array[0].name = _data.array.random()?.name;
+                tnt.vm.trigger(this.data.array);
+            }
         });
     }
 }
