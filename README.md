@@ -56,7 +56,7 @@ tnt.startup(startupOptions);
     - [多语言](./docs/%E5%A4%9A%E8%AF%AD%E8%A8%80.md)
     - [控制器](./docs/%E6%8E%A7%E5%88%B6%E5%99%A8.md)
     - [TiledMap](./docs/TiledMap.md)
-    - [MVVM](./docs/MVVM.md)
+    - [MVVM](./docs/MVVM/MVVM.md)
     - [装饰器](./docs/%E8%A3%85%E9%A5%B0%E5%99%A8.md)
     - [热更新](./docs/%E7%83%AD%E6%9B%B4%E6%96%B0.md)
     - [工具类](./docs/%E5%B7%A5%E5%85%B7%E7%B1%BB.md)
