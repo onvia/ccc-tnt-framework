@@ -11,9 +11,9 @@ declare global {
     }
 }
 
-@mvvm()
 @prefabUrl("mvvm-example#prefabs/VMPanel")
 @ccclass('VMPanel3')
+@mvvm()
 export class VMPanel3 extends VMPanel1 {
 
 

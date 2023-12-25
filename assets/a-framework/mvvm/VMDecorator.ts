@@ -1,6 +1,6 @@
 
-import { Node, CCObject, Component, js, __private, Button, Label, ProgressBar, Sprite, Slider, UIRenderer, UITransform, UIOpacity, SpriteFrame, RichText, EditBox, Toggle, Color, Size, sp, Asset, Renderer, CCClass, instantiate } from "cc";
-import { DEBUG, EDITOR } from "cc/env";
+import { Node, CCObject, Component, js, __private, Button, Label, ProgressBar, Sprite, Slider, UIRenderer, UITransform, UIOpacity, SpriteFrame, RichText, EditBox, Toggle, Color, Size, sp, Asset, Renderer, CCClass, instantiate, error } from "cc";
+import { DEBUG, DEV, EDITOR } from "cc/env";
 import { BaseValueType, CustomAttrBind, DataChanged, Formatter, LabelAttrBind, ReturnValueType, SkinAttrBind, VMForAttr, WatchPath } from "./_mv_declare";
 
 type DecoratorCompData = { attr: CustomAttrBind<any> | WatchPath, formatter: Formatter<ReturnValueType, unknown>, ctor: GConstructor<any> };
@@ -21,12 +21,12 @@ type DecoratorData<T extends eVMFuncType> = { propertyKey: string, funcType: T, 
 
 
 
-const CCCLASS_TAG = '__ctors__'; // Still use this historical name to avoid unsynchronized version issue
+// const CCCLASS_TAG = '__ctors__'; // Still use this historical name to avoid unsynchronized version issue
 const VM_CLASS_TAG = '__vm_ctors__';
 /**
  * mvvm 装饰器
- * - 特殊要求： 推荐在 @ccclass 之后添加 例如：
- *  @ccclass
+ * - 特殊要求： 在 @ccclass() 之后添加 例如：
+ * - @ccclass()
  * - @mvvm()
  * - class UIView { }
  * @param _tagOrDelay //唯一 标签  | 延迟注册
@@ -37,17 +37,16 @@ function mvvm(_tagOrDelay?: string | number, _delay?: number) {
 
     return <T extends { new(...args: any[]): Component }>(constructor: T) => {
         if (EDITOR) {
+            if (DEV && CCClass._isCCClass(constructor)) {
+                error('`@%s` should be used after @ccclass for class "%s"', "mvvm", js.getClassName(constructor));
+                return null;
+            }
             return constructor;
         }
-        let isCCClass = constructor.hasOwnProperty(CCCLASS_TAG);
-
+        // let isCCClass = constructor.hasOwnProperty(CCCLASS_TAG);
+        
         // 修复 使用类装饰器之后 导致 node.getComponent(组件基类) 返回值 为空的情况
         var base = js.getSuper(constructor);
-
-        // let _bind50Data = constructor["_vmDecoratorDataArray"];
-        // if (_bind50Data) {
-        //     console.log(`VMDecorator-> `);
-        // }
 
         let isVMClass = base?.hasOwnProperty(VM_CLASS_TAG);
         if (isVMClass) {
@@ -164,19 +163,19 @@ function mvvm(_tagOrDelay?: string | number, _delay?: number) {
             }
         }
 
-        if (isCCClass) {
+        // if (isCCClass) {
 
-            let className = js.getClassName(constructor);
-            let base: any = constructor;
-            const cls = define(className, constructor, clazz);
+        //     let className = js.getClassName(constructor);
+        //     let base: any = constructor;
+        //     const cls = define(className, constructor, clazz);
 
-            cls._sealed = true;
-            if (base) {
-                base._sealed = false;
-            }
+        //     cls._sealed = true;
+        //     if (base) {
+        //         base._sealed = false;
+        //     }
 
-            declareProperties(cls, base);
-        }
+        //     declareProperties(cls, base);
+        // }
 
 
         js.value(clazz, VM_CLASS_TAG, true, true);
@@ -184,47 +183,47 @@ function mvvm(_tagOrDelay?: string | number, _delay?: number) {
     }
 }
 
-function define(className, baseClass, ctor) {
-    // @ts-ignore
-    let frame = cc._RF.peek();
+// function define(className, baseClass, ctor) {
+//     // @ts-ignore
+//     let frame = cc._RF.peek();
 
-    if (frame && js.isChildClassOf(baseClass, Component)) {
-        className = className || frame.script;
-    }
-    const cls = doDefine(className, baseClass, ctor);
+//     if (frame && js.isChildClassOf(baseClass, Component)) {
+//         className = className || frame.script;
+//     }
+//     const cls = doDefine(className, baseClass, ctor);
 
-    if (frame) {
-        // 基础的 ts, js 脚本组件
-        if (js.isChildClassOf(baseClass, Component)) {
-            const uuid = frame.uuid;
-            if (uuid) {
-                js._setClassId(uuid, cls);
-            }
-            frame.cls = cls;
-        } else if (!js.isChildClassOf(frame.cls, Component)) {
-            frame.cls = cls;
-        }
-    }
-    return cls;
-}
-function declareProperties(cls, baseClass) {
-    cls.__props__ = [];
-    if (baseClass && baseClass.__props__) {
-        cls.__props__ = baseClass.__props__.slice();
-    }
-    let attributeUtils = CCClass.Attr;
-    const attrs = attributeUtils.getClassAttrs(cls);
-    cls.__values__ = cls.__props__.filter((prop) => attrs[`${prop + attributeUtils.DELIMETER}serializable`] !== false);
-}
+//     if (frame) {
+//         // 基础的 ts, js 脚本组件
+//         if (js.isChildClassOf(baseClass, Component)) {
+//             const uuid = frame.uuid;
+//             if (uuid) {
+//                 js._setClassId(uuid, cls);
+//             }
+//             frame.cls = cls;
+//         } else if (!js.isChildClassOf(frame.cls, Component)) {
+//             frame.cls = cls;
+//         }
+//     }
+//     return cls;
+// }
+// function declareProperties(cls, baseClass) {
+//     cls.__props__ = [];
+//     if (baseClass && baseClass.__props__) {
+//         cls.__props__ = baseClass.__props__.slice();
+//     }
+//     let attributeUtils = CCClass.Attr;
+//     const attrs = attributeUtils.getClassAttrs(cls);
+//     cls.__values__ = cls.__props__.filter((prop) => attrs[`${prop + attributeUtils.DELIMETER}serializable`] !== false);
+// }
 
-function doDefine(className, baseClass, ctor) {
-    js.value(ctor, CCCLASS_TAG, true, true);
-    if (baseClass) {
-        ctor.$super = baseClass;
-    }
-    js.setClassName(className, ctor);
-    return ctor;
-}
+// function doDefine(className, baseClass, ctor) {
+//     js.value(ctor, CCCLASS_TAG, true, true);
+//     if (baseClass) {
+//         ctor.$super = baseClass;
+//     }
+//     js.setClassName(className, ctor);
+//     return ctor;
+// }
 
 
 

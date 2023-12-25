@@ -20,8 +20,8 @@ const _data = {
 }
 
 //@prefabUrl("{bundle}#{path}/VMPanelBase")
-@mvvm()
 @ccclass('VMPanelBase')
+@mvvm()
 export class VMPanelBase extends tnt.UIPanel<VMPanelBaseOptions> {
 
 
