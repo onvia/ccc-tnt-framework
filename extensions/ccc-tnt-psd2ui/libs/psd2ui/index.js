@@ -1457,7 +1457,9 @@
                 console.log(`Texture9Utils-> 设置的九宫格 bottom， top 数据不合理，请重新设置`);
                 return _canvas;
             }
-            let newCanvas = canvas__default["default"].createCanvas(Math.min(cw, border.l + border.r + space) || cw, Math.min(ch, border.b + border.t + space) || ch);
+            let imgW = border.l + border.r == 0 ? cw : Math.min(cw, border.l + border.r + space);
+            let imgH = border.b + border.t == 0 ? ch : Math.min(ch, border.b + border.t + space);
+            let newCanvas = canvas__default["default"].createCanvas(imgW, imgH);
             let ctx = newCanvas.getContext("2d");
             // 左上
             ctx.drawImage(_canvas, 0, 0, left + space, top + space, 0, 0, left + space, top + space);
@@ -1549,7 +1551,13 @@
                 }
             }
             this.text = textSource.text;
-            this.fontSize = style.fontSize;
+            // 可能会对文本图层进行缩放，这里计算缩放之后的时机字体大小
+            if (Math.abs(1 - textSource.transform[0]) > 0.001) {
+                this.fontSize = Math.round(style.fontSize * textSource.transform[0] * 100) / 100;
+            }
+            else {
+                this.fontSize = style.fontSize;
+            }
             this.offsetY = config.textOffsetY[this.fontSize] || config.textOffsetY["default"] || 0;
             this.parseSolidFill();
             this.parseStroke();
