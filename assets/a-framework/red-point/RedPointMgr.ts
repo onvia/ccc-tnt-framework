@@ -1,5 +1,6 @@
 
 import { _decorator, Node, director, Director, isValid } from 'cc';
+import { RedPointConfig } from './RedPointConfing';
 const { ccclass } = _decorator;
 
 
@@ -11,6 +12,7 @@ declare global {
 
 // CHANGELOG: 
 // 1. 增加更新标记，在每帧后统一更新，处理一帧内多次调用相同红点更新
+// 2. 增加红点更新优先级
 
 @ccclass('RedPointMgr')
 class RedPointMgr extends tnt.EventMgr {
@@ -48,7 +50,7 @@ class RedPointMgr extends tnt.EventMgr {
         }
 
         // 设置 根节点，如果没有被创建，则创建一个默认的
-        this.root = this._redPointMap.get(rootId) ?? this._createRedPoint({ id: rootId, name: 'main', parent: 0, showType: tnt.RedPoint.ShowType.Normal, }, null);
+        this.root = this._redPointMap.get(rootId) ?? this._createRedPoint({ id: rootId, name: 'main', parent: 0, showType: tnt.RedPoint.ShowType.Normal, priority: 0 }, null);
 
         // 对每一个节点设置 父节点
         this._redPointMap.forEach((redPoint) => {
@@ -394,6 +396,15 @@ class RedPointMgr extends tnt.EventMgr {
     public removeDisplay(id: number) {
         let display = this._redPointDisplayMap.get(id);
         this._removeDisplay(id, display);
+    }
+
+    /**
+     *
+     *
+     * @memberof RedPointMgr
+     */
+    setParentTypeUseChildTypeWhenHasSort(b: boolean) {
+        RedPointConfig.parentTypeUseHighestChildTypeWhenHasSort = b;
     }
 
     public destroy() {
