@@ -19,7 +19,7 @@
 
 ## 用法
 
-装饰器是对普通方法的包装，二者可以混合使用
+装饰器是对普通方法的包装，在使用了 `@mvvm` 的情况下二者可以混合使用
 
 [普通方法](./%E6%99%AE%E9%80%9A%E6%96%B9%E6%B3%95.md)
 
@@ -60,4 +60,9 @@
     data.array[data.array.length] =  { name: data.array.length, age: 4, sex: 2 },
     data.push({ name: 'sn5', age: 5, sex: 2 });
 
+    // 强制触发一次 数据的更新
+    // 当修改了数组内元素的属性，这时候无法触发数组的更新
+    data.array[0].name = "test"; 、
+    // 如果在使用 vm.for， 这时候则需要手动调用一次强制更新
+    tnt.vm.trigger(data.array);
 ```
