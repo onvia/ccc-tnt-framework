@@ -95,6 +95,8 @@ class RedPoint<Options = any> extends tnt.EventMgr {
     }
 
     public children: RedPoint[] = [];
+
+
     private _count: number = 0;
     public get count(): number {
         return this._count;
@@ -113,6 +115,13 @@ class RedPoint<Options = any> extends tnt.EventMgr {
         }
     }
 
+    public get isDisplay() {
+        return this.count > 0;
+    }
+
+    public get isLeaf(): boolean {
+        return this.children.length === 0;
+    }
 
     /** 优先级 数值越小越先执行 */
     private _priority = 0;
@@ -190,7 +199,7 @@ class RedPoint<Options = any> extends tnt.EventMgr {
      * @memberof RedPoint
      */
     public setCount(count: number) {
-        if (this.isLeaf()) {
+        if (this.isLeaf) {
             this._updateCount(count);
             // 更新完数据之后 关闭标识
             this.isDirty = false;
@@ -258,13 +267,12 @@ class RedPoint<Options = any> extends tnt.EventMgr {
      * @memberof RedPoint
      */
     public _refresh() {
-        if (this.isLeaf()) {
+        if (this.isLeaf) {
             this._refreshParent();
         } else {
             this._refreshSelf();
         }
     }
-
 
     private _preSortSiblings(_priorityDirty: boolean) {
         if (this._priorityDirty) {
@@ -285,18 +293,26 @@ class RedPoint<Options = any> extends tnt.EventMgr {
             return a.priority - b.priority;
         });
         this._priorityDirty = false;
+        if (this.isLeaf) {
+            return;
+        }
 
         // 如果是手动调用的排序，则需要判断设置父红点的红点类型
         if (this._isManualUpdatePriority) {
             this._isManualUpdatePriority = false;
             // 父级红点类型使用 最高优先级的子红点类型
             if (RedPointConfig.parentTypeUseHighestChildTypeWhenHasSort) {
-                this.showType = this.children[0]?.showType ?? this.showType;
+                for (let i = 0; i < this.children.length; i++) {
+                    const child = this.children[i];
+                    if (child.isDisplay) {
+                        this.showType = child.showType ?? this.showType;
+                        // // 更新父节点
+                        // this.parent && (this.parent.priorityDirty = true);
+                        break;
+                    }
+                }
             }
         }
-    }
-    public isLeaf() {
-        return this.children.length === 0;
     }
 
     public destroy() {

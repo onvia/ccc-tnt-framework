@@ -320,7 +320,7 @@ class RedPointMgr extends tnt.EventMgr {
             return false;
         }
         let refresh = false;
-        if (redPoint.isLeaf()) {
+        if (redPoint.isLeaf) {
             let count = this._redPointRequestUpdate.requestUpdate(redPoint.redPointInfo.parent, redPoint.id, redPoint.options);
             if (count >= 0) {
                 redPoint.setCount(count);
@@ -376,7 +376,7 @@ class RedPointMgr extends tnt.EventMgr {
     private _updateDisplay(id: number, redPoint: tnt.RedPoint, display: tnt.RedPointComp) {
         if (isValid(display, true) && isValid(display.node, true)) {
             display.updateCount(redPoint.count);
-            display.updateDisplay(redPoint.enabled && redPoint.count > 0); // 红点启用并且数量大于0
+            display.updateDisplay(redPoint.enabled && redPoint.isDisplay); // 红点启用并且数量大于0
 
         } else {
             this._removeDisplay(id, display);
