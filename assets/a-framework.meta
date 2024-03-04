@@ -1,19 +1,14 @@
 {
-  "ver": "1.1.0",
+  "ver": "1.2.0",
   "importer": "directory",
   "imported": true,
   "uuid": "68f660a0-0d83-44eb-a3d6-a09883d6b67a",
   "files": [],
   "subMetas": {},
   "userData": {
-    "compressionType": {
-      "wechatgame": "subpackage"
-    },
-    "isRemoteBundle": {
-      "wechatgame": false
-    },
     "isBundle": true,
     "priority": 20,
-    "bundleName": "framework"
+    "bundleName": "framework",
+    "bundleConfigID": "auto_b4ksUjehhFU6SAXi6LSO+t"
   }
 }
