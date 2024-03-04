@@ -434,6 +434,25 @@ let __decorator = {
         }
         return CommonPropertyDecorator("__$$50bind__", key, { type, parent });
     },
+
+    /**
+     * 给节点添加脚本组件
+     *
+     * @param {(string | GConstructor<Component>)} [name]
+     * @param {GConstructor<Component>} [type]
+     * @param {string} [parent]
+     * @return {*} 
+     */
+    addScript(name?: string | GConstructor<Component>, type?: GConstructor<Component>, parent?: string) {
+        let key = null;
+        if (name) {
+            if (typeof name == "string") {
+                key = name;
+            }
+        }
+        return CommonPropertyDecorator("__$$50bind__", key, { type, parent, add: true });
+    },
+
     /**
      * 非序列化装饰器，用于标记属性不会被序列化
      */

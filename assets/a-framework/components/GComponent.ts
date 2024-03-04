@@ -183,7 +183,7 @@ class GComponent<Options = any> extends Component {
         if (_nodes) {
             for (const key in _nodes) {
                 let param = _nodes[key];
-                this.bindNode(key, param.name, param.type, param.parent);
+                this.bindNode(key, param.name, param.type, param.parent, param.add);
             }
         }
 
@@ -223,13 +223,23 @@ class GComponent<Options = any> extends Component {
         }
     }
 
-    protected bindNode(property: string, nodeName: string, type: GConstructor<Component>, parentName: string = null) {
+    protected bindNode(property: string, nodeName: string, type: GConstructor<Component>, parentName: string = null, add: boolean = false) {
         let parent: Node = null;
         if (parentName) {
             parent = this.find(parentName)
         }
         if (type) {
-            let _comp = this.findComponent(nodeName, type, parent);
+            let node = this.find(nodeName, parent);
+
+            let _comp = node?.getComponent(type);
+
+            if (add && node && !_comp) {
+                _comp = node.addComponent(type);
+                if (_comp instanceof tnt.GComponent) {
+                    _comp.loaderKey = this.loaderKey;
+                }
+            }
+            // let _comp = this.findComponent(nodeName, type, parent);
             this[property] = _comp;
         } else {
 
@@ -237,7 +247,6 @@ class GComponent<Options = any> extends Component {
             this[property] = node;
         }
     }
-
     /**
      * 分帧执行
      * @param {*} generator Generator 类型方法
