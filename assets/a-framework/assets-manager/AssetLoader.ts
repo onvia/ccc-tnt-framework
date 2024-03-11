@@ -1078,7 +1078,7 @@ class AssetLoader implements IPluginMgr {
         _handlerExts.push(ext);
 
         let customDownloaderHandler = (url, options, onComplete) => {
-            options.responseType = "arraybuffer";
+            options.xhrResponseType = "arraybuffer";
             downloadFile(url, options, options.onFileProgress, onComplete);
         }
         let customParserHandler = (file, options, cb) => {
