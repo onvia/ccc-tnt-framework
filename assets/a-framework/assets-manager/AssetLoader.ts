@@ -1030,7 +1030,14 @@ class AssetLoader implements IPluginMgr {
      * @return {Object} 返回包含解析后的路径和bundle的对象
      */
     parsePath(path: string): { path: string, bundle: string } {
+        if (!path) {
+            console.log(`AssetLoader-> parse path error`);
+            return null;
+        }
         let bundle = null;
+        if (!path.split) {
+            return null;
+        }
         // 以 '#' 为分隔符，分割路径字符串
         let arr = path.split("#");
         if (arr.length === 2) {
@@ -1071,7 +1078,7 @@ class AssetLoader implements IPluginMgr {
         _handlerExts.push(ext);
 
         let customDownloaderHandler = (url, options, onComplete) => {
-            options.responseType = "arraybuffer";
+            options.xhrResponseType = "arraybuffer";
             downloadFile(url, options, options.onFileProgress, onComplete);
         }
         let customParserHandler = (file, options, cb) => {

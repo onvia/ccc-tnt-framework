@@ -1,5 +1,5 @@
 import "../../../components/GComponent"
-import { _decorator, Button, Node, EditBox, Toggle, Label, Sprite, Slider, ToggleContainer, ProgressBar, Layout, js, Prefab } from "cc";
+import { _decorator, Button, Node, EditBox, Toggle, Label, Sprite, Slider, ToggleContainer, ProgressBar, Layout, js, Prefab, ScrollView } from "cc";
 const { ccclass, } = _decorator;
 
 
@@ -170,7 +170,16 @@ class UIBase<Options = any> extends tnt.GComponent<Options> implements IUIAble {
     public getSliderByName(name: string, parent?: Node): Slider {
         return this.findComponent(name, Slider, parent);
     }
+    public getEditBoxByName(name: string, parent?: Node): EditBox {
+        return this.findComponent(name, EditBox, parent);
+    }
 
+    public getLayoutByName(name: string, parent?: Node): Layout {
+        return this.findComponent(name, Layout, parent);
+    }
+    public getScrollViewByName(name: string, parent?: Node): ScrollView {
+        return this.findComponent(name, ScrollView, parent);
+    }
     public setLabelText(name: NodeNoun<Node>, text: string | number, parent?: Node) {
         let label: Label = null;
         if (name instanceof Node) {

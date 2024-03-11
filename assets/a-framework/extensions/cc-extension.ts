@@ -160,6 +160,7 @@ if (!EDITOR) {
         return false;
     }
 }
+
 declare module "cc" {
 
     export interface Button {

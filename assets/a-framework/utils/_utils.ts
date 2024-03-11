@@ -8,3 +8,4 @@ import "./TimeUtils";
 import "./TweenUtils";
 import "./DebugUtils";
 import "./FunctionUtils";
+import "./js";

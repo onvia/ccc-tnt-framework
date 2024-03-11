@@ -6,9 +6,9 @@ export type WatchPath = string | string[];
 export type BaseValueType = string[] | string | number | number[];
 export type ReturnValueType = BaseValueType | boolean | CCObject | ValueType | object;
 
-export type FormatterOpts = { handler: VMBaseHandler, newValue: any, oldValue?: any, node?: Node, /*nodeIdx?: number,*/ watchPath?: WatchPath, readonly attr?: VMBaseAttr };
+export type FormatterOpts = { handler: VMBaseHandler, newValue: any, oldValue?: any, node?: Node, /*nodeIdx?: number,*/ watchPath?: WatchPath, readonly attr?: VMBaseAttr, component?: Component };
 export type Formatter<T, E> = (options: FormatterOpts & E) => T | Promise<T> | T[] | Promise<T[]>;
-export type DataChanged = (options: { handler: VMBaseHandler, newValue: any, oldValue?: any, watchPath?: WatchPath, readonly attr?: VMBaseAttr }) => void;
+export type DataChanged = (options: { handler: VMBaseHandler, newValue: any, oldValue?: any, watchPath?: WatchPath, readonly attr?: VMBaseAttr, component?: Component }) => void;
 export interface IVMItem {
     updateItem(data, index, ...args);
 }
@@ -59,11 +59,13 @@ export interface VMForAttr extends VMBaseAttr {
     /** @deprecated 在 VMForAttr 中不要使用这个属性 */
     formatter?: null;
 
+    isBidirectional?: false;
+
     /** 数据发生改变 */
     onChange: (operate: ForOpType) => void;
 }
 
-export interface VMSpriteAttr<R> extends VMCustomAttr<R> {
+export interface VMSkinAttr<R> extends VMCustomAttr<R> {
 
     /** @deprecated 在 VMSpriteAttr 中不要使用这个属性*/
     tween?: null;
@@ -99,15 +101,15 @@ type BaseValueTypeOrOriginal<T> = T extends string ? number | number[] | string 
 
 // 属性绑定
 export type CustomAttrBind<T> = {
-    [P in keyof T]?: WatchPath | VMCustomAttr<BaseValueTypeOrOriginal<T[P]>>;
+    [P in keyof T as T[P] extends (...args: any[]) => any ? never : P]?: WatchPath | VMCustomAttr<BaseValueTypeOrOriginal<T[P]>>;
 }
 
 // 属性绑定
-export type SpriteAttrBind<T = Sprite> = {
-    [P in keyof T]?: WatchPath | VMSpriteAttr<BaseValueTypeOrOriginal<T[P]>>;
+export type SkinAttrBind<T> = {
+    [P in keyof T as T[P] extends (...args: any[]) => any ? never : P]?: WatchPath | VMSkinAttr<BaseValueTypeOrOriginal<T[P]>>;
 }
 
 // 属性绑定
 export type LabelAttrBind<T = Label | RichText> = {
-    [P in keyof T]?: WatchPath | VMLabelAttr<BaseValueTypeOrOriginal<T[P]>>;
+    [P in keyof T as T[P] extends (...args: any[]) => any ? never : P]?: WatchPath | VMLabelAttr<BaseValueTypeOrOriginal<T[P]>>;
 }

@@ -328,7 +328,7 @@ class ResourcesMgr {
                 }
                 let node = instantiate(assets);
                 let component = node.getComponent(cls) || node.addComponent(cls);
-                if (!component.loaderKey) {
+                if (!component._loaderKey) {
                     component.loaderKey = loader.key;
                 }
                 component.bindNodes();
@@ -367,7 +367,7 @@ class ResourcesMgr {
         }
         let node = instantiate(assets.asset as Prefab);
         let component = node.getComponent(cls) || node.addComponent(cls);
-        if (!component.loaderKey) {
+        if (!component._loaderKey) {
             component.loaderKey = loader.key;
         }
         component.bindNodes();

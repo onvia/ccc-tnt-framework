@@ -57,7 +57,21 @@ export class RedPointDemo extends tnt.SceneBase {
             let redPointRoot = node.getChildByName("RedPoint");
             tnt.redPointMgr.setDisplayProxy(parseInt(key),redPointRoot, RedPointCompProxy);
         }
+
+
+        // 红点优先级
+        let _10011 = tnt.redPointMgr.getRedPoint(10011);
+        let _10012 = tnt.redPointMgr.getRedPoint(10012);
+        let _10013 = tnt.redPointMgr.getRedPoint(10013);
+               
+        _10012.priority = -1;
+        _10013.priority = -2;
+        _10011.priority = 1;
+        
     }
 
+    onExit(): void {
+        tnt.redPointMgr.clear();
+    }
 
 }

@@ -106,7 +106,6 @@ function CommonPropertyDecorator(attrName: string, key?: string, obj?: any) {
 
     return (target: any, propertyKey: string) => {
 
-
         if (!key) {
             key = propertyKey;
         }
@@ -121,55 +120,8 @@ function CommonPropertyDecorator(attrName: string, key?: string, obj?: any) {
             _bind50Data = { constructor: target.constructor, data: { ...tmpData } }
             target.constructor[attrName] = _bind50Data;
         }
-
         _bind50Data.data[propertyKey] = Object.assign({ name: key }, obj || {});
     }
-    // return (target: any, propertyKey: string) => {
-
-    //     let _className = target.constructor.name;
-
-    //     _className = checkClassTag(target);
-
-    //     !_classAttrs[_className] && (_classAttrs[_className] = {});
-
-    //     if (!key) {
-    //         key = propertyKey;
-    //     }
-
-    //     let _classObj = _classAttrs[_className];
-    //     _classObj[propertyKey] = Object.assign({
-    //         name: key,
-    //     }, obj || {});
-
-    //     let base = js.getSuper(target.constructor);
-    //     (base === Object || base === Object || base === Component) && (base = null);
-    //     if (base) {
-
-    //         let parent = checkClassTag(base.prototype);
-    //         !_extends[_className] && (_extends[_className] = parent);
-
-    //         let _super = js.getSuper(base);
-    //         let superIdx = 1;
-    //         while (_super) {
-    //             if (_super === Object || _super === Object || _super === Component) {
-    //                 _super = null;
-    //                 break;
-    //             }
-    //             let superTag = checkClassTag(_super.prototype);
-    //             !_extends[parent] && (_extends[parent] = superTag);
-    //             _super = js.getSuper(_super);
-    //             superIdx++;
-    //         }
-
-    //         while (parent) {
-    //             if (parent in _classAttrs) {
-    //                 assign(_classObj, _classAttrs[parent]);
-    //             }
-    //             parent = _extends[parent];
-    //         }
-    //     }
-    //     target[attrName] = _classAttrs[_className] = _classObj;
-    // }
 }
 
 
@@ -233,6 +185,8 @@ function _registerPlugins() {
  * 装饰器对象，包含各种组件和功能装饰器
  */
 let __decorator = {
+
+    __CommonPropertyDecorator: CommonPropertyDecorator,
 
     /**
      * 插件管理器装饰器
@@ -480,6 +434,25 @@ let __decorator = {
         }
         return CommonPropertyDecorator("__$$50bind__", key, { type, parent });
     },
+
+    /**
+     * 给节点添加脚本组件
+     *
+     * @param {(string | GConstructor<Component>)} [name]
+     * @param {GConstructor<Component>} [type]
+     * @param {string} [parent]
+     * @return {*} 
+     */
+    addScript(name?: string | GConstructor<Component>, type?: GConstructor<Component>, parent?: string) {
+        let key = null;
+        if (name) {
+            if (typeof name == "string") {
+                key = name;
+            }
+        }
+        return CommonPropertyDecorator("__$$50bind__", key, { type, parent, add: true });
+    },
+
     /**
      * 非序列化装饰器，用于标记属性不会被序列化
      */
@@ -527,6 +500,30 @@ let __decorator = {
             }
 
             return descriptor
+        }
+    },
+
+    /**
+     * 方法装饰器
+     *
+     * @param {string} name
+     * @param {string} [parent]
+     * @return {*} 
+     */
+    click(name: string, parent?: string) {
+        return (target: any,
+            propertyKey: string,
+            descriptor: TypedPropertyDescriptor<any>) => {
+
+            let key = null;
+            if (name) {
+                if (typeof name == "string") {
+                    key = name;
+                }
+            }
+
+            CommonPropertyDecorator("__$$50btnClick__", key, { parent, func: descriptor.value })(target, propertyKey);
+            return descriptor;
         }
     },
 
@@ -676,16 +673,23 @@ let __decorator = {
     // }
 }
 
+
+
+type ___IDecorator = typeof __decorator;
 /**
  * 全局声明扩展接口，添加 _decorator 对象
  */
 declare global {
+    interface __IDecorator extends ___IDecorator {
+
+    }
     interface ITNT {
-        _decorator: typeof __decorator;
+        _decorator: __IDecorator;
     }
 }
 
 /**
  * 将 _decorator 对象添加到全局 ITNT 接口中
  */
+// @ts-ignore
 tnt._decorator = __decorator;

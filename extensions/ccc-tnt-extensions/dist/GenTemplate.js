@@ -34,8 +34,9 @@ class GenTemplate {
             let remoteVersion = lastRelease.data.tag_name;
             let result = this._versionCompareHandle(remoteVersion, localVersionConfig.version);
             if (result > 0) {
+                let isBeta = remoteVersion.toLowerCase().includes('beta') || remoteVersion.toLowerCase().includes('alpha');
                 // 更新
-                console.log(`[TNT] 框架发现新版本。当前版本： ${localVersionConfig.version}，新版本： ${remoteVersion}`);
+                console.log(`[TNT] 框架发现新版本${isBeta ? "（测试版）" : ""}。当前版本： ${localVersionConfig.version}，新版本： ${remoteVersion}`);
             }
             else {
                 console.log(`[TNT] 框架无更新。`);
@@ -175,7 +176,7 @@ class GenTemplate {
         }
     }
     digitization(tag) {
-        if (tag.toLowerCase().includes('beta')) {
+        if (tag.toLowerCase().includes('beta') || tag.toLowerCase().includes('alpha')) {
             return 1;
         }
         if (tag.toLowerCase().includes('release') || tag == '') {

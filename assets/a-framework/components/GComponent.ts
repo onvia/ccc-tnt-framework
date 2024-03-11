@@ -29,7 +29,7 @@ declare global {
 @ccclass('GComponent')
 class GComponent<Options = any> extends Component {
 
-    protected declare _loaderKey: string;
+    public declare _loaderKey: string;
 
     public get loaderKey(): string {
         if (!this._loaderKey) {
@@ -183,22 +183,11 @@ class GComponent<Options = any> extends Component {
         if (_nodes) {
             for (const key in _nodes) {
                 let param = _nodes[key];
-                let parent: Node = null;
-                if (param.parent) {
-                    parent = this.find(param.parent)
-                }
-                if (param.type) {
-                    let _comp = this.findComponent(param.name, param.type, parent);
-                    this[key] = _comp;
-                } else {
-
-                    let node = this.find(param.name, parent);
-                    this[key] = node;
-                }
+                this.bindNode(key, param.name, param.type, param.parent, param.add);
             }
         }
 
-        
+
 
         // @ts-ignore
         let _btnSounds = comp.__$$50btnSounds__?.data;
@@ -209,9 +198,55 @@ class GComponent<Options = any> extends Component {
                 btn.__$soundName = obj?.soundName;
             }
         }
+
+        // @ts-ignore
+        let btnClicks = comp.__$$50btnClick__?.data;
+        if (btnClicks) {
+            for (const key in btnClicks) {
+                let param = btnClicks[key]
+                let parent: Node = null;
+                if (param.parent) {
+                    parent = this.find(param.parent)
+                }
+
+                let node = this.find(param.name, parent);
+                if (node?.button) {
+                    tnt.componentUtils.registerButtonClick(node, param.func, this, this.node);
+                } else if (node) {
+                    let touch = {
+                        onTouchEnded: param.func,
+                    }
+                    tnt.componentUtils.registerNodeTouchEvent(node, touch, this, this.node);
+                }
+
+            }
+        }
     }
 
+    protected bindNode(property: string, nodeName: string, type: GConstructor<Component>, parentName: string = null, add: boolean = false) {
+        let parent: Node = null;
+        if (parentName) {
+            parent = this.find(parentName)
+        }
+        if (type) {
+            let node = this.find(nodeName, parent);
 
+            let _comp = node?.getComponent(type);
+
+            if (add && node && !_comp) {
+                _comp = node.addComponent(type);
+                if (_comp instanceof tnt.GComponent) {
+                    _comp.loaderKey = this.loaderKey;
+                }
+            }
+            // let _comp = this.findComponent(nodeName, type, parent);
+            this[property] = _comp;
+        } else {
+
+            let node = this.find(nodeName, parent);
+            this[property] = node;
+        }
+    }
     /**
      * 分帧执行
      * @param {*} generator Generator 类型方法

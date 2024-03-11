@@ -13,8 +13,6 @@ export const enum VMHandlerName {
     Progress = 'progress',
     Event = 'event',
     // Click = 'click',
-    // Active = 'active',
-    // SpriteFrame = 'spriteFrame'
 }
 
 
