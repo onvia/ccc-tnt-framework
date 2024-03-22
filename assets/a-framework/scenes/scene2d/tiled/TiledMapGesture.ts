@@ -146,6 +146,7 @@ class TiledMapGesture extends Component implements ITouch, IMouse {
 
     onTouchBegan(event: EventTouch) {
         let allTouches = event.getAllTouches();
+        this.location = event.getLocation();
         // 单点
         if (allTouches.length === 1) {
             let touch = event.touch;
