@@ -1061,7 +1061,7 @@ class AssetLoader implements IPluginMgr {
      * @param {(file)=> any} [parserCallback]
      * @memberof ResourcesMgr
      */
-    static registerLoadBinary(ext?: string, parserCallback?: (file) => any) {
+    static registerLoadBinary(ext?: string, parserCallback?: (file, options: Record<string, any>) => any) {
         // 参考
         // https://docs.cocos.com/creator/manual/zh/release-notes/asset-manager-upgrade-guide.html
         // https://docs.cocos.com/creator/manual/zh/asset-manager/options.html#%E6%89%A9%E5%B1%95%E5%BC%95%E6%93%8E
@@ -1081,10 +1081,14 @@ class AssetLoader implements IPluginMgr {
             options.xhrResponseType = "arraybuffer";
             downloadFile(url, options, options.onFileProgress, onComplete);
         }
-        let customParserHandler = (file, options, cb) => {
+        let customParserHandler = async (file, options, cb) => {
             if (parserCallback) {
-                let array = parserCallback(file);
-                cb(null, array);
+                try {
+                    let array = await parserCallback(file, options);
+                    cb(null, array);
+                } catch (error) {
+                    cb(error, null);
+                }
             } else {
                 let rawAsset = new Uint8Array(file);
                 cb(null, rawAsset);

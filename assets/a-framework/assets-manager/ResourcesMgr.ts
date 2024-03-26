@@ -425,7 +425,7 @@ class ResourcesMgr {
      * @param {(file)=> any} [parserCallback]
      * @memberof ResourcesMgr
      */
-    registerLoadBinary(ext?: string, parserCallback?: (file) => any) {
+    registerLoadBinary(ext?: string, parserCallback?: (file, options: Record<string, any>) => any) {
         tnt.AssetLoader.registerLoadBinary(ext, parserCallback);
     }
 

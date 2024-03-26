@@ -80,5 +80,10 @@ export const SceneConfig: ISceneConfig[] = [
         scene: "ShaderTest",
         button: "shader",
         bundle: "shader-test",
+    },
+    {
+        scene: "BasisTest",
+        bundle: "basis-test",
+        button: "basis"
     }
 ]
