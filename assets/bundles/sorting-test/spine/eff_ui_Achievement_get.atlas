@@ -1,0 +1,146 @@
+
+eff_ui_Achievement_get.png
+size: 369,425
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+ci
+  rotate: false
+  xy: 334, 330
+  size: 23, 39
+  orig: 129, 129
+  offset: 53, 90
+  index: -1
+ci2
+  rotate: false
+  xy: 2, 269
+  size: 151, 154
+  orig: 151, 154
+  offset: 0, 0
+  index: -1
+glow01
+  rotate: false
+  xy: 249, 26
+  size: 111, 111
+  orig: 128, 128
+  offset: 9, 8
+  index: -1
+glow02
+  rotate: true
+  xy: 132, 9
+  size: 128, 115
+  orig: 128, 128
+  offset: 0, 9
+  index: -1
+glow03
+  rotate: false
+  xy: 2, 139
+  size: 128, 128
+  orig: 128, 128
+  offset: 0, 0
+  index: -1
+glow06
+  rotate: false
+  xy: 132, 139
+  size: 126, 128
+  orig: 128, 128
+  offset: 0, 0
+  index: -1
+glow07
+  rotate: false
+  xy: 260, 139
+  size: 100, 97
+  orig: 121, 121
+  offset: 11, 11
+  index: -1
+ring01
+  rotate: true
+  xy: 155, 303
+  size: 120, 110
+  orig: 128, 128
+  offset: 4, 9
+  index: -1
+ring02
+  rotate: false
+  xy: 2, 9
+  size: 128, 128
+  orig: 128, 128
+  offset: 0, 0
+  index: -1
+seq/title_0001
+  rotate: false
+  xy: 249, 2
+  size: 22, 22
+  orig: 68, 49
+  offset: 24, 13
+  index: -1
+seq/title_0002
+  rotate: true
+  xy: 319, 382
+  size: 39, 41
+  orig: 68, 49
+  offset: 14, 4
+  index: -1
+seq/title_0003
+  rotate: false
+  xy: 330, 290
+  size: 37, 38
+  orig: 68, 49
+  offset: 15, 6
+  index: -1
+seq/title_0004
+  rotate: false
+  xy: 267, 382
+  size: 50, 36
+  orig: 68, 49
+  offset: 10, 7
+  index: -1
+seq/title_0005
+  rotate: true
+  xy: 330, 238
+  size: 50, 35
+  orig: 68, 49
+  offset: 10, 8
+  index: -1
+seq/title_0006
+  rotate: false
+  xy: 267, 274
+  size: 61, 35
+  orig: 68, 49
+  offset: 4, 8
+  index: -1
+seq/title_0007
+  rotate: false
+  xy: 267, 311
+  size: 61, 35
+  orig: 68, 49
+  offset: 4, 8
+  index: -1
+seq/title_0008
+  rotate: false
+  xy: 260, 238
+  size: 66, 34
+  orig: 68, 49
+  offset: 2, 8
+  index: -1
+seq/title_0009
+  rotate: false
+  xy: 267, 348
+  size: 65, 32
+  orig: 68, 49
+  offset: 2, 9
+  index: -1
+seq/title_0010
+  rotate: false
+  xy: 155, 272
+  size: 65, 29
+  orig: 68, 49
+  offset: 2, 11
+  index: -1
+spot_01
+  rotate: false
+  xy: 222, 270
+  size: 31, 31
+  orig: 31, 31
+  offset: 0, 0
+  index: -1
