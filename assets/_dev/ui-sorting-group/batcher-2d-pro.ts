@@ -1,6 +1,6 @@
 
 import { EPSILON, Node, RenderData, StencilManager, UIRenderer, approx, cclegacy, clamp, gfx, log, sp, __private } from "cc";
-import { JSB } from 'cc/env';
+import { EDITOR, JSB } from 'cc/env';
 
 declare module 'cc' {
     interface UI {
@@ -68,7 +68,7 @@ let batcher2dPrototype = Batcher2D.prototype;
 let oldBatcher2DUpdate = Batcher2D.prototype.update;
 let oldBatcher2DWalk = Batcher2D.prototype.walk;
 export function enableChangeBatcher2D() {
-   
+
 }
 
 
@@ -154,7 +154,11 @@ if (!batcher2dPrototype["_$pro$_"]) {
                 this._opacityDirty = 0;
                 this._pOpacity = 1;
 
-                this.walk(screen.node);
+                let level = this.walk(screen.node);
+                if (!EDITOR) {
+                    console.log(`batcher-2d-pro-> `, level);
+                }
+
 
                 this.autoMergeBatches(this._currComponent!);
                 this.resetRenderStates();
@@ -187,8 +191,7 @@ if (!batcher2dPrototype["_$pro$_"]) {
             const children = node.children;
             const uiProps = node._uiProps;
             const render = uiProps.uiComp as UIRenderer;
-            const stencilStage = render && render.stencilStage as unknown;
-            const stencilEnterLevel = render && (stencilStage === Stage.ENTER_LEVEL || stencilStage === Stage.ENTER_LEVEL_INVERTED);
+            const stencilEnterLevel = render && (render.stencilStage as unknown === Stage.ENTER_LEVEL || render.stencilStage as unknown === Stage.ENTER_LEVEL_INVERTED);
             // const transform = uiProps.uiTransformComp;
 
             // let sortingEnabled = transform?._sortingEnabled;
@@ -248,40 +251,9 @@ if (!batcher2dPrototype["_$pro$_"]) {
                 }
 
                 if (children.length > 0 && !node._static) {
-                    if (!node[`__levelRender`]) {
-                        __renderQueue = [];
-                        for (let i = 0; i < children.length; ++i) {
-                            const child = children[i];
-                            const enableLevelRender = node[`__enableLevelRender`];
-
-                            if (!enableLevelRender) {
-                                const uiProps = child._uiProps;
-                                const transform = uiProps.uiTransformComp;
-                                let sortingEnabled = transform?._sortingEnabled;
-                                // sortingPriority = sortingEnabled ? transform._sortingPriority : sortingPriority;
-                                if (sortingEnabled) {
-                                    this.manualSplit(child, opacity, 0, sortingPriority);
-                                } else {
-                                    this.walk(child, level);
-                                }
-                            } else {
-                                levelSplit(child, 0, i);
-                            }
-                        }
-                        while (__renderQueue.length > 0) {
-                            const list = __renderQueue.shift();
-                            if (list.length > 0) {
-                                while (list.length > 0) {
-                                    const n = list.shift();
-                                    this.walk(n, level);
-                                }
-                            }
-                        }
-                        while (this.rendererCache.length > 0) {
-                            const n = this.rendererCache.shift();
-                            this.walk(n, level);
-                            // this.walk(n.node, level);
-                        }
+                    for (let i = 0; i < children.length; ++i) {
+                        const child = children[i];
+                        level = this.walk(child, level);
                     }
                 }
 
@@ -308,8 +280,10 @@ if (!batcher2dPrototype["_$pro$_"]) {
                 }
             }
 
+            console.log(`batcher-2d-pro-> `, level, node.name);
 
             level += 1;
+            return level;
         }
     });
 
