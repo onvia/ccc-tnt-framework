@@ -20,7 +20,7 @@ class RedPointMgr extends tnt.EventMgr {
     public root: tnt.RedPoint = null;
     protected _redPointMap: Map<number, tnt.RedPoint> = null;
     protected _redPointRequestUpdate: IRedPointRequestUpdate = null;
-    protected _redPointDisplayMap: Map<number, tnt.RedPointComp> = null;
+    protected _redPointDisplayMap: Map<number, Array<tnt.RedPointComp>> = null;
 
     //存储一帧结束后要更新的红点
     protected _preUpdateRedPointMap: Map<tnt.RedPoint, boolean> = null;
@@ -173,10 +173,11 @@ class RedPointMgr extends tnt.EventMgr {
             console.error(`RedPointMgr-> 红点宿主节点错误`);
             return;
         }
-        let display = this._redPointDisplayMap.get(id);
-        if (display && isValid(display, true) && isValid(display.node, true)) {
-            console.warn(`RedPointMgr-> 当前 [${id}] 红点已存在红点显示组件`);
-            return;
+        let displayArray = this._redPointDisplayMap.get(id);
+
+        if (!displayArray) {
+            displayArray = new Array();
+            this._redPointDisplayMap.set(id, displayArray);
         }
 
         let redPoint = this._redPointMap.get(id);
@@ -185,10 +186,12 @@ class RedPointMgr extends tnt.EventMgr {
             return;
         }
 
-        display = await tnt.resourcesMgr.addPrefabNode(tnt.RedPoint.loaderKey, clazz, pointRoot);
+
+
+        let display = await tnt.resourcesMgr.addPrefabNode(tnt.RedPoint.loaderKey, clazz, pointRoot);
         if (isValid(display, true)) {
             if (pointRoot && isValid(pointRoot, true)) {
-                this._redPointDisplayMap.set(id, display);
+                displayArray.push(display);
                 display.updateShowType(redPoint.showType);
                 this._updateDisplay(id, redPoint, display);
             } else {
@@ -356,20 +359,26 @@ class RedPointMgr extends tnt.EventMgr {
     }
     private _onUpdateDisplay(id: number) {
         let redPoint = this._redPointMap.get(id);
-        let display = this._redPointDisplayMap.get(id);
-        if (display) {
-            if (redPoint) {
+        if (!redPoint) {
+            this.removeDisplay(id);
+            return;
+        }
+        let displayArray = this._redPointDisplayMap.get(id);
+        if (displayArray) {
+            // 倒序
+            for (let i = displayArray.length - 1; i >= 0; i--) {
+                let display = displayArray[i];
                 this._updateDisplay(id, redPoint, display);
-            } else {
-                this._removeDisplay(id, display);
             }
         }
     }
     private _onChangeShowType(id: number) {
-        let display = this._redPointDisplayMap.get(id);
-        if (display && isValid(display, true)) {
-            let redPoint = this._redPointMap.get(id);
-            redPoint && display.updateShowType(redPoint.showType);
+        let displayArray = this._redPointDisplayMap.get(id);
+        for (const display of displayArray) {
+            if (display && isValid(display, true)) {
+                let redPoint = this._redPointMap.get(id);
+                redPoint && display.updateShowType(redPoint.showType);
+            }
         }
     }
 
@@ -383,19 +392,30 @@ class RedPointMgr extends tnt.EventMgr {
         }
     }
 
-    private _removeDisplay(id: number, display: tnt.RedPointComp) {
+    private _removeDisplay(id: number, display: tnt.RedPointComp, checkEmpty = true) {
         if (display) {
             if (isValid(display, true) && isValid(display.node, true)) {
                 display.node.removeFromParent();
                 display.node.destroy();
                 display.destroy();
             }
-            this._redPointDisplayMap.delete(id);
+
+            if (checkEmpty) {
+                let displayArray = this._redPointDisplayMap.get(id);
+                displayArray.removeOne(display);
+                if (!displayArray.length) {
+                    this._redPointDisplayMap.delete(id);
+                }
+            }
         }
     }
     public removeDisplay(id: number) {
-        let display = this._redPointDisplayMap.get(id);
-        this._removeDisplay(id, display);
+        let displayArray = this._redPointDisplayMap.get(id);
+        for (const display of displayArray) {
+            this._removeDisplay(id, display, false);
+        }
+        displayArray.length = 0;
+        this._redPointDisplayMap.delete(id);
     }
 
     /**
